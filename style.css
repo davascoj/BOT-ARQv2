@@ -1,0 +1,295 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #0b1020;
+  color: #e8eefc;
+}
+
+.container {
+  width: 98.5%;
+  max-width: 1950px;
+  margin: 0 auto;
+  padding: 18px 0;
+}
+
+.hero {
+  padding: 22px;
+  background: linear-gradient(135deg, #14213d, #0f172a);
+  border: 1px solid #22304d;
+  border-radius: 18px;
+  box-shadow: 0 16px 40px rgba(0,0,0,.35);
+}
+
+.hero h1 {
+  margin: 0 0 8px;
+  font-size: clamp(26px, 5vw, 46px);
+}
+
+.hero p {
+  margin: 0 0 14px;
+  color: #b7c4e5;
+  line-height: 1.45;
+}
+
+.market-box {
+  display: inline-block;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: #1e293b;
+  color: #dbeafe;
+  border: 1px solid #334155;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.market-box.alcista,
+.market-box.neutro-plus {
+  background: #064e3b;
+  color: #a7f3d0;
+}
+
+.market-box.debil {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+.buttons,
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  align-items: center;
+}
+
+button {
+  border: none;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: #38bdf8;
+  color: #03111d;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+button:hover { opacity: 0.88; }
+
+.filtros button {
+  background: #1f2937;
+  color: #e5e7eb;
+  border: 1px solid #334155;
+}
+
+.filtros label {
+  color: #dbeafe;
+  font-size: 14px;
+}
+
+#buscarAccion {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e5e7eb;
+  min-width: 250px;
+  font-weight: 700;
+}
+
+#buscarAccion::placeholder { color: #94a3b8; }
+
+.notice,
+.historial-note {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #1e293b;
+  color: #dbeafe;
+  border: 1px solid #334155;
+}
+
+.historial-note {
+  margin: 0 14px 14px;
+  font-size: 13px;
+}
+
+.card {
+  background: #111827;
+  border: 1px solid #22304d;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0,0,0,.35);
+  margin-bottom: 18px;
+}
+
+.summary-card { padding: 14px; }
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  gap: 12px;
+}
+
+.summary div {
+  background: #0f172a;
+  border: 1px solid #263247;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.summary strong {
+  display: block;
+  font-size: 23px;
+  color: #93c5fd;
+}
+
+.summary span {
+  display: block;
+  color: #cbd5e1;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.historial-summary {
+  padding: 0 14px 14px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.topbar h2 { margin: 0; }
+#fecha, #historialFecha { color: #a7b7d8; }
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+th, td {
+  padding: 8px 7px;
+  border-top: 1px solid #263247;
+  text-align: left;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+th {
+  color: #93c5fd;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+td { color: #eef5ff; }
+
+.badge,
+.conf,
+.prob,
+.bot-badge,
+.hist-status {
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 10px;
+}
+
+.bajo,
+.alta,
+.prob-verde,
+.bot-buy-strong,
+.hist-open {
+  background: #064e3b;
+  color: #a7f3d0;
+}
+
+.medio,
+.media,
+.prob-amarillo,
+.bot-buy,
+.bot-hold {
+  background: #78350f;
+  color: #fde68a;
+}
+
+.alto,
+.baja,
+.prob-rojo,
+.bot-sell,
+.hist-closed {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+.fuerte {
+  color: #22c55e;
+  font-weight: 900;
+}
+
+.compra {
+  color: #86efac;
+  font-weight: 800;
+}
+
+.vigilar {
+  color: #fde68a;
+  font-weight: 800;
+}
+
+.no {
+  color: #fca5a5;
+  font-weight: 800;
+}
+
+.mom-pos,
+.hist-pos {
+  color: #86efac;
+  font-weight: 800;
+}
+
+.mom-neg,
+.hist-neg {
+  color: #fca5a5;
+  font-weight: 800;
+}
+
+.detalle {
+  max-width: 380px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #cbd5e1;
+}
+
+@media (max-width: 900px) {
+  .container { width: 99%; }
+  .hero { padding: 16px; }
+  th, td { padding: 7px 5px; font-size: 11px; }
+  th { font-size: 9px; }
+  button { padding: 9px 11px; font-size: 12px; }
+  #buscarAccion { min-width: 180px; }
+}
+
+
+.auto-refresh-info {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(56, 189, 248, 0.10);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  color: #bfdbfe;
+  font-size: 13px;
+  line-height: 1.4;
+}

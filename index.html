@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Analizador de Acciones ARQ</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+
+<body>
+  <main class="container">
+    <section class="hero">
+      <h1>Analizador de Acciones ARQ</h1>
+      <p>
+        Ranking técnico con filtro de mercado SPY/QQQ, señales automáticas BUY/SELL,
+        zona de entrada, stop loss, objetivo y seguimiento de ganancias/pérdidas en modo simulación.
+      </p>
+
+      <div class="market-box" id="marketBox">
+        Mercado: cargando...
+      </div>
+
+      <div class="buttons">
+        <button onclick="cargarDatos()">Actualizar vista ahora</button>
+        <button onclick="ejecutarAnalisis()">Abrir GitHub Actions</button>
+        <button onclick="mostrarTop4()">Top 4 para mañana</button>
+        <button onclick="scrollHistorial()">Ver historial</button>
+      </div>
+
+      <div id="autoRefreshInfo" class="auto-refresh-info">La vista se refresca sola cada 60 segundos. GitHub Actions actualiza datos cada 5 minutos en horario de mercado.</div>
+
+      <div class="filtros">
+        <button onclick="filtrarSector('TODOS')">Todos</button>
+        <button onclick="filtrarSector('IA')">IA</button>
+        <button onclick="filtrarSector('Chips')">Chips</button>
+        <button onclick="filtrarSector('Trading')">Trading</button>
+        <button onclick="filtrarSector('Energía')">Energía</button>
+        <button onclick="filtrarSector('Tecnología')">Tecnología</button>
+
+        <input
+          type="text"
+          id="buscarAccion"
+          placeholder="Buscar acción: NVDA, AMD, TSLA..."
+          oninput="renderTabla()"
+        />
+
+        <button onclick="limpiarBusqueda()">Quitar filtro</button>
+
+        <label>
+          <input type="checkbox" id="soloCompra" onchange="renderTabla()">
+          Solo compra
+        </label>
+
+        <label>
+          <input type="checkbox" id="soloHot" onchange="renderTabla()">
+          Solo HOT
+        </label>
+
+        <label>
+          <input type="checkbox" id="ocultarAlto" onchange="renderTabla()">
+          Ocultar riesgo alto
+        </label>
+      </div>
+    </section>
+
+    <section class="notice">
+      <strong>Importante:</strong>
+      Esta herramienta no garantiza ganancias. Las señales BUY/SELL son simuladas y no ejecutan órdenes reales.
+      Antes de comprar, confirma precio en tiempo real, volumen, noticias y usa stop loss. La actualización automática depende de GitHub Actions y puede demorarse unos minutos en horas de alta carga.
+    </section>
+
+    <section class="card summary-card">
+      <div class="summary" id="resumen">
+        Cargando resumen...
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="topbar">
+        <h2>Resultados</h2>
+        <span id="fecha">Cargando...</span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th title="Ticker o símbolo bursátil.">Acción</th>
+              <th title="Sector o categoría principal.">Sector</th>
+              <th title="Último precio de cierre tomado por el sistema.">Precio</th>
+              <th title="Probabilidad técnica estimada. No garantiza ganancia.">Prob.</th>
+              <th title="Movimiento reciente de 5 días.">Mom. 5D</th>
+              <th title="Fuerza contra QQQ en 20 días. Positivo = supera al Nasdaq.">Rel.</th>
+              <th title="Más fuego significa mayor fuerza técnica con riesgo controlado.">Hot</th>
+              <th title="Confirmación técnica de ruptura o fuerza.">Conf.</th>
+              <th title="ATR como porcentaje del precio. Alto ATR % significa más riesgo.">ATR %</th>
+              <th title="Zona técnica sugerida de entrada.">Entrada</th>
+              <th title="Precio sugerido para limitar pérdidas.">Stop</th>
+              <th title="Precio objetivo técnico estimado.">Objetivo</th>
+              <th title="Relación riesgo/recompensa aproximada.">R/R</th>
+              <th title="RSI: arriba de 70 puede indicar sobrecompra.">RSI</th>
+              <th title="Contexto general del mercado por SPY/QQQ.">Mercado</th>
+              <th title="Riesgo según volatilidad, momentum, RSI y distancia a MA20.">Riesgo</th>
+              <th title="Lectura automática para humanos.">Señal</th>
+              <th title="Señal lista para futuro bot: BUY STRONG, BUY, HOLD o SELL / EVITAR.">Bot</th>
+              <th title="Razones y alertas principales.">Detalle</th>
+            </tr>
+          </thead>
+          <tbody id="tabla"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card" id="historialCard">
+      <div class="topbar">
+        <h2>Historial de señales / Simulación</h2>
+        <span id="historialFecha">Cargando...</span>
+      </div>
+
+      <div class="historial-note">
+        El historial mide qué habría pasado si se siguieran las señales. No compra ni vende dinero real.
+      </div>
+
+      <div class="summary historial-summary" id="historialResumen">
+        Cargando historial...
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Estado</th>
+              <th>Acción</th>
+              <th>Entrada</th>
+              <th>Actual</th>
+              <th>G/P %</th>
+              <th>Stop</th>
+              <th>Objetivo</th>
+              <th>R/R</th>
+              <th>Fecha entrada</th>
+              <th>Días</th>
+              <th>Señal entrada</th>
+              <th>Bot actual</th>
+              <th>Resultado</th>
+            </tr>
+          </thead>
+          <tbody id="tablaHistorial"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
