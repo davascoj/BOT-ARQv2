@@ -293,3 +293,68 @@ td { color: #eef5ff; }
   font-size: 13px;
   line-height: 1.4;
 }
+
+
+/* ================================
+   AVISO VISUAL DE ESTADO DEL SISTEMA
+   Mercado abierto/cerrado NYSE/Nasdaq
+   ================================ */
+.market-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: fit-content;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  text-transform: lowercase;
+  margin: 12px 0 16px 0;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+  transition: all 0.25s ease;
+}
+
+.market-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  display: inline-block;
+  flex: 0 0 auto;
+}
+
+.market-status-badge.market-online {
+  color: #d8ffe8;
+  background: rgba(0, 120, 70, 0.30);
+  border: 1px solid rgba(0, 255, 140, 0.55);
+}
+
+.market-status-badge.market-online .market-status-dot {
+  background: #8cffbd;
+  box-shadow: 0 0 14px rgba(140, 255, 189, 0.95);
+}
+
+.market-status-badge.market-off {
+  color: #ffdada;
+  background: rgba(120, 20, 20, 0.30);
+  border: 1px solid rgba(255, 90, 90, 0.55);
+}
+
+.market-status-badge.market-off .market-status-dot {
+  background: #ff6b6b;
+  box-shadow: 0 0 14px rgba(255, 90, 90, 0.95);
+}
+
+.market-status-badge.market-preopen {
+  color: #fff0c2;
+  background: rgba(150, 105, 0, 0.30);
+  border: 1px solid rgba(255, 190, 70, 0.55);
+}
+
+.market-status-badge.market-preopen .market-status-dot {
+  background: #ffd166;
+  box-shadow: 0 0 14px rgba(255, 209, 102, 0.95);
+}

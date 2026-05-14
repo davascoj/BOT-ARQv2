@@ -358,3 +358,78 @@ setInterval(() => {
     cargarDatos();
   }
 }, AUTO_REFRESH_MS);
+
+
+// ================================
+// AVISO VISUAL DE ESTADO DEL SISTEMA
+// Mercado regular NYSE/Nasdaq: lunes a viernes, 9:30 a.m. a 4:00 p.m. New York
+// Nota: no valida feriados especiales; el workflow de Python sí controla eso mejor.
+// ================================
+function obtenerHoraNewYorkARQ() {
+  const partes = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+  }).formatToParts(new Date());
+
+  const datos = {};
+
+  partes.forEach((parte) => {
+    datos[parte.type] = parte.value;
+  });
+
+  return {
+    weekday: datos.weekday,
+    hour: Number(datos.hour),
+    minute: Number(datos.minute),
+    second: Number(datos.second)
+  };
+}
+
+function mercadoAbiertoAhoraARQ() {
+  const ny = obtenerHoraNewYorkARQ();
+  const diasHabiles = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  const esDiaHabil = diasHabiles.includes(ny.weekday);
+  const minutosActuales = ny.hour * 60 + ny.minute;
+  const apertura = 9 * 60 + 30;
+  const cierre = 16 * 60;
+
+  return esDiaHabil && minutosActuales >= apertura && minutosActuales < cierre;
+}
+
+function mercadoPreAperturaARQ() {
+  const ny = obtenerHoraNewYorkARQ();
+  const diasHabiles = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+  const esDiaHabil = diasHabiles.includes(ny.weekday);
+  const minutosActuales = ny.hour * 60 + ny.minute;
+  const preInicio = 9 * 60;
+  const apertura = 9 * 60 + 30;
+
+  return esDiaHabil && minutosActuales >= preInicio && minutosActuales < apertura;
+}
+
+function actualizarAvisoSistemaARQ() {
+  const badge = document.getElementById("marketStatusBadge");
+  const texto = document.getElementById("marketStatusText");
+
+  if (!badge || !texto) return;
+
+  badge.classList.remove("market-online", "market-off", "market-preopen");
+
+  if (mercadoAbiertoAhoraARQ()) {
+    badge.classList.add("market-online");
+    texto.textContent = "sistema en línea";
+  } else if (mercadoPreAperturaARQ()) {
+    badge.classList.add("market-preopen");
+    texto.textContent = "preapertura";
+  } else {
+    badge.classList.add("market-off");
+    texto.textContent = "sistema off";
+  }
+}
+
+actualizarAvisoSistemaARQ();
+setInterval(actualizarAvisoSistemaARQ, 30000);
