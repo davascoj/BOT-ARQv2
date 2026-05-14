@@ -12,18 +12,62 @@ HISTORIAL_FILE = "historial_senales.json"
 HISTORIAL_XLSX = "historial_senales.xlsx"
 
 ACCIONES_INFO = {
+    # Tecnología, IA y software
     "NVDA": "IA / Chips", "AMD": "IA / Chips", "MSFT": "Tecnología",
     "AVGO": "IA / Chips", "AAPL": "Tecnología", "META": "Tecnología",
     "AMZN": "Tecnología", "GOOGL": "Tecnología", "TSLA": "Autos / Tech",
-    "PLTR": "IA / Software", "SMCI": "Servidores IA", "MU": "Memoria / Chips",
-    "ARM": "Chips", "QCOM": "Chips", "INTC": "Chips", "TSM": "Chips",
-    "ASML": "Chips", "AMAT": "Equipos chips", "LRCX": "Equipos chips",
-    "KLAC": "Equipos chips", "SOFI": "Fintech", "COIN": "Cripto / Trading",
-    "HOOD": "Trading", "PYPL": "Pagos", "SQ": "Pagos", "XOM": "Energía",
-    "CVX": "Energía", "OXY": "Energía", "SLB": "Energía",
-    "SPY": "ETF Mercado", "QQQ": "ETF Nasdaq", "SOXX": "ETF Chips",
-    "RKLB": "Espacial", "IONQ": "Computación cuántica",
-    "SOUN": "IA", "AI": "IA", "UPST": "Fintech IA"
+    "ORCL": "Tecnología", "CRM": "Tecnología", "NOW": "Tecnología",
+    "SNOW": "Tecnología", "DDOG": "Tecnología", "NET": "Tecnología",
+    "APP": "Tecnología", "UBER": "Tecnología", "NFLX": "Tecnología",
+    "ADBE": "Tecnología", "SHOP": "Tecnología", "RDDT": "Tecnología",
+    "IBM": "Tecnología", "ACN": "Tecnología", "INTU": "Tecnología",
+    "TEAM": "Tecnología", "HUBS": "Tecnología", "TTD": "Tecnología",
+    "DELL": "Tecnología",
+
+    # IA, datos, ciberseguridad y crecimiento
+    "PLTR": "IA / Software", "SMCI": "Servidores IA", "SOUN": "IA",
+    "AI": "IA", "UPST": "Fintech IA", "CRWD": "Ciberseguridad",
+    "PANW": "Ciberseguridad", "ZS": "Ciberseguridad", "FTNT": "Ciberseguridad",
+    "OKTA": "Ciberseguridad", "CHKP": "Ciberseguridad", "MDB": "Datos / Software",
+    "ANET": "Redes / IA",
+
+    # Semiconductores y equipos de chips
+    "MU": "Memoria / Chips", "ARM": "Chips", "QCOM": "Chips", "INTC": "Chips",
+    "TSM": "Chips", "ASML": "Chips", "AMAT": "Equipos chips",
+    "LRCX": "Equipos chips", "KLAC": "Equipos chips", "MRVL": "Chips",
+    "ON": "Chips", "NXPI": "Chips", "MPWR": "Chips", "TXN": "Chips",
+    "ADI": "Chips", "MCHP": "Chips",
+
+    # Finanzas, pagos, trading y cripto relacionadas
+    "SOFI": "Fintech", "COIN": "Cripto / Trading", "HOOD": "Trading",
+    "PYPL": "Pagos", "XYZ": "Pagos", "V": "Pagos", "MA": "Pagos",
+    "JPM": "Finanzas", "GS": "Finanzas", "BAC": "Finanzas", "MS": "Finanzas",
+    "C": "Finanzas", "WFC": "Finanzas", "BLK": "Finanzas", "SCHW": "Finanzas",
+    "IBKR": "Trading", "MSTR": "Cripto / Trading", "MARA": "Cripto / Trading",
+    "RIOT": "Cripto / Trading",
+
+    # Energía e industrial
+    "XOM": "Energía", "CVX": "Energía", "OXY": "Energía", "SLB": "Energía",
+    "COP": "Energía", "LNG": "Energía", "EOG": "Energía", "FANG": "Energía",
+    "DVN": "Energía", "HAL": "Energía", "GE": "Industrial", "CAT": "Industrial",
+    "BA": "Industrial", "DE": "Industrial",
+
+    # Salud y consumo defensivo
+    "LLY": "Salud", "NVO": "Salud", "UNH": "Salud", "ABBV": "Salud",
+    "JNJ": "Salud", "PFE": "Salud", "MRK": "Salud", "TMO": "Salud",
+    "ABT": "Salud", "COST": "Consumo", "WMT": "Consumo", "MCD": "Consumo",
+    "HD": "Consumo", "LOW": "Consumo", "SBUX": "Consumo",
+
+    # ETFs y mercado general
+    "SPY": "ETF Mercado", "QQQ": "ETF Nasdaq", "VOO": "ETF Mercado",
+    "SOXX": "ETF Chips", "SMH": "ETF Chips", "XLK": "ETF Tecnología",
+    "VGT": "ETF Tecnología", "IWM": "ETF Russell", "DIA": "ETF Dow",
+    "XLE": "ETF Energía", "XLF": "ETF Finanzas", "XLV": "ETF Salud",
+    "ARKK": "ETF Innovación",
+
+    # Temáticas de alta volatilidad / innovación
+    "RKLB": "Espacial", "IONQ": "Computación cuántica", "QBTS": "Computación cuántica",
+    "RGTI": "Computación cuántica", "JOBY": "Movilidad aérea", "ACHR": "Movilidad aérea"
 }
 
 ACCIONES = list(ACCIONES_INFO.keys())
