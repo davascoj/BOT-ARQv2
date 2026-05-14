@@ -72,6 +72,15 @@ ACCIONES_INFO = {
 
 ACCIONES = list(ACCIONES_INFO.keys())
 
+# Contexto externo por tipo de acción.
+# Estos tickers no necesariamente se muestran en tabla; son drivers para confirmar si el sector acompaña.
+DRIVERS_CONTEXTO = {
+    "chips": ["SOXX", "QQQ"],
+    "energia": ["XLE", "CL=F"],
+    "cripto": ["BTC-USD", "ETH-USD"],
+    "tech_ia": ["QQQ", "ARKK", "SPY"],
+}
+
 
 def numero(valor):
     try:
@@ -148,58 +157,203 @@ def unir_unicos(items, limite=5):
     return "; ".join(vistos[:limite])
 
 
-def contexto_mercado():
-    """Calcula un filtro general de mercado usando SPY y QQQ."""
+def evaluar_driver(ticker):
+    """Evalúa un ETF/índice/activo externo como QQQ, SOXX, XLE, BTC-USD, ETH-USD o petróleo."""
     try:
-        spy = descargar("SPY", "1y")
-        qqq = descargar("QQQ", "1y")
-        if spy.empty or qqq.empty or len(spy) < 220 or len(qqq) < 220:
-            return {"estado": "NEUTRO", "score": 0, "spy20": 0, "qqq20": 0}
+        df = descargar(ticker, "1y")
+        if df.empty or len(df) < 80:
+            return {"ticker": ticker, "estado": "SIN DATOS", "score": 0, "mom20": 0, "mom5": 0}
 
-        def evaluar(df):
-            close = df["Close"]
-            precio = numero(close.iloc[-1])
-            ma20 = numero(close.rolling(20).mean().iloc[-1])
-            ma50 = numero(close.rolling(50).mean().iloc[-1])
-            ma200 = numero(close.rolling(200).mean().iloc[-1])
-            mom20 = cambio_pct(close, 20)
-            pts = 0
-            if precio > ma20:
-                pts += 1
-            if ma20 > ma50:
-                pts += 1
-            if ma50 > ma200:
-                pts += 1
-            if mom20 > 0:
-                pts += 1
-            return pts, mom20
+        close = df["Close"]
+        precio = numero(close.iloc[-1])
+        ma20 = numero(close.rolling(20).mean().iloc[-1])
+        ma50 = numero(close.rolling(50).mean().iloc[-1])
+        mom5 = cambio_pct(close, 5)
+        mom20 = cambio_pct(close, 20)
 
-        spy_pts, spy20 = evaluar(spy)
-        qqq_pts, qqq20 = evaluar(qqq)
-        total = spy_pts + qqq_pts
+        pts = 0
+        if precio and ma20 and precio > ma20:
+            pts += 1
+        if ma20 and ma50 and ma20 > ma50:
+            pts += 1
+        if mom5 > 0:
+            pts += 1
+        if mom20 > 0:
+            pts += 1
 
-        if total >= 7:
+        if pts >= 4:
+            estado = "FUERTE"
+            score = 6
+        elif pts == 3:
+            estado = "POSITIVO"
+            score = 3
+        elif pts == 2:
+            estado = "NEUTRO"
+            score = 0
+        else:
+            estado = "DÉBIL"
+            score = -6
+
+        return {
+            "ticker": ticker,
+            "estado": estado,
+            "score": score,
+            "mom20": round(mom20, 2),
+            "mom5": round(mom5, 2),
+        }
+
+    except Exception as e:
+        print(f"ERROR driver {ticker}: {e}")
+        return {"ticker": ticker, "estado": "SIN DATOS", "score": 0, "mom20": 0, "mom5": 0}
+
+
+def contexto_mercado():
+    """Calcula contexto general y contexto por sectores clave."""
+    try:
+        drivers = {}
+        tickers_unicos = sorted({t for lista in DRIVERS_CONTEXTO.values() for t in lista})
+
+        for ticker in tickers_unicos:
+            drivers[ticker] = evaluar_driver(ticker)
+            time.sleep(0.2)
+
+        spy = drivers.get("SPY", {"score": 0, "mom20": 0, "estado": "NEUTRO"})
+        qqq = drivers.get("QQQ", {"score": 0, "mom20": 0, "estado": "NEUTRO"})
+        total_base = spy.get("score", 0) + qqq.get("score", 0)
+
+        if total_base >= 9:
             estado = "ALCISTA"
             score = 8
-        elif total >= 5:
+        elif total_base >= 3:
             estado = "NEUTRO +"
             score = 4
-        elif total >= 3:
+        elif total_base > -6:
             estado = "NEUTRO"
             score = 0
         else:
             estado = "DÉBIL"
             score = -8
 
+        def crear_contexto(nombre, tickers):
+            datos = [
+                drivers[t]
+                for t in tickers
+                if t in drivers and drivers[t].get("estado") != "SIN DATOS"
+            ]
+
+            if not datos:
+                return {
+                    "estado": "SIN DATOS",
+                    "score": 0,
+                    "detalle": "",
+                    "drivers": tickers,
+                }
+
+            score_prom = sum(d.get("score", 0) for d in datos) / len(datos)
+            mom_prom = sum(d.get("mom20", 0) for d in datos) / len(datos)
+
+            if score_prom >= 4:
+                estado_ctx = "ACOMPAÑA"
+                ajuste = 7
+            elif score_prom >= 1:
+                estado_ctx = "NEUTRO +"
+                ajuste = 3
+            elif score_prom > -3:
+                estado_ctx = "NEUTRO"
+                ajuste = 0
+            else:
+                estado_ctx = "NO ACOMPAÑA"
+                ajuste = -8
+
+            detalle = " · ".join([f"{d['ticker']} {d['mom20']}%" for d in datos])
+
+            return {
+                "estado": estado_ctx,
+                "score": ajuste,
+                "mom20_prom": round(mom_prom, 2),
+                "detalle": detalle,
+                "drivers": tickers,
+            }
+
+        sectores = {
+            "chips": crear_contexto("chips", DRIVERS_CONTEXTO["chips"]),
+            "energia": crear_contexto("energia", DRIVERS_CONTEXTO["energia"]),
+            "cripto": crear_contexto("cripto", DRIVERS_CONTEXTO["cripto"]),
+            "tech_ia": crear_contexto("tech_ia", DRIVERS_CONTEXTO["tech_ia"]),
+        }
+
         return {
             "estado": estado,
             "score": score,
-            "spy20": round(spy20, 2),
-            "qqq20": round(qqq20, 2),
+            "spy20": round(spy.get("mom20", 0), 2),
+            "qqq20": round(qqq.get("mom20", 0), 2),
+            "drivers": drivers,
+            "sectores": sectores,
         }
+
     except Exception as e:
         print(f"ERROR contexto mercado: {e}")
-        return {"estado": "NEUTRO", "score": 0, "spy20": 0, "qqq20": 0}
+        return {
+            "estado": "NEUTRO",
+            "score": 0,
+            "spy20": 0,
+            "qqq20": 0,
+            "drivers": {},
+            "sectores": {},
+        }
+
+
+def tipo_contexto_por_accion(ticker, sector):
+    """Define qué contexto externo debe confirmar cada acción."""
+    sector_txt = str(sector or "")
+
+    if ticker in ["COIN", "MSTR", "MARA", "RIOT"] or "Cripto" in sector_txt:
+        return "cripto"
+
+    if ticker in ["XOM", "CVX", "SLB", "OXY", "COP", "LNG", "EOG", "FANG", "DVN", "HAL"] or "Energía" in sector_txt:
+        return "energia"
+
+    if ticker in ["NVDA", "AMD", "MU", "AVGO", "KLAC", "AMAT"] or "Chips" in sector_txt or "Memoria" in sector_txt:
+        return "chips"
+
+    if (
+        "Tecnología" in sector_txt
+        or "IA" in sector_txt
+        or "Software" in sector_txt
+        or "Ciberseguridad" in sector_txt
+        or "Computación" in sector_txt
+        or ticker in ["PLTR", "TSLA", "SOUN", "AI", "ARKK"]
+    ):
+        return "tech_ia"
+
+    return "general"
+
+
+def aplicar_contexto_sector(ticker, sector, mercado, razones, alertas):
+    """Devuelve ajuste de score y descripción del contexto sectorial."""
+    tipo = tipo_contexto_por_accion(ticker, sector)
+
+    if tipo == "general":
+        return 0, "GENERAL", "SPY/QQQ"
+
+    ctx = mercado.get("sectores", {}).get(tipo)
+    if not ctx:
+        return 0, "SIN DATOS", ""
+
+    estado = ctx.get("estado", "NEUTRO")
+    ajuste = ctx.get("score", 0)
+    detalle = ctx.get("detalle", "")
+
+    if estado == "ACOMPAÑA":
+        razones.append(f"Sector acompaña: {detalle}")
+    elif estado == "NO ACOMPAÑA":
+        alertas.append(f"Sector no acompaña: {detalle}")
+    elif estado == "NEUTRO +":
+        razones.append(f"Sector ligeramente positivo: {detalle}")
+
+    ajuste = max(-8, min(7, ajuste))
+
+    return ajuste, estado, detalle
 
 
 def analizar(ticker, mercado):
@@ -236,7 +390,12 @@ def analizar(ticker, mercado):
         macd_hist_val = numero(macd_hist.iloc[-1])
         macd_hist_prev = numero(macd_hist.iloc[-2])
 
-        necesarios = [precio, ma10, ma20, ma50, ma200, rsi, volumen_actual, volumen_prom, max20, min20, atr, macd_val, macd_sig, macd_hist_val, macd_hist_prev]
+        necesarios = [
+            precio, ma10, ma20, ma50, ma200, rsi, volumen_actual,
+            volumen_prom, max20, min20, atr, macd_val, macd_sig,
+            macd_hist_val, macd_hist_prev
+        ]
+
         if any(v is None for v in necesarios):
             return None
 
@@ -248,17 +407,25 @@ def analizar(ticker, mercado):
         distancia_ma20 = ((precio / ma20) - 1) * 100 if ma20 else 0
         distancia_max20 = ((precio / max20) - 1) * 100 if max20 else 0
         posicion_rango20 = ((precio - min20) / (max20 - min20)) * 100 if max20 != min20 else 50
+
         fuerza_relativa = momentum_20d - mercado.get("qqq20", 0)
 
         score = 45
         razones = []
         alertas = []
+        sector = ACCIONES_INFO.get(ticker, "Otro")
 
         score += mercado.get("score", 0)
+
         if mercado.get("estado") in ["ALCISTA", "NEUTRO +"]:
             razones.append(f"Mercado {mercado.get('estado')}")
         elif mercado.get("estado") == "DÉBIL":
             alertas.append("Mercado débil")
+
+        ajuste_sector, contexto_sector, detalle_sector = aplicar_contexto_sector(
+            ticker, sector, mercado, razones, alertas
+        )
+        score += ajuste_sector
 
         if precio > ma20:
             score += 7
@@ -300,14 +467,13 @@ def analizar(ticker, mercado):
             razones.append("MACD positivo")
         elif macd_val > macd_sig:
             score += 5
-            razones.append("MACD mejorando")
         else:
             score -= 5
             alertas.append("MACD sin confirmar")
 
         if macd_hist_val > macd_hist_prev:
             score += 4
-            razones.append("Histograma MACD mejora")
+            razones.append("MACD mejorando")
         else:
             score -= 2
 
@@ -347,6 +513,7 @@ def analizar(ticker, mercado):
             alertas.append("Débil vs QQQ")
 
         confirmacion = "MEDIA"
+
         if precio >= max20 * 0.985 and posicion_rango20 >= 75 and volumen_relativo >= 1.1:
             score += 9
             confirmacion = "ALTA"
@@ -378,12 +545,17 @@ def analizar(ticker, mercado):
         score = max(0, min(96, score))
 
         riesgo = "BAJO"
+
         if rsi > 72 or momentum_5d > 10 or atr_pct > 9 or distancia_ma20 > 12:
             riesgo = "ALTO"
         elif rsi > 65 or momentum_5d > 6 or atr_pct > 6 or distancia_ma20 > 7:
             riesgo = "MEDIO"
 
+        if contexto_sector == "NO ACOMPAÑA" and riesgo == "BAJO":
+            riesgo = "MEDIO"
+
         hot_score = 0
+
         if score >= 82:
             hot_score += 1
         if volumen_relativo >= 1.25:
@@ -392,12 +564,14 @@ def analizar(ticker, mercado):
             hot_score += 1
         if fuerza_relativa > 0:
             hot_score += 1
+        if contexto_sector in ["ACOMPAÑA", "NEUTRO +"]:
+            hot_score += 1
         if riesgo != "ALTO":
             hot_score += 1
 
-        if hot_score >= 5:
+        if hot_score >= 6:
             hot = "🔥🔥🔥"
-        elif hot_score == 4:
+        elif hot_score >= 4:
             hot = "🔥🔥"
         elif hot_score == 3:
             hot = "🔥"
@@ -410,13 +584,24 @@ def analizar(ticker, mercado):
         objetivo = round(precio + (atr * 2.2), 2)
         relacion_rr = round((objetivo - precio) / max(precio - stop, 0.01), 2)
 
-        if score >= 84 and riesgo != "ALTO" and confirmacion == "ALTA" and mercado.get("estado") != "DÉBIL":
+        if (
+            score >= 84
+            and riesgo != "ALTO"
+            and confirmacion == "ALTA"
+            and mercado.get("estado") != "DÉBIL"
+            and contexto_sector != "NO ACOMPAÑA"
+        ):
             senal = "COMPRA FUERTE"
             senal_bot = "BUY STRONG"
-        elif score >= 74 and riesgo != "ALTO" and mercado.get("estado") != "DÉBIL":
+        elif (
+            score >= 74
+            and riesgo != "ALTO"
+            and mercado.get("estado") != "DÉBIL"
+            and contexto_sector != "NO ACOMPAÑA"
+        ):
             senal = "POSIBLE COMPRA"
             senal_bot = "BUY"
-        elif score >= 58:
+        elif score >= 60:
             senal = "VIGILAR"
             senal_bot = "HOLD"
         else:
@@ -425,7 +610,7 @@ def analizar(ticker, mercado):
 
         return {
             "Accion": ticker,
-            "Sector": ACCIONES_INFO.get(ticker, "Otro"),
+            "Sector": sector,
             "Precio actual": round(precio, 2),
             "Probabilidad tecnica": round(score, 1),
             "Momentum": round(momentum_5d, 2),
@@ -445,6 +630,8 @@ def analizar(ticker, mercado):
             "Distancia Max20 %": round(distancia_max20, 2),
             "Confirmacion": confirmacion,
             "Mercado": mercado.get("estado", "NEUTRO"),
+            "Contexto sector": contexto_sector,
+            "Drivers sector": detalle_sector,
             "Riesgo": riesgo,
             "Hot Score": hot,
             "Senal": senal,
@@ -476,19 +663,35 @@ def prioridad_riesgo(riesgo):
     return 0
 
 
+def prioridad_contexto(ctx):
+    if ctx == "ACOMPAÑA":
+        return 3
+    if ctx == "NEUTRO +":
+        return 2
+    if ctx in ["NEUTRO", "GENERAL"]:
+        return 1
+    return 0
+
+
 def cargar_historial():
     if not os.path.exists(HISTORIAL_FILE):
         return {"version": 1, "actualizado": "", "operaciones": [], "resumen": {}}
+
     try:
         with open(HISTORIAL_FILE, "r", encoding="utf-8") as f:
             data = json.load(f)
+
         if not isinstance(data, dict):
             data = {}
+
         if not isinstance(data.get("operaciones"), list):
             data["operaciones"] = []
+
         data.setdefault("version", 1)
         data.setdefault("resumen", {})
+
         return data
+
     except Exception as e:
         print(f"No se pudo leer historial: {e}")
         return {"version": 1, "actualizado": "", "operaciones": [], "resumen": {}}
@@ -510,26 +713,31 @@ def actualizar_historial(historial, resultados):
     - Cierra operación si toca stop, objetivo o si la señal se vuelve SELL / EVITAR después de al menos 1 día.
     - No ejecuta órdenes reales. Solo mide si las señales habrían ganado o perdido.
     """
+
     hoy = hoy_ymd()
     resultados_por_ticker = {r["Accion"]: r for r in resultados}
     operaciones = historial.get("operaciones", [])
 
-    # Actualizar operaciones abiertas.
     for op in operaciones:
         if op.get("estado") != "ABIERTA":
             continue
 
         ticker = op.get("accion") or op.get("Accion")
         r = resultados_por_ticker.get(ticker)
+
         if not r:
             continue
 
-        precio_actual = float(r.get("Precio actual", op.get("precio_actual", op.get("precio_entrada", 0))) or 0)
+        precio_actual = float(
+            r.get("Precio actual", op.get("precio_actual", op.get("precio_entrada", 0))) or 0
+        )
         precio_entrada = float(op.get("precio_entrada") or precio_actual or 0)
+
         if precio_entrada <= 0:
             continue
 
         ganancia_pct = ((precio_actual / precio_entrada) - 1) * 100
+
         op["precio_actual"] = round(precio_actual, 2)
         op["ganancia_pct"] = round(ganancia_pct, 2)
         op["dias_abierta"] = dias_desde(op.get("fecha_entrada", hoy))
@@ -537,8 +745,12 @@ def actualizar_historial(historial, resultados):
         op["senal_bot_actual"] = r.get("Senal Bot", "")
         op["probabilidad_actual"] = r.get("Probabilidad tecnica", 0)
         op["riesgo_actual"] = r.get("Riesgo", "")
-        op["max_ganancia_pct"] = round(max(float(op.get("max_ganancia_pct", ganancia_pct)), ganancia_pct), 2)
-        op["max_perdida_pct"] = round(min(float(op.get("max_perdida_pct", ganancia_pct)), ganancia_pct), 2)
+        op["max_ganancia_pct"] = round(
+            max(float(op.get("max_ganancia_pct", ganancia_pct)), ganancia_pct), 2
+        )
+        op["max_perdida_pct"] = round(
+            min(float(op.get("max_perdida_pct", ganancia_pct)), ganancia_pct), 2
+        )
 
         stop = float(op.get("stop") or 0)
         objetivo = float(op.get("objetivo") or 0)
@@ -574,7 +786,6 @@ def actualizar_historial(historial, resultados):
     abiertas = {op.get("accion") for op in operaciones if op.get("estado") == "ABIERTA"}
     creadas_hoy = {(op.get("accion"), op.get("fecha_entrada")) for op in operaciones}
 
-    # Crear nuevas operaciones simuladas con señales BUY.
     for r in resultados:
         ticker = r.get("Accion")
         senal_bot = r.get("Senal Bot")
@@ -583,16 +794,21 @@ def actualizar_historial(historial, resultados):
 
         if senal_bot not in ["BUY STRONG", "BUY"]:
             continue
+
         if riesgo == "ALTO":
             continue
+
         if rr < 1.30:
             continue
+
         if ticker in abiertas:
             continue
+
         if (ticker, hoy) in creadas_hoy:
             continue
 
         precio = float(r.get("Precio actual") or 0)
+
         nueva = {
             "id": f"{hoy}-{ticker}",
             "fecha_entrada": hoy,
@@ -621,6 +837,7 @@ def actualizar_historial(historial, resultados):
             "probabilidad_actual": r.get("Probabilidad tecnica", 0),
             "riesgo_actual": riesgo,
         }
+
         operaciones.append(nueva)
         abiertas.add(ticker)
         creadas_hoy.add((ticker, hoy))
@@ -661,6 +878,7 @@ def actualizar_historial(historial, resultados):
     historial["actualizado"] = fecha_visible()
     historial["operaciones"] = operaciones
     historial["resumen"] = resumen
+
     return historial
 
 
@@ -669,25 +887,31 @@ def guardar_historial(historial):
         json.dump(historial, f, ensure_ascii=False, indent=2)
 
     ops = historial.get("operaciones", [])
+
     if ops:
         pd.DataFrame(ops).to_excel(HISTORIAL_XLSX, index=False)
     else:
-        pd.DataFrame(columns=["fecha_entrada", "accion", "estado", "resultado"]).to_excel(HISTORIAL_XLSX, index=False)
+        pd.DataFrame(
+            columns=["fecha_entrada", "accion", "estado", "resultado"]
+        ).to_excel(HISTORIAL_XLSX, index=False)
 
 
 def main():
     resultados = []
+
     mercado = contexto_mercado()
     print(f"Contexto mercado: {mercado}")
 
     for ticker in ACCIONES:
         print(f"Analizando {ticker}...")
         r = analizar(ticker, mercado)
+
         if r:
             resultados.append(r)
             print("OK")
         else:
             print("SIN DATOS")
+
         time.sleep(1)
 
     resultados = sorted(
@@ -695,6 +919,7 @@ def main():
         key=lambda x: (
             prioridad_senal(x.get("Senal", "")),
             prioridad_riesgo(x.get("Riesgo", "")),
+            prioridad_contexto(x.get("Contexto sector", "")),
             len(x.get("Hot Score", "")),
             x.get("Probabilidad tecnica", 0),
             x.get("Fuerza relativa", 0),
@@ -722,6 +947,7 @@ def main():
         json.dump(salida, f, ensure_ascii=False, indent=2)
 
     pd.DataFrame(resultados).to_excel("analisis_acciones.xlsx", index=False)
+
     print("ARCHIVOS GENERADOS")
 
 
