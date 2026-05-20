@@ -39,6 +39,11 @@ jobs:
           token: ${{ secrets.ARQ_PAT }}
           persist-credentials: true
 
+      - name: Sincronizar con la rama main
+        run: |
+          git fetch origin main
+          git pull --rebase origin main
+
       - name: Mostrar tipo de ejecucion
         run: |
           echo "Evento: ${{ github.event_name }}"
@@ -108,11 +113,25 @@ jobs:
           git config user.name "davascoj"
           git config user.email "stivenvasco223@gmail.com"
 
-          git add datos_acciones.json analisis_acciones.xlsx historial_senales.json historial_senales.xlsx
+          echo "Agregando archivos generados..."
+
+          for file in datos_acciones.json analisis_acciones.xlsx historial_senales.json historial_senales.xlsx; do
+            if [ -f "$file" ]; then
+              git add "$file"
+              echo "Agregado: $file"
+            else
+              echo "No existe, se omite: $file"
+            fi
+          done
 
           if git diff --cached --quiet; then
             echo "Sin cambios para guardar"
           else
             git commit -m "Actualizar analisis automatico ARQ v2"
+
+            echo "Sincronizando antes de subir cambios..."
+            git pull --rebase origin main
+
+            echo "Subiendo cambios al repositorio..."
             git push origin main
           fi
