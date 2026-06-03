@@ -67,7 +67,75 @@ ACCIONES_INFO = {
 
     # Temáticas de alta volatilidad / innovación
     "RKLB": "Espacial", "IONQ": "Computación cuántica", "QBTS": "Computación cuántica",
-    "RGTI": "Computación cuántica", "JOBY": "Movilidad aérea", "ACHR": "Movilidad aérea"
+    "RGTI": "Computación cuántica", "JOBY": "Movilidad aérea", "ACHR": "Movilidad aérea",
+
+    # Ampliación ARQ - más acciones para analizar
+    # Tecnología / nube / software
+    "CSCO": "Tecnología", "HPE": "Tecnología", "HPQ": "Tecnología",
+    "FSLY": "Tecnología", "TWLO": "Tecnología",
+    "DOCU": "Tecnología", "ZM": "Tecnología", "PATH": "IA / Software",
+    "U": "Software", "ESTC": "Datos / Software", "DT": "Software",
+    "GTLB": "Software", "S": "Ciberseguridad", "TENB": "Ciberseguridad",
+    "CYBR": "Ciberseguridad", "GEN": "Ciberseguridad",
+
+    # Chips, data centers y hardware IA
+    "VRT": "Data Center / IA", "COHR": "Fotónica / IA", "LITE": "Fotónica / IA",
+    "CIEN": "Redes / IA", "WDC": "Almacenamiento", "STX": "Almacenamiento",
+    "SNDK": "Almacenamiento", "GFS": "Chips", "TER": "Equipos chips",
+    "ENTG": "Equipos chips", "WOLF": "Chips", "ALAB": "Data Center / IA",
+
+    # IA especulativa, robótica y automatización
+    "BBAI": "IA", "SERV": "Robótica", "SYM": "Robótica",
+    "ISRG": "Robótica / Salud", "ROK": "Automatización", "ABBNY": "Automatización",
+
+    # Autos eléctricos, movilidad y baterías
+    "RIVN": "Autos eléctricos", "LCID": "Autos eléctricos", "NIO": "Autos eléctricos",
+    "LI": "Autos eléctricos", "XPEV": "Autos eléctricos", "BYDDY": "Autos eléctricos",
+    "GM": "Autos", "F": "Autos", "TM": "Autos", "HMC": "Autos",
+    "QS": "Baterías", "ENVX": "Baterías", "ALB": "Litio", "LAC": "Litio",
+
+    # Fintech, bancos, seguros y mercados
+    "AXP": "Pagos", "FI": "Pagos", "FIS": "Pagos", "GPN": "Pagos",
+    "NU": "Fintech", "AFRM": "Fintech", "TOST": "Fintech", "BILL": "Fintech",
+    "KKR": "Finanzas", "ARES": "Finanzas", "BX": "Finanzas", "APO": "Finanzas",
+    "CME": "Trading", "ICE": "Trading", "SPGI": "Finanzas", "MCO": "Finanzas",
+    "AFL": "Seguros", "TRV": "Seguros", "PGR": "Seguros",
+
+    # Energía tradicional y renovables
+    "VLO": "Energía", "MPC": "Energía", "PSX": "Energía", "KMI": "Energía",
+    "WMB": "Energía", "OKE": "Energía", "BKR": "Energía", "RIG": "Energía",
+    "NEE": "Energía renovable", "ENPH": "Energía renovable", "SEDG": "Energía renovable",
+    "FSLR": "Energía renovable", "RUN": "Energía renovable", "BE": "Energía renovable",
+
+    # Salud, biotecnología y farmacéuticas
+    "VRTX": "Salud", "REGN": "Salud", "AMGN": "Salud", "GILD": "Salud",
+    "SYK": "Salud", "MDT": "Salud", "BSX": "Salud",
+    "DHR": "Salud", "ZTS": "Salud", "HIMS": "Salud", "TDOC": "Salud",
+    "VEEV": "Salud / Software", "ALNY": "Biotecnología", "MRNA": "Biotecnología",
+
+    # Consumo, retail, viajes y entretenimiento
+    "DIS": "Entretenimiento", "ROKU": "Entretenimiento", "SPOT": "Entretenimiento",
+    "ABNB": "Viajes", "BKNG": "Viajes", "EXPE": "Viajes", "DAL": "Aerolíneas",
+    "UAL": "Aerolíneas", "AAL": "Aerolíneas", "CCL": "Cruceros", "RCL": "Cruceros",
+    "NKE": "Consumo", "LULU": "Consumo", "TGT": "Consumo", "TJX": "Consumo",
+    "CMG": "Consumo", "YUM": "Consumo", "PEP": "Consumo", "KO": "Consumo",
+    "PG": "Consumo defensivo", "PM": "Consumo defensivo",
+
+    # Industrial, defensa, infraestructura y construcción
+    "LMT": "Defensa", "RTX": "Defensa", "NOC": "Defensa", "GD": "Defensa",
+    "HON": "Industrial", "ETN": "Industrial", "PH": "Industrial", "EMR": "Industrial",
+    "FIX": "Construcción", "URI": "Construcción", "BLDR": "Construcción", "VMC": "Materiales",
+    "MLM": "Materiales", "CRH": "Materiales", "NEM": "Oro", "FCX": "Minería",
+
+    # ETFs adicionales para ver mercado / sectores
+    "XLU": "ETF Utilities", "XLI": "ETF Industrial", "XLY": "ETF Consumo",
+    "XLP": "ETF Consumo defensivo", "XLC": "ETF Comunicaciones", "XLRE": "ETF Real Estate",
+    "XLB": "ETF Materiales", "IBB": "ETF Biotech", "XBI": "ETF Biotech",
+    "BOTZ": "ETF Robótica", "ROBO": "ETF Robótica", "CIBR": "ETF Ciberseguridad",
+    "HACK": "ETF Ciberseguridad", "TAN": "ETF Solar", "ICLN": "ETF Energía limpia",
+    "URA": "ETF Uranio", "GLD": "ETF Oro", "SLV": "ETF Plata", "TLT": "ETF Bonos",
+    "HYG": "ETF Bonos", "VTI": "ETF Mercado", "SCHD": "ETF Dividendos"
+
 }
 
 ACCIONES = list(ACCIONES_INFO.keys())
@@ -912,7 +980,7 @@ def main():
         else:
             print("SIN DATOS")
 
-        time.sleep(1)
+        time.sleep(0.35)
 
     resultados = sorted(
         resultados,
