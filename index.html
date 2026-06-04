@@ -120,6 +120,34 @@
       </div>
     </section>
 
+
+    <section class="card" id="carteraAbiertaCard">
+      <div class="topbar">
+        <h2>Cartera abierta simulada</h2>
+        <span>Valor invertido, ganancia abierta y riesgo por stop</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Acción</th>
+              <th>Sector</th>
+              <th>Valor en cartera</th>
+              <th>Invertido USD</th>
+              <th>G/P abierta USD</th>
+              <th>G/P %</th>
+              <th>Pérdida máx. stop</th>
+              <th>Dist. objetivo</th>
+              <th>Dist. stop</th>
+              <th>Score</th>
+              <th>Bot actual</th>
+            </tr>
+          </thead>
+          <tbody id="tablaCarteraAbierta"></tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="card">
       <div class="topbar">
         <h2>Métricas avanzadas</h2>
@@ -173,6 +201,7 @@
               <th title="Contexto general del mercado por SPY/QQQ.">Mercado</th>
               <th title="Riesgo según volatilidad, momentum, RSI y distancia a MA20.">Riesgo</th>
               <th title="Lectura automática para humanos.">Señal</th>
+              <th title="Calificación de calidad de la señal de 0 a 100.">Score</th>
               <th title="Señal lista para futuro bot: BUY STRONG, BUY, HOLD o SELL / EVITAR.">Bot</th>
               <th title="Razones y alertas principales.">Detalle</th>
             </tr>
@@ -219,6 +248,15 @@
               <th>Entrada</th>
               <th>Actual</th>
               <th>G/P %</th>
+              <th>Invertido USD</th>
+              <th>Valor cartera</th>
+              <th>G/P USD</th>
+              <th>Riesgo USD</th>
+              <th>Riesgo %</th>
+              <th>Costo USD</th>
+              <th>Dist. objetivo</th>
+              <th>Dist. stop</th>
+              <th>Score</th>
               <th>Stop</th>
               <th>Objetivo</th>
               <th>R/R</th>

@@ -850,6 +850,153 @@ def calcular_posicion(capital, precio_entrada, stop):
     }
 
 
+
+def calcular_score_calidad(r):
+    """Score 0-100 para medir calidad de cada señal.
+    Combina probabilidad, R/R, momentum, fuerza relativa, riesgo, confirmación, volumen y mercado.
+    No garantiza resultados; sirve para ordenar y filtrar señales.
+    """
+    try:
+        prob = max(0.0, min(100.0, float(r.get("Probabilidad tecnica") or 0)))
+        rr = max(0.0, min(3.0, float(r.get("R/R") or 0)))
+        momentum = max(-10.0, min(10.0, float(r.get("Momentum") or 0)))
+        fuerza_rel = max(-10.0, min(10.0, float(r.get("Fuerza relativa") or 0)))
+        volumen_rel = max(0.0, min(2.5, float(r.get("Volumen relativo") or 0)))
+    except Exception:
+        prob, rr, momentum, fuerza_rel, volumen_rel = 0.0, 0.0, 0.0, 0.0, 0.0
+
+    riesgo = str(r.get("Riesgo") or "").upper()
+    confirmacion = str(r.get("Confirmacion") or "").upper()
+    mercado = str(r.get("Mercado") or "").upper()
+    contexto_sector = str(r.get("Contexto sector") or "").upper()
+    bot = str(r.get("Senal Bot") or "").upper()
+
+    score = 0.0
+    score += prob * 0.34
+    score += min(rr / 2.0, 1.0) * 18.0
+    score += ((momentum + 10.0) / 20.0) * 12.0
+    score += ((fuerza_rel + 10.0) / 20.0) * 10.0
+    score += min(volumen_rel / 1.5, 1.0) * 8.0
+
+    if riesgo == "BAJO":
+        score += 10.0
+    elif riesgo == "MEDIO":
+        score += 5.0
+    elif riesgo == "ALTO":
+        score -= 8.0
+
+    if confirmacion == "ALTA":
+        score += 6.0
+    elif confirmacion == "BAJA":
+        score -= 6.0
+
+    if "ALCISTA" in mercado or "NEUTRO +" in mercado:
+        score += 6.0
+    elif "DÉBIL" in mercado or "DEBIL" in mercado:
+        score -= 10.0
+
+    if contexto_sector == "ACOMPAÑA":
+        score += 4.0
+    elif contexto_sector == "NO ACOMPAÑA":
+        score -= 6.0
+
+    if bot == "BUY STRONG":
+        score += 4.0
+    elif bot == "SELL / EVITAR":
+        score -= 8.0
+
+    return round(max(0.0, min(100.0, score)), 1)
+
+
+def distancia_objetivo_pct(precio_actual, objetivo):
+    try:
+        precio_actual = float(precio_actual or 0)
+        objetivo = float(objetivo or 0)
+        if precio_actual <= 0 or objetivo <= 0:
+            return 0.0
+        return round(((objetivo - precio_actual) / precio_actual) * 100, 2)
+    except Exception:
+        return 0.0
+
+
+def distancia_stop_actual_pct(precio_actual, stop):
+    try:
+        precio_actual = float(precio_actual or 0)
+        stop = float(stop or 0)
+        if precio_actual <= 0 or stop <= 0:
+            return 0.0
+        return round(((precio_actual - stop) / precio_actual) * 100, 2)
+    except Exception:
+        return 0.0
+
+
+def calcular_benchmark_desde_fecha(fecha_inicio, capital_inicial, bot_rentabilidad_pct):
+    """Compara el bot contra SPY y QQQ desde la primera operación registrada."""
+    salida = {
+        "fecha_inicio": fecha_inicio or "SIN DATOS",
+        "bot_rentabilidad_neta_pct": round(float(bot_rentabilidad_pct or 0), 2),
+        "spy_rentabilidad_pct": None,
+        "qqq_rentabilidad_pct": None,
+        "bot_vs_spy_alpha_pct": None,
+        "bot_vs_qqq_alpha_pct": None,
+        "capital_si_spy_usd": None,
+        "capital_si_qqq_usd": None,
+    }
+
+    if not fecha_inicio:
+        return salida
+
+    for ticker, prefijo in [("SPY", "spy"), ("QQQ", "qqq")]:
+        try:
+            df = descargar(ticker, periodo="1y")
+            if df is None or df.empty or "Close" not in df:
+                continue
+            df = df[df.index.strftime("%Y-%m-%d") >= fecha_inicio]
+            if df.empty:
+                continue
+            inicial = numero(df["Close"].iloc[0])
+            final = numero(df["Close"].iloc[-1])
+            if inicial and final and inicial > 0:
+                ret = round(((final / inicial) - 1) * 100, 2)
+                salida[f"{prefijo}_rentabilidad_pct"] = ret
+                salida[f"capital_si_{prefijo}_usd"] = round(capital_inicial * (1 + ret / 100), 2)
+        except Exception:
+            continue
+
+    if salida["spy_rentabilidad_pct"] is not None:
+        salida["bot_vs_spy_alpha_pct"] = round(salida["bot_rentabilidad_neta_pct"] - salida["spy_rentabilidad_pct"], 2)
+    if salida["qqq_rentabilidad_pct"] is not None:
+        salida["bot_vs_qqq_alpha_pct"] = round(salida["bot_rentabilidad_neta_pct"] - salida["qqq_rentabilidad_pct"], 2)
+
+    return salida
+
+
+def crear_resumen_diario(equity_curve, resumen_base):
+    """Resumen diario de capital usando la última operación cerrada de cada fecha."""
+    dias = {}
+    for p in equity_curve:
+        fecha = p.get("fecha") or "SIN FECHA"
+        dias[fecha] = {
+            "fecha": fecha,
+            "capital_cerrado_usd": p.get("capital", 0),
+            "pnl_ultimo_cierre_usd": p.get("pnl_usd", 0),
+            "drawdown_pct": p.get("drawdown_pct", 0),
+            "ultima_accion_cerrada": p.get("accion", ""),
+        }
+
+    hoy = hoy_ymd()
+    actual = dict(dias.get(hoy, {"fecha": hoy}))
+    actual.update({
+        "fecha": hoy,
+        "capital_cerrado_usd": resumen_base.get("capital_actual_cerrado", actual.get("capital_cerrado_usd", 0)),
+        "capital_total_estimado_usd": resumen_base.get("capital_actual_total_estimado", 0),
+        "ganancia_total_estimada_usd": resumen_base.get("ganancia_total_estimada_usd", 0),
+        "rentabilidad_total_estimada_pct": resumen_base.get("rentabilidad_total_estimada_pct", 0),
+    })
+    dias[hoy] = actual
+
+    return [dias[k] for k in sorted(dias.keys())]
+
 def fecha_orden_operacion(op):
     return op.get("fecha_cierre") or op.get("fecha_entrada") or "1900-01-01"
 
@@ -962,7 +1109,8 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
     for i, op in enumerate(cerradas_ordenadas, start=1):
         bruto_pct = float(op.get("ganancia_pct_final") or 0)
         neto_pct = bruto_pct - costo_pct
-        pos = calcular_posicion(capital, op.get("precio_entrada"), op.get("stop"))
+        capital_antes = capital
+        pos = calcular_posicion(capital_antes, op.get("precio_entrada"), op.get("stop"))
         posicion_usd = pos["posicion_usd"]
         costo_usd = posicion_usd * (costo_pct / 100)
         pnl_usd = posicion_usd * (neto_pct / 100)
@@ -987,9 +1135,15 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         op["pnl_usd_estimado"] = round(pnl_usd, 2)
         op["costo_usd_estimado"] = round(costo_usd, 2)
         op["posicion_usd_estimada"] = pos["posicion_usd"]
+        op["valor_cartera_usd"] = 0.0
+        op["capital_antes_operacion"] = round(capital_antes, 2)
+        op["capital_despues_operacion"] = round(capital, 2)
         op["riesgo_usd_estimado"] = pos["riesgo_usd"]
         op["riesgo_pct_cuenta_estimado"] = pos["riesgo_pct_cuenta"]
+        op["perdida_maxima_stop_usd"] = pos["riesgo_usd"]
         op["distancia_stop_pct"] = pos["distancia_stop_pct"]
+        op["distancia_stop_actual_pct"] = 0.0
+        op["distancia_objetivo_pct"] = 0.0
 
         equity_curve.append({
             "n": i,
@@ -1009,15 +1163,22 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         bruto_abierto = float(op.get("ganancia_pct") or 0)
         neto_abierto = bruto_abierto - costo_pct
         pnl_abierto = pos["posicion_usd"] * (neto_abierto / 100)
+        valor_cartera = pos["posicion_usd"] + pnl_abierto
         exposicion_usd += pos["posicion_usd"]
         riesgo_abierto_usd += pos["riesgo_usd"]
         ganancia_abierta_neta_usd += pnl_abierto
         op["ganancia_pct_neta_estimada"] = round(neto_abierto, 2)
         op["pnl_usd_estimado"] = round(pnl_abierto, 2)
+        op["ganancia_abierta_usd_estimada"] = round(pnl_abierto, 2)
+        op["costo_usd_estimado"] = round(pos["posicion_usd"] * (costo_pct / 100), 2)
         op["posicion_usd_estimada"] = pos["posicion_usd"]
+        op["valor_cartera_usd"] = round(valor_cartera, 2)
         op["riesgo_usd_estimado"] = pos["riesgo_usd"]
         op["riesgo_pct_cuenta_estimado"] = pos["riesgo_pct_cuenta"]
+        op["perdida_maxima_stop_usd"] = pos["riesgo_usd"]
         op["distancia_stop_pct"] = pos["distancia_stop_pct"]
+        op["distancia_stop_actual_pct"] = distancia_stop_actual_pct(op.get("precio_actual"), op.get("stop"))
+        op["distancia_objetivo_pct"] = distancia_objetivo_pct(op.get("precio_actual"), op.get("objetivo"))
 
     rachas = calcular_rachas(cerradas_ordenadas)
     profit_factor = round(ganancias_usd / perdidas_usd, 2) if perdidas_usd else None
@@ -1079,8 +1240,17 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         "rentabilidad_neta_senales_pct": round(suma_neta_pct, 2),
         "costos_totales_usd": round(total_costos, 2),
         "costo_total_estimado_pct_por_operacion": costo_pct,
+        "ganancia_abierta_neta_usd": round(ganancia_abierta_neta_usd, 2),
+        "valor_total_en_cartera_usd": round(exposicion_usd + ganancia_abierta_neta_usd, 2),
         "modo": "SIMULACIÓN",
     }
+
+    benchmark = calcular_benchmark_desde_fecha(
+        cerradas_ordenadas[0].get("fecha_entrada") if cerradas_ordenadas else None,
+        capital_inicial,
+        simulacion.get("rentabilidad_neta_pct", 0),
+    )
+    resumen_diario = crear_resumen_diario(equity_curve, simulacion)
 
     riesgo = {
         "max_drawdown_pct": round(max_dd_pct, 2),
@@ -1112,6 +1282,8 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         "riesgo": riesgo,
         "metricas": metricas,
         "equity_curve": equity_curve,
+        "resumen_diario": resumen_diario,
+        "benchmark": benchmark,
         "rendimiento_por_sector": resumen_grupo_operaciones(cerradas, "sector"),
         "rendimiento_por_mercado": resumen_grupo_operaciones(cerradas, "mercado_entrada"),
         "mejores_operaciones": [resumen_operacion_top(op) for op in mejores],
@@ -1176,6 +1348,7 @@ def actualizar_historial(historial, resultados, mercado):
         op["mercado_actual"] = r.get("Mercado", mercado.get("estado", "NEUTRO"))
         op["contexto_sector_actual"] = r.get("Contexto sector", "")
         op["volumen_relativo_actual"] = r.get("Volumen relativo", 0)
+        op["score_calidad_actual"] = r.get("Score calidad", calcular_score_calidad(r))
         op["max_ganancia_pct"] = round(
             max(float(op.get("max_ganancia_pct", ganancia_pct)), ganancia_pct), 2
         )
@@ -1300,6 +1473,8 @@ def actualizar_historial(historial, resultados, mercado):
             "mercado_entrada": r.get("Mercado", mercado.get("estado", "NEUTRO")),
             "contexto_sector_entrada": r.get("Contexto sector", ""),
             "volumen_relativo_entrada": r.get("Volumen relativo", 0),
+            "score_calidad_entrada": r.get("Score calidad", calcular_score_calidad(r)),
+            "score_calidad_actual": r.get("Score calidad", calcular_score_calidad(r)),
             "costo_total_estimado_pct": costo_total_estimado_pct(),
             "posicion_usd_estimada": posicion.get("posicion_usd", 0),
             "posicion_pct_cuenta_estimada": posicion.get("posicion_pct_cuenta", 0),
@@ -1307,6 +1482,11 @@ def actualizar_historial(historial, resultados, mercado):
             "riesgo_pct_cuenta_estimado": posicion.get("riesgo_pct_cuenta", 0),
             "distancia_stop_pct": posicion.get("distancia_stop_pct", 0),
             "acciones_estimadas": posicion.get("acciones_estimadas", 0),
+            "valor_cartera_usd": posicion.get("posicion_usd", 0),
+            "ganancia_abierta_usd_estimada": 0.0,
+            "perdida_maxima_stop_usd": posicion.get("riesgo_usd", 0),
+            "distancia_stop_actual_pct": distancia_stop_actual_pct(precio, r.get("Stop loss")),
+            "distancia_objetivo_pct": distancia_objetivo_pct(precio, r.get("Objetivo")),
         }
 
         operaciones.append(nueva)
@@ -1358,18 +1538,90 @@ def actualizar_historial(historial, resultados, mercado):
     return historial
 
 
+def _df_limpio(data):
+    if not data:
+        return pd.DataFrame()
+    return pd.DataFrame(data)
+
+
 def guardar_historial(historial):
     with open(HISTORIAL_FILE, "w", encoding="utf-8") as f:
         json.dump(historial, f, ensure_ascii=False, indent=2)
 
     ops = historial.get("operaciones", [])
+    resumen = historial.get("resumen", {})
+    cerradas = [op for op in ops if op.get("estado") == "CERRADA"]
+    abiertas = [op for op in ops if op.get("estado") == "ABIERTA"]
 
-    if ops:
-        pd.DataFrame(ops).to_excel(HISTORIAL_XLSX, index=False)
-    else:
-        pd.DataFrame(
-            columns=["fecha_entrada", "accion", "estado", "resultado"]
-        ).to_excel(HISTORIAL_XLSX, index=False)
+    columnas_prioritarias = [
+        "estado", "accion", "sector", "fecha_entrada", "fecha_cierre", "dias_abierta",
+        "precio_entrada", "precio_actual", "precio_cierre", "ganancia_pct", "ganancia_pct_final",
+        "ganancia_pct_neta_estimada", "pnl_usd_estimado", "ganancia_abierta_usd_estimada",
+        "posicion_usd_estimada", "valor_cartera_usd", "riesgo_usd_estimado",
+        "riesgo_pct_cuenta_estimado", "perdida_maxima_stop_usd", "costo_usd_estimado",
+        "acciones_estimadas", "distancia_stop_pct", "distancia_stop_actual_pct", "distancia_objetivo_pct",
+        "stop", "objetivo", "rr", "resultado", "tipo_cierre",
+        "score_calidad_entrada", "score_calidad_actual", "senal_bot_entrada", "senal_bot_actual",
+        "probabilidad_entrada", "probabilidad_actual", "riesgo_entrada", "riesgo_actual",
+        "mercado_entrada", "mercado_actual", "mercado_cierre",
+        "contexto_sector_entrada", "contexto_sector_actual", "contexto_sector_cierre",
+        "volumen_relativo_entrada", "volumen_relativo_actual",
+    ]
+
+    def ordenar_columnas(df):
+        if df.empty:
+            return df
+        primeras = [c for c in columnas_prioritarias if c in df.columns]
+        otras = [c for c in df.columns if c not in primeras]
+        return df[primeras + otras]
+
+    df_ops = ordenar_columnas(_df_limpio(ops))
+    if df_ops.empty:
+        df_ops = pd.DataFrame(columns=["fecha_entrada", "accion", "estado", "resultado"])
+
+    df_abiertas = ordenar_columnas(_df_limpio(abiertas))
+    df_cerradas = ordenar_columnas(_df_limpio(cerradas))
+
+    costos = [{
+        "capital_inicial": resumen.get("simulacion", {}).get("capital_inicial"),
+        "capital_actual_cerrado": resumen.get("simulacion", {}).get("capital_actual_cerrado"),
+        "capital_actual_total_estimado": resumen.get("simulacion", {}).get("capital_actual_total_estimado"),
+        "costos_totales_usd": resumen.get("simulacion", {}).get("costos_totales_usd"),
+        "costo_pct_por_operacion": resumen.get("simulacion", {}).get("costo_total_estimado_pct_por_operacion"),
+        "comision_pct_por_lado": CONFIG_SIMULACION.get("comision_por_operacion_pct"),
+        "slippage_pct_por_lado": CONFIG_SIMULACION.get("slippage_pct"),
+        "spread_pct_total": CONFIG_SIMULACION.get("spread_pct"),
+        "riesgo_por_operacion_pct": CONFIG_SIMULACION.get("riesgo_por_operacion_pct"),
+        "max_posicion_pct": CONFIG_SIMULACION.get("max_posicion_pct"),
+        "max_operaciones_abiertas": CONFIG_SIMULACION.get("max_operaciones_abiertas"),
+        "max_exposicion_total_pct": CONFIG_SIMULACION.get("max_exposicion_total_pct"),
+    }]
+
+    with pd.ExcelWriter(HISTORIAL_XLSX, engine="openpyxl") as writer:
+        df_ops.to_excel(writer, sheet_name="Historial completo", index=False)
+        _df_limpio(resumen.get("resumen_diario", [])).to_excel(writer, sheet_name="Resumen diario", index=False)
+        _df_limpio(resumen.get("equity_curve", [])).to_excel(writer, sheet_name="Capital equity curve", index=False)
+        df_abiertas.to_excel(writer, sheet_name="Operaciones abiertas", index=False)
+        df_cerradas.to_excel(writer, sheet_name="Operaciones cerradas", index=False)
+        _df_limpio(resumen.get("rendimiento_por_sector", [])).to_excel(writer, sheet_name="Rendimiento sector", index=False)
+        _df_limpio(resumen.get("rendimiento_por_mercado", [])).to_excel(writer, sheet_name="Rendimiento mercado", index=False)
+        _df_limpio(resumen.get("mejores_operaciones", [])).to_excel(writer, sheet_name="Mejores operaciones", index=False)
+        _df_limpio(resumen.get("peores_operaciones", [])).to_excel(writer, sheet_name="Peores operaciones", index=False)
+        pd.DataFrame(costos).to_excel(writer, sheet_name="Costos simulados", index=False)
+        pd.DataFrame([resumen.get("benchmark", {})]).to_excel(writer, sheet_name="Benchmark SPY QQQ", index=False)
+
+        # Formato básico: congelar encabezados y ajustar anchos.
+        for ws in writer.book.worksheets:
+            ws.freeze_panes = "A2"
+            for col in ws.columns:
+                max_len = 0
+                col_letter = col[0].column_letter
+                for cell in col[:80]:
+                    try:
+                        max_len = max(max_len, len(str(cell.value or "")))
+                    except Exception:
+                        pass
+                ws.column_dimensions[col_letter].width = min(max(max_len + 2, 10), 28)
 
 
 def main():
@@ -1390,6 +1642,9 @@ def main():
 
         time.sleep(0.35)
 
+    for r in resultados:
+        r["Score calidad"] = calcular_score_calidad(r)
+
     resultados = sorted(
         resultados,
         key=lambda x: (
@@ -1397,6 +1652,7 @@ def main():
             prioridad_riesgo(x.get("Riesgo", "")),
             prioridad_contexto(x.get("Contexto sector", "")),
             len(x.get("Hot Score", "")),
+            x.get("Score calidad", 0),
             x.get("Probabilidad tecnica", 0),
             x.get("Fuerza relativa", 0),
             -x.get("ATR %", 99),
