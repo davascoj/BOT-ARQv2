@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BOT-ARQ V4.1 · Paper Trading Engine</title>
+  <title>BOT-ARQ V4.3 · Auditoría de Bloqueos</title>
   <link rel="stylesheet" href="style.css"/>
 </head>
 
@@ -12,7 +12,7 @@
     <section class="hero hero-v41">
       <div class="hero-main">
         <div>
-          <p class="eyebrow">BOT-ARQ V4.1 · Dashboard profesional</p>
+          <p class="eyebrow">BOT-ARQ V4.3 · Auditoría de Bloqueos</p>
           <h1>Paper Trading Engine</h1>
           <p class="hero-copy">
             Motor automatizado de señales, simulación de operaciones, control de cartera paper y seguimiento de riesgo.
@@ -95,6 +95,32 @@
       <div id="alertasEjecutivas" class="alerts-list">Cargando alertas...</div>
     </section>
 
+    <section class="card audit-card" id="auditoriaBloqueosCard">
+      <div class="topbar">
+        <div>
+          <h2>Auditoría de bloqueos</h2>
+          <span>Explica señales BUY que el bot no abrió por reglas ya existentes.</span>
+        </div>
+        <span class="mode-badge warning" id="auditBadge">Auditoría V4.3</span>
+      </div>
+      <div class="audit-summary" id="auditSummary">Cargando auditoría...</div>
+      <div class="table-wrap">
+        <table class="compact-table">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Señal</th>
+              <th>Riesgo</th>
+              <th>R/R</th>
+              <th>Motivo</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="tablaBloqueos"></tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="card paper-v4-card" id="paperTradingV4Card">
       <div class="topbar">
         <div>
@@ -132,16 +158,16 @@
         <table class="compact-table">
           <thead>
             <tr>
-              <th>Acción</th>
+              <th>Ticker</th>
               <th>Sector</th>
               <th>Precio</th>
-              <th>Señal</th>
-              <th>Bot</th>
+              <th>Bot / Señal</th>
               <th>Score</th>
               <th>Riesgo</th>
               <th>Entrada</th>
               <th>Stop</th>
               <th>Objetivo</th>
+              <th>Acción sugerida</th>
             </tr>
           </thead>
           <tbody id="tablaTopOportunidades"></tbody>
@@ -214,7 +240,7 @@
       </div>
     </section>
 
-    <details class="advanced-details">
+    <details class="advanced-details" id="metricasAvanzadasDetails">
       <summary>Métricas avanzadas por sector, mercado y mejores/peores operaciones</summary>
       <section class="card advanced-card">
         <div class="advanced-layout">
@@ -238,7 +264,7 @@
       </section>
     </details>
 
-    <details class="advanced-details">
+    <details class="advanced-details" id="rankingCompletoDetails">
       <summary>Ranking técnico completo de acciones</summary>
       <section class="card">
         <div class="topbar">

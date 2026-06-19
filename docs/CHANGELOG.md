@@ -1,5 +1,19 @@
 # Changelog
 
+## V4.3 Auditoría de Bloqueos
+- Nuevo paper_audit.json derivado de nuevas_bloqueadas.
+- Nuevo panel visual para explicar señales bloqueadas.
+- No crea lógica de riesgo paralela.
+
+## V4.2.2 Lazy Render Performance
+- Ranking, historial y métricas avanzadas se cargan al abrir.
+- Menos DOM inicial y mejor velocidad percibida.
+
+## V4.2.1 Visual Fix Dashboard
+- Corrige columnas vacías en Top oportunidades.
+- Corrige Score visual.
+- No toca motor Python.
+
 ## V4.2 Configuración Real del Motor
 - Se agregó `config/system_config.json`.
 - Se agregó `engine/config_loader.py`.

@@ -16,6 +16,11 @@ let diagnosticoBot = {};
 let benchmarkBot = {};
 let resumenDiario = [];
 let paperTradingV4 = null;
+let paperAuditV43 = null;
+let renderLazyInicializado = false;
+let rankingRenderizado = false;
+let historialRenderizado = false;
+let metricasRenderizadas = false;
 const AUTO_REFRESH_MS = 60 * 1000;
 let autoRefreshActivo = true;
 
@@ -85,15 +90,15 @@ async function cargarDatos() {
     pintarResumen();
     pintarDashboardEjecutivo();
     pintarAlertasEjecutivas();
+    pintarAuditoriaBloqueos();
     renderTopOportunidades();
-    renderTabla();
     pintarHistorialResumen();
     pintarPanelProfesional();
     pintarPaperTradingV4();
     dibujarEquityCurve();
-    renderTablasAvanzadas();
     renderCarteraAbierta();
-    renderHistorial();
+    inicializarRenderDiferido();
+    refrescarVistasAvanzadasSiAbiertas();
 
   } catch (e) {
     fecha.textContent = "Sin datos";
@@ -105,6 +110,55 @@ async function cargarDatos() {
   }
 }
 
+
+
+function campo(r, claves, fallback = "") {
+  for (const k of claves) {
+    const v = r?.[k];
+    if (v !== undefined && v !== null && String(v).trim() !== "") return v;
+  }
+  return fallback;
+}
+
+function formatoNumeroCorto(v, dec = 2) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "—";
+  return n.toLocaleString("en-US", { maximumFractionDigits: dec, minimumFractionDigits: dec });
+}
+
+function formatoPrecio(v) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "—";
+  return n.toLocaleString("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 });
+}
+
+function formatoRangoEntrada(r) {
+  const min = campo(r, ["Entrada min", "Entrada", "entrada_min"]);
+  const max = campo(r, ["Entrada max", "entrada_max"]);
+  if (min !== "" && max !== "") return `${formatoPrecio(min)} - ${formatoPrecio(max)}`;
+  if (min !== "") return formatoPrecio(min);
+  return "—";
+}
+
+function scoreVisual(score) {
+  const s = Number(score || 0);
+  const pct = Math.max(0, Math.min(100, s));
+  return `
+    <div class="score-visual ${claseScore(s)}">
+      <span class="score-num">${formatoNumeroCorto(s, 1)}</span>
+      <span class="score-track"><span class="score-fill" style="width:${pct}%"></span></span>
+    </div>
+  `;
+}
+
+function textoAccionSugerida(r) {
+  const bot = String(r?.["Senal Bot"] || "");
+  const riesgo = String(r?.Riesgo || "");
+  if (bot === "BUY STRONG" && riesgo === "BAJO") return "Prioritaria";
+  if (bot === "BUY STRONG") return "Alta prioridad";
+  if (bot === "BUY") return "Vigilar entrada";
+  return "No abrir";
+}
 
 function pintarDashboardEjecutivo() {
   const box = document.getElementById("dashboardEjecutivo");
@@ -219,20 +273,29 @@ function renderTopOportunidades() {
     return;
   }
 
-  tbody.innerHTML = datos.map(r => `
-    <tr>
-      <td><strong>${safe(r.Accion)}</strong></td>
-      <td>${safe(r.Sector)}</td>
-      <td>${safe(r.Precio)}</td>
-      <td>${safe(r.Senal)}</td>
-      <td><span class="bot-badge ${claseBot(r["Senal Bot"])}">${safe(r["Senal Bot"])}</span></td>
-      <td><span class="score-pill ${claseScore(r.Score)}">${numero(r.Score, 1)}</span></td>
-      <td>${safe(r.Riesgo)}</td>
-      <td>${safe(r.Entrada)}</td>
-      <td>${safe(r.Stop)}</td>
-      <td>${safe(r.Objetivo)}</td>
-    </tr>
-  `).join("");
+  tbody.innerHTML = datos.map(r => {
+    const precio = campo(r, ["Precio actual", "Precio"]);
+    const stop = campo(r, ["Stop loss", "Stop"]);
+    const objetivo = campo(r, ["Objetivo"]);
+    const score = campo(r, ["Score calidad", "Score"], 0);
+    const bot = String(r["Senal Bot"] || "");
+    const accion = textoAccionSugerida(r);
+
+    return `
+      <tr>
+        <td class="ticker-cell"><strong>${safe(r.Accion)}</strong></td>
+        <td>${safe(r.Sector)}</td>
+        <td class="num">${formatoPrecio(precio)}</td>
+        <td><span class="bot-badge ${claseBot(bot)}">${safe(bot)}</span><small class="subsignal">${safe(r.Senal || "")}</small></td>
+        <td>${scoreVisual(score)}</td>
+        <td><span class="badge ${String(r.Riesgo || "").toLowerCase()}">${safe(r.Riesgo)}</span></td>
+        <td class="entry-range">${formatoRangoEntrada(r)}</td>
+        <td class="num">${formatoPrecio(stop)}</td>
+        <td class="num objetivo-cell">${formatoPrecio(objetivo)}</td>
+        <td><span class="action-chip">${safe(accion)}</span></td>
+      </tr>
+    `;
+  }).join("");
 }
 
 
@@ -438,6 +501,9 @@ function renderTablasAvanzadas() {
 function filtrarSector(sector) {
   datosGlobales = [...datosOriginales];
   sectorActivo = sector;
+  const ranking = document.getElementById("rankingCompletoDetails");
+  if (ranking) ranking.open = true;
+  rankingRenderizado = true;
   renderTabla();
 }
 
@@ -456,6 +522,9 @@ function limpiarBusqueda() {
   if (soloHot) soloHot.checked = false;
   if (ocultarAlto) ocultarAlto.checked = false;
 
+  const ranking = document.getElementById("rankingCompletoDetails");
+  if (ranking) ranking.open = true;
+  rankingRenderizado = true;
   renderTabla();
 }
 
@@ -707,9 +776,79 @@ function renderHistorial() {
   });
 }
 
+
+function inicializarRenderDiferido() {
+  if (renderLazyInicializado) return;
+  renderLazyInicializado = true;
+
+  const ranking = document.getElementById("rankingCompletoDetails");
+  const hist = document.getElementById("historialCard");
+  const metricas = document.getElementById("metricasAvanzadasDetails");
+
+  if (ranking) {
+    ranking.addEventListener("toggle", () => {
+      if (ranking.open) {
+        rankingRenderizado = true;
+        renderTabla();
+      }
+    });
+  }
+
+  if (hist) {
+    hist.addEventListener("toggle", () => {
+      if (hist.open) {
+        historialRenderizado = true;
+        pintarHistorialResumen();
+        renderHistorial();
+      }
+    });
+  }
+
+  if (metricas) {
+    metricas.addEventListener("toggle", () => {
+      if (metricas.open) {
+        metricasRenderizadas = true;
+        renderTablasAvanzadas();
+      }
+    });
+  }
+}
+
+function refrescarVistasAvanzadasSiAbiertas() {
+  const ranking = document.getElementById("rankingCompletoDetails");
+  const hist = document.getElementById("historialCard");
+  const metricas = document.getElementById("metricasAvanzadasDetails");
+
+  const tablaRanking = document.getElementById("tabla");
+  if (ranking?.open) {
+    rankingRenderizado = true;
+    renderTabla();
+  } else if (tablaRanking) {
+    tablaRanking.innerHTML = `<tr><td colspan="20">Abra esta sección para cargar el ranking completo. Esto mejora la velocidad de la página.</td></tr>`;
+  }
+
+  if (hist?.open) {
+    historialRenderizado = true;
+    renderHistorial();
+  } else {
+    const tablaHistorial = document.getElementById("tablaHistorial");
+    if (tablaHistorial) tablaHistorial.innerHTML = `<tr><td colspan="22">Abra esta sección para cargar el historial completo.</td></tr>`;
+  }
+
+  if (metricas?.open) {
+    metricasRenderizadas = true;
+    renderTablasAvanzadas();
+  }
+}
+
 function scrollHistorial() {
   const card = document.getElementById("historialCard");
-  if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (card) {
+    card.open = true;
+    historialRenderizado = true;
+    renderHistorial();
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 }
 
 function ejecutarAnalisis() {
@@ -812,9 +951,56 @@ async function cargarPaperTradingV4() {
     const resp = await fetch("paper/paper_state.json?nocache=" + Date.now());
     if (!resp.ok) throw new Error("No existe paper_state.json");
     paperTradingV4 = await resp.json();
+    paperAuditV43 = paperTradingV4.audit || null;
   } catch (e) {
     paperTradingV4 = null;
+    paperAuditV43 = null;
   }
+}
+
+
+function pintarAuditoriaBloqueos() {
+  const summary = document.getElementById("auditSummary");
+  const tbody = document.getElementById("tablaBloqueos");
+  const badge = document.getElementById("auditBadge");
+
+  if (!summary || !tbody) return;
+
+  if (!paperAuditV43) {
+    summary.innerHTML = `<div class="metric-box">Auditoría pendiente. Se llenará en la próxima ejecución del bot.</div>`;
+    tbody.innerHTML = `<tr><td colspan="6">Sin auditoría disponible todavía.</td></tr>`;
+    if (badge) badge.textContent = "Pendiente";
+    return;
+  }
+
+  const s = paperAuditV43.summary || {};
+  const blocked = paperAuditV43.blocked_signals || [];
+  const reasons = paperAuditV43.block_reasons || [];
+
+  if (badge) badge.textContent = `${s.blocked_count || 0} bloqueadas`;
+
+  summary.innerHTML = `
+    <div class="metric-box"><strong>${s.blocked_count || 0}</strong><span>señales bloqueadas</span></div>
+    <div class="metric-box"><strong>${s.buy_candidates_count || 0}</strong><span>candidatas BUY</span></div>
+    <div class="metric-box"><strong>${s.open_positions_count || 0}</strong><span>posiciones abiertas</span></div>
+    <div class="metric-box"><strong>${safe(s.main_block_reason || "Sin bloqueos")}</strong><span>motivo principal</span></div>
+  `;
+
+  if (!blocked.length) {
+    tbody.innerHTML = `<tr><td colspan="6">No hay señales bloqueadas registradas.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = blocked.slice(0, 12).map(b => `
+    <tr>
+      <td class="ticker-cell"><strong>${safe(b.ticker)}</strong></td>
+      <td><span class="bot-badge ${claseBot(b.signal)}">${safe(b.signal)}</span></td>
+      <td><span class="badge ${String(b.risk || "").toLowerCase()}">${safe(b.risk)}</span></td>
+      <td class="num">${numero(b.rr ?? 0, 2)}</td>
+      <td>${safe(b.reason)}</td>
+      <td>${safe(b.date)}</td>
+    </tr>
+  `).join("");
 }
 
 function pintarPaperTradingV4() {

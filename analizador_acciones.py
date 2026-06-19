@@ -1716,7 +1716,7 @@ def main():
     if export_paper_state:
         try:
             paper_state = export_paper_state(historial, resultados, mercado, CONFIG_SIMULACION)
-            print("PAPER TRADING V4.2 EXPORTADO")
+            print("PAPER TRADING V4.3 EXPORTADO")
         except Exception as e:
             print("ADVERTENCIA: no se pudo exportar paper trading V4:", e)
     else:
@@ -1724,7 +1724,7 @@ def main():
 
     salida = {
         "actualizado": fecha_visible(),
-        "version_bot": "V4.2 CONFIGURACION REAL DEL MOTOR",
+        "version_bot": "V4.3 AUDITORIA BLOQUEOS",
         "contexto_mercado": mercado,
         "config_operativa": resumen_config_operativa(CONFIG_SISTEMA, CONFIG_SIMULACION) if resumen_config_operativa else {"simulation_config": CONFIG_SIMULACION},
         "resultados": resultados,

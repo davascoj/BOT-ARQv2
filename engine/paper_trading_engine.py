@@ -11,6 +11,7 @@ más profesional tipo broker/paper trading:
 - paper_risk.json
 - paper_status.json
 - paper_state.json
+- paper_audit.json
 
 Objetivo:
 preparar el sistema para un futuro broker adapter real sin romper la simulación actual.
@@ -184,6 +185,67 @@ def _trade_from_closed_operation(op, idx):
     }
 
 
+
+def _audit_from_historial(historial, resultados, positions, warnings, config):
+    resumen = _resumen(historial)
+    bloqueadas = list(resumen.get("nuevas_bloqueadas", []) or [])
+    abiertas = [p.get("ticker") for p in positions if p.get("ticker")]
+
+    blocked = []
+    for idx, b in enumerate(bloqueadas[-80:]):
+        blocked.append({
+            "id": f"BLOCK-{idx+1}",
+            "date": _safe_text(b.get("fecha")),
+            "ticker": _safe_text(b.get("accion")),
+            "signal": _safe_text(b.get("senal_bot")),
+            "reason": _safe_text(b.get("motivo")),
+            "risk": _safe_text(b.get("riesgo")),
+            "rr": _round(b.get("rr")),
+            "decision": "BLOCKED_BY_EXISTING_RULE"
+        })
+
+    buy_candidates = []
+    for r in resultados or []:
+        bot = _safe_text(r.get("Senal Bot"))
+        if bot in ("BUY STRONG", "BUY"):
+            t = _safe_text(r.get("Accion"))
+            buy_candidates.append({
+                "ticker": t,
+                "signal": bot,
+                "score": _round(r.get("Score calidad")),
+                "risk": _safe_text(r.get("Riesgo")),
+                "already_open": t in abiertas,
+                "entry": f"{_safe_text(r.get('Entrada min'))} - {_safe_text(r.get('Entrada max'))}",
+                "stop": _round(r.get("Stop loss")),
+                "target": _round(r.get("Objetivo")),
+            })
+
+    motivos = {}
+    for b in blocked:
+        m = b.get("reason") or "SIN MOTIVO"
+        motivos[m] = motivos.get(m, 0) + 1
+
+    return {
+        "updated": _now_visible(),
+        "version": "V4.3",
+        "mode": "AUDITORIA_BLOQUEOS_EXISTENTES",
+        "summary": {
+            "blocked_count": len(blocked),
+            "buy_candidates_count": len(buy_candidates),
+            "open_positions_count": len(positions),
+            "warnings_count": len(warnings),
+            "main_block_reason": max(motivos, key=motivos.get) if motivos else "SIN BLOQUEOS REGISTRADOS",
+        },
+        "warnings": warnings,
+        "block_reasons": [{"reason": k, "count": v} for k, v in sorted(motivos.items(), key=lambda x: x[1], reverse=True)],
+        "blocked_signals": blocked,
+        "buy_candidates": buy_candidates[:80],
+        "notes": [
+            "Este archivo no crea lógica nueva; resume bloqueos ya existentes en historial_senales.json.",
+            "Sirve para explicar por qué el bot no abrió compras aunque hubiera señales BUY.",
+        ]
+    }
+
 def build_paper_state(historial, resultados, mercado, config):
     ops = _operaciones(historial)
     resumen = _resumen(historial)
@@ -277,13 +339,16 @@ def build_paper_state(historial, resultados, mercado, config):
             "trades": "paper/paper_trades.json",
             "risk": "paper/paper_risk.json",
             "status": "paper/paper_status.json",
-            "state": "paper/paper_state.json"
+            "state": "paper/paper_state.json",
+            "audit": "paper/paper_audit.json"
         }
     }
 
+    audit = _audit_from_historial(historial, resultados, positions, warnings, config)
+
     state = {
         "updated": _now_visible(),
-        "version": "V4",
+        "version": "V4.3",
         "status": status,
         "portfolio": portfolio,
         "orders": {
@@ -296,7 +361,8 @@ def build_paper_state(historial, resultados, mercado, config):
             "mode": "PAPER_ONLY",
             "trades": trades[-600:]
         },
-        "risk": risk_state
+        "risk": risk_state,
+        "audit": audit
     }
 
     return state
@@ -311,6 +377,7 @@ def export_paper_state(historial, resultados, mercado, config):
     _write_json(PAPER_DIR / "paper_trades.json", state["trades"])
     _write_json(PAPER_DIR / "paper_risk.json", state["risk"])
     _write_json(PAPER_DIR / "paper_status.json", state["status"])
+    _write_json(PAPER_DIR / "paper_audit.json", state["audit"])
     _write_json(PAPER_DIR / "paper_state.json", state)
 
     return state

@@ -1,4 +1,19 @@
-# BOT-ARQ v4.2 - Configuración Real del Motor
+# BOT-ARQ v4.3 - Auditoría de Bloqueos
+
+Incluye V4.2.1 y V4.2.2. Agrega auditoría visual de señales bloqueadas usando lógica existente del bot.
+
+---
+
+
+Mejora de rendimiento visual. Incluye V4.2.1. No cambia el motor de trading.
+
+---
+
+
+Corrección visual del dashboard. No cambia el motor Python; corrige cómo se muestran los datos en Top oportunidades.
+
+---
+
 
 Sistema automatizado de análisis técnico, señales simuladas, paper trading y dashboard web.
 
