@@ -24,6 +24,25 @@ except Exception as e:
 else:
     PAPER_ENGINE_IMPORT_ERROR = ""
 
+# ============================================================
+# BOT-ARQ V4.2 - CONFIGURACIÓN REAL DEL MOTOR
+# Carga config/system_config.json y la aplica al motor actual.
+# ============================================================
+try:
+    from engine.config_loader import (
+        cargar_config_sistema,
+        cargar_config_simulacion,
+        resumen_config_operativa,
+    )
+except Exception as e:
+    cargar_config_sistema = None
+    cargar_config_simulacion = None
+    resumen_config_operativa = None
+    CONFIG_LOADER_IMPORT_ERROR = str(e)
+else:
+    CONFIG_LOADER_IMPORT_ERROR = ""
+
+
 ACCIONES_INFO = {
     # Tecnología, IA y software
     "NVDA": "IA / Chips", "AMD": "IA / Chips", "MSFT": "Tecnología",
@@ -158,7 +177,7 @@ ACCIONES = list(ACCIONES_INFO.keys())
 # Ajusta estos valores si quieres volver el sistema más conservador o agresivo.
 # El bot sigue siendo PAPER TRADING: no ejecuta compras reales.
 # ============================================================
-CONFIG_SIMULACION = {
+DEFAULT_CONFIG_SIMULACION = {
     "capital_inicial": 5000.0,
     "riesgo_por_operacion_pct": 1.0,      # Riesgo máximo de cuenta por operación.
     "max_posicion_pct": 20.0,             # No usar más de este % del capital en una sola operación.
@@ -173,6 +192,22 @@ CONFIG_SIMULACION = {
     "volumen_relativo_minimo": 0.80,
     "permitir_buy_strong_en_mercado_debil": False,
 }
+
+# CONFIG_SIMULACION real usada por el motor.
+# En V4.2 se carga desde config/system_config.json.
+# Si el archivo falla, usa DEFAULT_CONFIG_SIMULACION.
+if cargar_config_sistema and cargar_config_simulacion:
+    CONFIG_SISTEMA = cargar_config_sistema()
+    CONFIG_SIMULACION = cargar_config_simulacion(DEFAULT_CONFIG_SIMULACION, CONFIG_SISTEMA)
+else:
+    CONFIG_SISTEMA = {}
+    CONFIG_SIMULACION = dict(DEFAULT_CONFIG_SIMULACION)
+
+if CONFIG_LOADER_IMPORT_ERROR:
+    print("ADVERTENCIA: config loader no disponible:", CONFIG_LOADER_IMPORT_ERROR)
+else:
+    print("CONFIG BOT-ARQ cargada:", CONFIG_SISTEMA.get("version", "default"))
+
 
 
 # Contexto externo por tipo de acción.
@@ -1681,7 +1716,7 @@ def main():
     if export_paper_state:
         try:
             paper_state = export_paper_state(historial, resultados, mercado, CONFIG_SIMULACION)
-            print("PAPER TRADING V4 EXPORTADO")
+            print("PAPER TRADING V4.2 EXPORTADO")
         except Exception as e:
             print("ADVERTENCIA: no se pudo exportar paper trading V4:", e)
     else:
@@ -1689,8 +1724,9 @@ def main():
 
     salida = {
         "actualizado": fecha_visible(),
-        "version_bot": "V4 PAPER TRADING ENGINE",
+        "version_bot": "V4.2 CONFIGURACION REAL DEL MOTOR",
         "contexto_mercado": mercado,
+        "config_operativa": resumen_config_operativa(CONFIG_SISTEMA, CONFIG_SIMULACION) if resumen_config_operativa else {"simulation_config": CONFIG_SIMULACION},
         "resultados": resultados,
         "paper_trading": paper_state.get("status", {}) if paper_state else {
             "version": "V4",

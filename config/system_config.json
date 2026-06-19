@@ -1,0 +1,50 @@
+{
+  "version": "4.2",
+  "name": "BOT-ARQ V4.2 - Configuración Real del Motor",
+  "mode": "PAPER_TRADING_SIMULATED",
+  "data_source": "yfinance",
+  "dashboard": {
+    "mode": "executive_cleanup",
+    "top_oportunidades": 10,
+    "cartera_abierta_max_visible": 40,
+    "historial_max_visible": 120,
+    "ranking_completo": "vista_avanzada",
+    "historial": "vista_avanzada"
+  },
+  "simulation_config": {
+    "capital_inicial": 5000.0,
+    "riesgo_por_operacion_pct": 1.0,
+    "max_posicion_pct": 20.0,
+    "max_operaciones_abiertas": 20,
+    "max_exposicion_total_pct": 80.0,
+    "comision_por_operacion_pct": 0.05,
+    "slippage_pct": 0.05,
+    "spread_pct": 0.03,
+    "pausar_si_perdidas_seguidas": 8,
+    "bloquear_si_perdidas_seguidas": 12,
+    "rr_minimo": 1.5,
+    "volumen_relativo_minimo": 0.8,
+    "permitir_buy_strong_en_mercado_debil": false
+  },
+  "paper_trading": {
+    "enabled": true,
+    "real_broker_enabled": false,
+    "portfolio_file": "paper/paper_portfolio.json",
+    "orders_file": "paper/paper_orders.json",
+    "trades_file": "paper/paper_trades.json",
+    "risk_file": "paper/paper_risk.json",
+    "status_file": "paper/paper_status.json",
+    "state_file": "paper/paper_state.json"
+  },
+  "automation": {
+    "github_actions": true,
+    "cron": "*/5 13-21 * * 1-5",
+    "market_calendar": "NYSE",
+    "force_manual_supported": true
+  },
+  "notes": [
+    "Este archivo ahora controla CONFIG_SIMULACION en analizador_acciones.py.",
+    "Si este archivo no existe o tiene errores, el bot usa valores por defecto seguros.",
+    "No ejecuta dinero real. Broker real permanece deshabilitado."
+  ]
+}

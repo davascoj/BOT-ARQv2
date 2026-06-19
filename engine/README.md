@@ -1,26 +1,8 @@
-# Engine BOT-ARQ v3
+# Engine BOT-ARQ V4.2
 
-Esta carpeta queda preparada para la evolución modular del motor.
+Archivos principales:
 
-En esta versión V3 real migrada, el motor productivo se conserva en:
+- `config_loader.py`: carga `config/system_config.json`.
+- `paper_trading_engine.py`: exporta portfolio, orders, trades, risk y status.
 
-- `../analizador_acciones.py`
-
-No se movió todavía para evitar romper:
-- GitHub Actions
-- GitHub Pages
-- generación de `datos_acciones.json`
-- generación de `historial_senales.json`
-- generación de archivos Excel
-
-## Fase siguiente recomendada
-
-Separar `analizador_acciones.py` en módulos:
-
-- `market_data.py`
-- `indicators.py`
-- `strategy.py`
-- `risk.py`
-- `portfolio.py`
-- `history.py`
-- `exporter.py`
+El motor principal todavía está en `../analizador_acciones.py` para no romper el sistema.

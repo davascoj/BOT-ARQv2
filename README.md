@@ -1,96 +1,48 @@
-# BOT-ARQ v4.1 - Dashboard Cleanup Pro
+# BOT-ARQ v4.2 - Configuración Real del Motor
 
-Sistema automatizado de análisis técnico, señales simuladas y seguimiento de cartera.
+Sistema automatizado de análisis técnico, señales simuladas, paper trading y dashboard web.
 
-Esta versión V4 conserva el motor real de V2 y agrega estructura profesional para evolucionar hacia:
-- arquitectura modular
-- risk engine más fuerte
-- paper trading
-- futura conexión con broker real
+## Estado actual
 
-## Estado
+✅ GitHub Pages  
+✅ GitHub Actions cada 5 minutos  
+✅ Señales BUY / HOLD / SELL  
+✅ Compra y venta simulada  
+✅ Cierre por stop / objetivo / señal  
+✅ Paper Trading Engine  
+✅ Dashboard V4.1 limpio  
+✅ Configuración real desde `config/system_config.json`  
 
-✅ Dashboard GitHub Pages  
-✅ GitHub Actions cada 5 minutos en horario de mercado  
-✅ Análisis con yfinance  
-✅ Ranking técnico  
-✅ Señales BUY / SELL / HOLD  
-✅ Simulación de cartera  
-✅ Historial de señales  
-✅ Métricas avanzadas  
-✅ Preparación inicial para broker adapter  
+## Cambio principal de V4.2
 
-## Archivos principales
+Antes, las reglas del bot estaban principalmente dentro de `analizador_acciones.py`.
 
-- `analizador_acciones.py` → motor real del bot
-- `datos_acciones.json` → datos para dashboard
-- `historial_senales.json` → historial de simulación
-- `index.html` → dashboard
-- `script.js` → lógica visual del dashboard
-- `style.css` → estilos
-- `.github/workflows/analizar.yml` → automatización
+Ahora la configuración operativa está en:
 
-## Carpetas nuevas V3
+`config/system_config.json`
 
-- `docs/` → arquitectura y guía de implementación
-- `config/` → configuración base
-- `engine/` → preparación para modularizar el motor
-- `execution/` → preparación para broker/paper trading
-- `scripts/` → ejecución local
+El código mantiene valores por defecto seguros si el archivo falta o tiene error.
 
-## Importante
+## Archivos importantes
 
-Este sistema NO ejecuta órdenes reales.  
-Las señales son simuladas.  
-Antes de dinero real, debe validarse durante varios meses en paper trading.
+- `analizador_acciones.py`: motor principal.
+- `engine/config_loader.py`: carga configuración real.
+- `engine/paper_trading_engine.py`: exporta paper trading.
+- `config/system_config.json`: configuración operativa.
+- `paper/*.json`: datos paper derivados.
+- `index.html`, `script.js`, `style.css`: dashboard.
+- `.github/workflows/analizar.yml`: automatización.
 
-## Implementación
+## Documentación
 
-Ver:
-
-- `docs/PASO_A_PASO_IMPLEMENTACION.md`
-- `docs/ARQUITECTURA_V3.md`
-
-
----
-
-## V4 Paper Trading Engine
-
-V4 formaliza el paper trading actual.
-
-Archivos principales nuevos:
-
-- `engine/paper_trading_engine.py`
-- `paper/paper_portfolio.json`
-- `paper/paper_orders.json`
-- `paper/paper_trades.json`
-- `paper/paper_risk.json`
-- `paper/paper_status.json`
-- `paper/paper_state.json`
-- `docs/V4_PAPER_TRADING_ENGINE.md`
-- `docs/PASO_A_PASO_V4.md`
-
-El bot sigue en modo simulación. No ejecuta órdenes reales.
-
-
----
-
-## V4.1 Dashboard Cleanup Pro
-
-Esta versión conserva el motor de trading y paper trading de V4, pero reorganiza la página para que sea más profesional:
-
-- Panel ejecutivo superior.
-- Alertas operativas arriba.
-- Top oportunidades separado.
-- Cartera abierta resumida.
-- Riesgo y desempeño con menos ruido visual.
-- Ranking completo como vista avanzada.
-- Historial como vista avanzada.
-- Documentación organizada.
-- Workflow ajustado para reducir conflictos por archivos paper generados.
-
-Ver:
-- `docs/PASO_A_PASO_V4_1.md`
+- `docs/V4_2_CONFIGURACION_REAL_MOTOR.md`
+- `docs/PASO_A_PASO_V4_2.md`
 - `docs/CURRENT_ARCHITECTURE.md`
 - `docs/ROADMAP.md`
 - `docs/CHANGELOG.md`
+
+## Seguridad
+
+No ejecuta dinero real.  
+Broker real sigue OFF.  
+Este sistema continúa en paper trading / simulación.

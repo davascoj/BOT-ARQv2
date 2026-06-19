@@ -1,20 +1,10 @@
 # Execution Layer
 
-Capa preparada para futura ejecución de órdenes.
+Preparación para broker futuro.
 
-Actualmente BOT-ARQ v3 sigue en simulación.
+Estado actual:
+- Paper trading simulado.
+- Broker real deshabilitado.
+- No ejecuta órdenes reales.
 
-No se recomienda conectar dinero real hasta validar:
-- señales durante varios meses
-- drawdown
-- profit factor
-- slippage
-- comisiones
-- reglas de apagado del bot
-
-
-## Estado V4
-
-El paper trading ahora se exporta formalmente en `paper/*.json`.
-
-La conexión con broker real se deja para una versión futura, recomendada como V5.
+La integración real se deja para V5/V6, después de validar V4.x.

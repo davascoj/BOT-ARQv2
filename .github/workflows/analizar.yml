@@ -1,4 +1,4 @@
-name: BOT-ARQ v4.1 - Dashboard Cleanup Pro
+name: BOT-ARQ v4.2 - Configuración Real del Motor
 
 on:
   schedule:
@@ -35,7 +35,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: arq-v4-1-auto-update
+  group: arq-v4-2-auto-update
   cancel-in-progress: false
 
 jobs:
@@ -139,7 +139,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Sin cambios para guardar"
           else
-            git commit -m "Actualizar analisis automatico BOT-ARQ v4.1"
+            git commit -m "Actualizar analisis automatico BOT-ARQ v4.2"
 
             echo "Sincronizando antes de subir cambios..."
             git pull --rebase origin main

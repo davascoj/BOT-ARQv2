@@ -1,18 +1,16 @@
 {
-  "version_actual": "V4.1",
-  "nombre": "BOT-ARQv4_1_DASHBOARD_CLEANUP_PRO",
-  "base": "V4_PAPER_TRADING_ENGINE",
-  "fecha_generacion": "2026-06-19 05:31:44 UTC",
+  "version_actual": "V4.2",
+  "nombre": "BOT-ARQv4_2_CONFIGURACION_REAL_MOTOR",
+  "base": "V4.1_DASHBOARD_CLEANUP_PRO",
+  "fecha_generacion": "2026-06-19 06:05:06 UTC",
   "cambios": [
-    "Reorganización visual del dashboard.",
-    "Panel ejecutivo superior más limpio.",
-    "Alertas críticas arriba.",
-    "Top oportunidades separado del ranking completo.",
-    "Ranking completo e historial como vistas avanzadas.",
-    "Panel profesional reducido a métricas clave.",
-    "Documentación V3 archivada.",
-    "Eliminación de __pycache__ y archivos .pyc.",
-    "Workflow ajustado para no dispararse por cambios en paper/*.json."
+    "Config real del motor desde config/system_config.json.",
+    "CONFIG_SIMULACION ya no queda solo fija en analizador_acciones.py.",
+    "Se agregó engine/config_loader.py.",
+    "Se archivaron configuraciones antiguas en config/archive/.",
+    "Se actualizó salida datos_acciones.json con config_operativa.",
+    "Workflow actualizado a V4.2.",
+    "Documentación actualizada a V4.2."
   ],
-  "siguiente_version_recomendada": "V4.2 Risk Engine Pro"
+  "siguiente_version_recomendada": "V4.3 Auditoría visual de bloqueos existentes"
 }
