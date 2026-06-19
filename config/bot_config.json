@@ -1,0 +1,19 @@
+{
+  "version": "3.0-real-migrada-desde-v2",
+  "modo": "SIMULACION",
+  "fuente_datos": "yfinance",
+  "actualizacion_github_actions": "cada 5 minutos en horario NYSE",
+  "capital_inicial_referencia": 5000,
+  "max_operaciones_abiertas": 20,
+  "riesgo_por_operacion": 0.01,
+  "estado": "conserva motor real V2 y prepara evolución modular",
+  "futuro_broker": {
+    "habilitado": false,
+    "modo_sugerido": "paper_trading",
+    "brokers_posibles": [
+      "Alpaca",
+      "Interactive Brokers",
+      "Tradier"
+    ]
+  }
+}

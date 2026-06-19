@@ -1,41 +1,52 @@
-# Analizador de Acciones ARQ con GitHub Actions
+# BOT-ARQ v3 - Real migrado desde V2
 
-## Qué hace
-Esta app usa GitHub Actions para analizar acciones y actualizar:
-- `datos_acciones.json`
-- `analisis_acciones.xlsx`
+Sistema automatizado de análisis técnico, señales simuladas y seguimiento de cartera.
 
-Luego tu página `index.html` muestra los resultados.
+Esta versión V3 conserva el motor real de V2 y agrega estructura profesional para evolucionar hacia:
+- arquitectura modular
+- risk engine más fuerte
+- paper trading
+- futura conexión con broker real
 
-## Archivos
-- `index.html`
-- `style.css`
-- `script.js`
-- `analizador_acciones.py`
-- `.github/workflows/analizar.yml`
-- `ejecutar_analisis_github.bat`
+## Estado
 
-## Pasos para instalar en GitHub
-1. Sube todos estos archivos a tu repositorio.
-2. Asegúrate de subir también la carpeta `.github/workflows/analizar.yml`.
-3. En GitHub, entra al repositorio.
-4. Ve a Settings > Pages.
-5. En Source selecciona `Deploy from a branch`.
-6. Branch: `main`.
-7. Folder: `/root`.
-8. Guarda.
+✅ Dashboard GitHub Pages  
+✅ GitHub Actions cada 5 minutos en horario de mercado  
+✅ Análisis con yfinance  
+✅ Ranking técnico  
+✅ Señales BUY / SELL / HOLD  
+✅ Simulación de cartera  
+✅ Historial de señales  
+✅ Métricas avanzadas  
+✅ Preparación inicial para broker adapter  
 
-## Para ejecutar el análisis
-1. Abre `ejecutar_analisis_github.bat`.
-2. Pega tu token.
-3. Escribe tu usuario de GitHub.
-4. Escribe el nombre del repositorio.
-5. Espera 1 a 3 minutos.
-6. Abre tu página y toca "Actualizar vista".
+## Archivos principales
 
-## Token recomendado
-Tu token debe tener permiso para ejecutar Actions y leer el repositorio.
-Si el repositorio es privado, necesita más permisos.
+- `analizador_acciones.py` → motor real del bot
+- `datos_acciones.json` → datos para dashboard
+- `historial_senales.json` → historial de simulación
+- `index.html` → dashboard
+- `script.js` → lógica visual del dashboard
+- `style.css` → estilos
+- `.github/workflows/analizar.yml` → automatización
+
+## Carpetas nuevas V3
+
+- `docs/` → arquitectura y guía de implementación
+- `config/` → configuración base
+- `engine/` → preparación para modularizar el motor
+- `execution/` → preparación para broker/paper trading
+- `scripts/` → ejecución local
 
 ## Importante
-Esto no garantiza ganancias. Es solo análisis técnico.
+
+Este sistema NO ejecuta órdenes reales.  
+Las señales son simuladas.  
+Antes de dinero real, debe validarse durante varios meses en paper trading.
+
+## Implementación
+
+Ver:
+
+- `docs/PASO_A_PASO_IMPLEMENTACION.md`
+- `docs/ARQUITECTURA_V3.md`

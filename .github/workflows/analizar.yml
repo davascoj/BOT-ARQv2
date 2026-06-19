@@ -1,4 +1,4 @@
-name: Analizar acciones
+name: BOT-ARQ v3 - Analizar acciones
 
 on:
   schedule:
@@ -22,12 +22,17 @@ on:
     paths:
       - ".github/workflows/analizar.yml"
       - "analizador_acciones.py"
+      - "requirements.txt"
+      - "config/**"
+      - "engine/**"
+      - "execution/**"
+      - "scripts/**"
 
 permissions:
   contents: write
 
 concurrency:
-  group: arq-v2-auto-update
+  group: arq-v3-auto-update
   cancel-in-progress: false
 
 jobs:
@@ -68,7 +73,7 @@ jobs:
       - name: Instalar librerias
         run: |
           python -m pip install --upgrade pip
-          pip install pandas numpy openpyxl yfinance requests pandas_market_calendars
+          pip install -r requirements.txt
 
       - name: Verificar mercado abierto NYSE
         id: mercado
@@ -131,7 +136,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Sin cambios para guardar"
           else
-            git commit -m "Actualizar analisis automatico ARQ v2"
+            git commit -m "Actualizar analisis automatico BOT-ARQ v3"
 
             echo "Sincronizando antes de subir cambios..."
             git pull --rebase origin main
