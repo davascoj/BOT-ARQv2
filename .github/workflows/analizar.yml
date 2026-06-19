@@ -1,4 +1,4 @@
-name: BOT-ARQ v4 - Paper Trading Engine
+name: BOT-ARQ v4.1 - Dashboard Cleanup Pro
 
 on:
   schedule:
@@ -30,13 +30,12 @@ on:
       - "engine/**"
       - "execution/**"
       - "scripts/**"
-      - "paper/**"
 
 permissions:
   contents: write
 
 concurrency:
-  group: arq-v4-auto-update
+  group: arq-v4-1-auto-update
   cancel-in-progress: false
 
 jobs:
@@ -140,7 +139,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Sin cambios para guardar"
           else
-            git commit -m "Actualizar analisis automatico BOT-ARQ v4 paper"
+            git commit -m "Actualizar analisis automatico BOT-ARQ v4.1"
 
             echo "Sincronizando antes de subir cambios..."
             git pull --rebase origin main

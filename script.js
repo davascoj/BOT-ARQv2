@@ -83,6 +83,9 @@ async function cargarDatos() {
 
     pintarMercado();
     pintarResumen();
+    pintarDashboardEjecutivo();
+    pintarAlertasEjecutivas();
+    renderTopOportunidades();
     renderTabla();
     pintarHistorialResumen();
     pintarPanelProfesional();
@@ -101,6 +104,137 @@ async function cargarDatos() {
     if (tablaHistorial) tablaHistorial.innerHTML = `<tr><td colspan="22">No hay historial todavía.</td></tr>`;
   }
 }
+
+
+function pintarDashboardEjecutivo() {
+  const box = document.getElementById("dashboardEjecutivo");
+  if (!box) return;
+
+  const sim = simulacionPro || {};
+  const riesgo = riesgoPro || {};
+  const met = metricasPro || {};
+  const paperStatus = paperTradingV4?.status || {};
+  const paperPortfolio = paperTradingV4?.portfolio || {};
+  const estadoMercado = contextoMercado?.estado || "SIN DATOS";
+  const brokerReal = paperStatus.broker_real_enabled ? "ON" : "OFF";
+
+  box.innerHTML = `
+    <div class="metric-box">
+      <strong>${safe(estadoMercado)}</strong>
+      <span>estado mercado</span>
+    </div>
+    <div class="metric-box">
+      <strong>${paperStatus.health || "OK"}</strong>
+      <span>salud V4</span>
+    </div>
+    <div class="metric-box">
+      <strong>${dinero(sim.capital_actual_total_estimado ?? paperPortfolio.capital_initial_usd ?? 0)}</strong>
+      <span>capital total estimado</span>
+    </div>
+    <div class="metric-box">
+      <strong class="${claseValor(sim.ganancia_total_estimada_usd ?? paperPortfolio.total_pnl_usd_estimated)}">${dinero(sim.ganancia_total_estimada_usd ?? paperPortfolio.total_pnl_usd_estimated ?? 0)}</strong>
+      <span>G/P total estimada</span>
+    </div>
+    <div class="metric-box">
+      <strong>${riesgo.operaciones_abiertas ?? paperStatus.positions_open ?? 0}/${riesgo.max_operaciones_abiertas ?? ""}</strong>
+      <span>operaciones abiertas</span>
+    </div>
+    <div class="metric-box">
+      <strong>${numero(riesgo.exposicion_abierta_pct ?? paperPortfolio.exposure_pct ?? 0)}%</strong>
+      <span>exposición abierta</span>
+    </div>
+    <div class="metric-box">
+      <strong>${numero(riesgo.riesgo_total_abierto_pct ?? paperPortfolio.open_risk_pct ?? 0)}%</strong>
+      <span>riesgo abierto</span>
+    </div>
+    <div class="metric-box">
+      <strong>${brokerReal}</strong>
+      <span>broker real</span>
+    </div>
+  `;
+}
+
+function pintarAlertasEjecutivas() {
+  const box = document.getElementById("alertasEjecutivas");
+  if (!box) return;
+
+  const alertas = [];
+  const riesgo = riesgoPro || {};
+  const diag = diagnosticoBot || {};
+  const paperWarnings = paperTradingV4?.status?.warnings || [];
+
+  paperWarnings.forEach(w => alertas.push({tipo: "warning", texto: w}));
+
+  const exp = Number(riesgo.exposicion_abierta_pct ?? 0);
+  const risk = Number(riesgo.riesgo_total_abierto_pct ?? 0);
+  const dd = Number(riesgo.max_drawdown_pct ?? 0);
+  const abiertas = Number(riesgo.operaciones_abiertas ?? 0);
+  const maxAbiertas = Number(riesgo.max_operaciones_abiertas ?? 0);
+
+  if (maxAbiertas && abiertas >= maxAbiertas) alertas.push({tipo: "danger", texto: "Máximo de operaciones abiertas alcanzado."});
+  if (exp > 80) alertas.push({tipo: "danger", texto: `Exposición abierta alta: ${numero(exp)}%.`});
+  if (risk > 10) alertas.push({tipo: "danger", texto: `Riesgo abierto elevado: ${numero(risk)}%.`});
+  if (dd > 20) alertas.push({tipo: "warning", texto: `Drawdown histórico relevante: -${numero(dd)}%.`});
+
+  if (Array.isArray(diag.alertas)) {
+    diag.alertas.slice(0, 4).forEach(a => alertas.push({tipo: "info", texto: a}));
+  }
+
+  if (!alertas.length) {
+    box.innerHTML = `<div class="alert-item ok">Sin alertas críticas. Mantener monitoreo normal.</div>`;
+    return;
+  }
+
+  const unicas = [];
+  const vistos = new Set();
+  alertas.forEach(a => {
+    const key = String(a.texto || "").trim();
+    if (key && !vistos.has(key)) {
+      vistos.add(key);
+      unicas.push(a);
+    }
+  });
+
+  box.innerHTML = unicas.slice(0, 8).map(a => `
+    <div class="alert-item ${a.tipo}">
+      ${safe(a.texto)}
+    </div>
+  `).join("");
+}
+
+function renderTopOportunidades() {
+  const tbody = document.getElementById("tablaTopOportunidades");
+  if (!tbody) return;
+
+  let datos = [...datosOriginales].filter(r =>
+    ["BUY STRONG", "BUY"].includes(String(r["Senal Bot"] || "")) &&
+    ["BAJO", "MEDIO"].includes(String(r.Riesgo || ""))
+  );
+
+  datos.sort(ordenRanking);
+  datos = datos.slice(0, 10);
+
+  if (!datos.length) {
+    tbody.innerHTML = `<tr><td colspan="10">No hay oportunidades BUY con riesgo bajo/medio en este momento.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = datos.map(r => `
+    <tr>
+      <td><strong>${safe(r.Accion)}</strong></td>
+      <td>${safe(r.Sector)}</td>
+      <td>${safe(r.Precio)}</td>
+      <td>${safe(r.Senal)}</td>
+      <td><span class="bot-badge ${claseBot(r["Senal Bot"])}">${safe(r["Senal Bot"])}</span></td>
+      <td><span class="score-pill ${claseScore(r.Score)}">${numero(r.Score, 1)}</span></td>
+      <td>${safe(r.Riesgo)}</td>
+      <td>${safe(r.Entrada)}</td>
+      <td>${safe(r.Stop)}</td>
+      <td>${safe(r.Objetivo)}</td>
+    </tr>
+  `).join("");
+}
+
 
 function pintarMercado() {
   const marketBox = document.getElementById("marketBox");
@@ -134,7 +268,7 @@ function pintarResumen() {
     <div><strong>${total}</strong><span>acciones analizadas</span></div>
     <div><strong>${fuertes}</strong><span>compra fuerte</span></div>
     <div><strong>${posibles}</strong><span>posible compra</span></div>
-    <div><strong>${botBuy}</strong><span>señales BUY bot</span></div>
+    <div><strong>${botBuy}</strong><span>señales BUY</span></div>
     <div><strong>${alto}</strong><span>riesgo alto</span></div>
   `;
 }
@@ -176,16 +310,9 @@ function pintarPanelProfesional() {
   if (resumen) {
     resumen.innerHTML = `
       <div class="metric-box"><strong>${dinero(sim.capital_inicial ?? 0)}</strong><span>capital inicial</span></div>
-      <div class="metric-box"><strong>${dinero(sim.capital_actual_cerrado ?? 0)}</strong><span>capital cerrado neto</span></div>
       <div class="metric-box"><strong>${dinero(sim.capital_actual_total_estimado ?? 0)}</strong><span>capital total c/abiertas</span></div>
-      <div class="metric-box"><strong class="${claseValor(sim.ganancia_neta_usd)}">${dinero(sim.ganancia_neta_usd ?? 0)}</strong><span>ganancia neta cerrada</span></div>
-      <div class="metric-box"><strong class="${claseValor(sim.ganancia_total_estimada_usd)}">${dinero(sim.ganancia_total_estimada_usd ?? 0)}</strong><span>ganancia total estimada</span></div>
-      <div class="metric-box"><strong class="${claseValor(sim.rentabilidad_neta_pct)}">${numero(sim.rentabilidad_neta_pct ?? 0)}%</strong><span>rentabilidad neta</span></div>
-      <div class="metric-box"><strong class="${claseValor(sim.rentabilidad_total_estimada_pct)}">${numero(sim.rentabilidad_total_estimada_pct ?? 0)}%</strong><span>rentab. total estimada</span></div>
-      <div class="metric-box"><strong>${numero(sim.rentabilidad_bruta_pct ?? historialResumen.rentabilidad_cerrada_pct ?? 0)}%</strong><span>rentabilidad bruta señales</span></div>
-      <div class="metric-box"><strong>${dinero(sim.costos_totales_usd ?? 0)}</strong><span>costos estimados</span></div>
-      <div class="metric-box"><strong>${dinero(sim.valor_total_en_cartera_usd ?? 0)}</strong><span>valor en cartera</span></div>
-      <div class="metric-box"><strong class="${claseValor(sim.ganancia_abierta_neta_usd)}">${dinero(sim.ganancia_abierta_neta_usd ?? 0)}</strong><span>G/P abierta neta</span></div>
+      <div class="metric-box"><strong class="${claseValor(sim.ganancia_total_estimada_usd)}">${dinero(sim.ganancia_total_estimada_usd ?? 0)}</strong><span>G/P total estimada</span></div>
+      <div class="metric-box"><strong class="${claseValor(sim.rentabilidad_total_estimada_pct)}">${numero(sim.rentabilidad_total_estimada_pct ?? 0)}%</strong><span>rentabilidad total</span></div>
       <div class="metric-box"><strong>${numero(met.profit_factor ?? 0)}</strong><span>profit factor</span></div>
       <div class="metric-box"><strong>${numero(met.expectativa_pct_por_operacion ?? 0)}%</strong><span>expectativa/op</span></div>
       <div class="metric-box"><strong class="${claseValor(benchmarkBot.bot_vs_spy_alpha_pct)}">${numero(benchmarkBot.bot_vs_spy_alpha_pct ?? 0)}%</strong><span>bot vs SPY</span></div>
@@ -197,15 +324,11 @@ function pintarPanelProfesional() {
   if (riesgoCaja) {
     riesgoCaja.innerHTML = `
       <div><strong class="valor-neg">-${numero(riesgo.max_drawdown_pct ?? 0)}%</strong><span>máx. drawdown</span></div>
-      <div><strong>${dinero(riesgo.max_drawdown_usd ?? 0)}</strong><span>caída máx. USD</span></div>
-      <div><strong>${riesgo.racha_max_perdidas ?? 0}</strong><span>racha máx. pérdidas</span></div>
+      <div><strong>${riesgo.racha_max_perdidas ?? 0}</strong><span>racha pérdidas</span></div>
       <div><strong>${riesgo.operaciones_abiertas ?? 0}/${riesgo.max_operaciones_abiertas ?? 0}</strong><span>operaciones abiertas</span></div>
-      <div><strong>${numero(riesgo.exposicion_abierta_pct ?? 0)}%</strong><span>exposición abierta</span></div>
-      <div><strong>${dinero(riesgo.exposicion_abierta_usd ?? 0)}</strong><span>exposición USD</span></div>
+      <div><strong>${numero(riesgo.exposicion_abierta_pct ?? 0)}%</strong><span>exposición</span></div>
       <div><strong>${numero(riesgo.riesgo_total_abierto_pct ?? 0)}%</strong><span>riesgo abierto</span></div>
-      <div><strong>${dinero(riesgo.riesgo_total_abierto_usd ?? 0)}</strong><span>riesgo abierto USD</span></div>
-      <div><strong>${numero(met.ganancia_promedio_pct ?? 0)}%</strong><span>ganancia prom.</span></div>
-      <div><strong>${numero(met.perdida_promedio_pct ?? 0)}%</strong><span>pérdida prom.</span></div>
+      <div><strong>${dinero(riesgo.riesgo_total_abierto_usd ?? 0)}</strong><span>riesgo USD</span></div>
     `;
   }
 
@@ -220,14 +343,10 @@ function pintarPanelProfesional() {
         <span class="diag-risk ${riesgoSistema.toLowerCase()}">Riesgo ${safe(riesgoSistema)}</span>
       </div>
       <p>${safe(diag.mensaje || "Sistema en seguimiento paper trading.")}</p>
-      <ul>${alertas.map(a => `<li>${safe(a)}</li>`).join("")}</ul>
-      <div class="cost-note">Costo por operación estimado: ${numero(sim.costo_total_estimado_pct_por_operacion ?? 0)}% entre comisión, slippage y spread.</div>
-      <div class="cost-note">Benchmark desde ${safe(benchmarkBot.fecha_inicio || "inicio historial")}: SPY ${numero(benchmarkBot.spy_rentabilidad_pct ?? 0)}%, QQQ ${numero(benchmarkBot.qqq_rentabilidad_pct ?? 0)}%.</div>
+      <ul>${alertas.slice(0, 5).map(a => `<li>${safe(a)}</li>`).join("")}</ul>
+      <p class="mini-copy">Costo estimado/op: ${numero(met.costo_total_pct_estimado ?? 0)}%. Benchmark: SPY ${numero(benchmarkBot.spy_pct ?? 0)}%, QQQ ${numero(benchmarkBot.qqq_pct ?? 0)}%.</p>
     `;
   }
-
-  const badge = document.getElementById("modoSimulacionBadge");
-  if (badge) badge.textContent = sim.modo || "MODO SIMULACIÓN";
 }
 
 function dibujarEquityCurve() {
@@ -503,18 +622,17 @@ function renderCarteraAbierta() {
     .sort((a, b) => Number(b.score_calidad_actual || 0) - Number(a.score_calidad_actual || 0));
 
   if (abiertas.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="11">No hay operaciones abiertas actualmente.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="10">No hay operaciones abiertas actualmente.</td></tr>`;
     return;
   }
 
-  tbody.innerHTML = abiertas.slice(0, 80).map(op => {
+  tbody.innerHTML = abiertas.slice(0, 40).map(op => {
     const gananciaPct = Number(op.ganancia_pct ?? 0);
     const botActual = op.senal_bot_actual || op.senal_bot_entrada || "";
     return `<tr>
       <td><strong>${safe(op.accion)}</strong></td>
       <td>${safe(op.sector || "Otro")}</td>
       <td>${dinero(op.valor_cartera_usd ?? op.posicion_usd_estimada ?? 0)}</td>
-      <td>${dinero(op.posicion_usd_estimada ?? 0)}</td>
       <td class="${claseValor(op.ganancia_abierta_usd_estimada ?? op.pnl_usd_estimado)}">${dinero(op.ganancia_abierta_usd_estimada ?? op.pnl_usd_estimado ?? 0)}</td>
       <td class="${gananciaPct >= 0 ? "hist-pos" : "hist-neg"}">${numero(gananciaPct)}%</td>
       <td class="valor-neg">${dinero(op.perdida_maxima_stop_usd ?? op.riesgo_usd_estimado ?? 0)}</td>

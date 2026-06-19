@@ -1,4 +1,4 @@
-# BOT-ARQ v4 - Paper Trading Engine
+# BOT-ARQ v4.1 - Dashboard Cleanup Pro
 
 Sistema automatizado de análisis técnico, señales simuladas y seguimiento de cartera.
 
@@ -71,3 +71,26 @@ Archivos principales nuevos:
 - `docs/PASO_A_PASO_V4.md`
 
 El bot sigue en modo simulación. No ejecuta órdenes reales.
+
+
+---
+
+## V4.1 Dashboard Cleanup Pro
+
+Esta versión conserva el motor de trading y paper trading de V4, pero reorganiza la página para que sea más profesional:
+
+- Panel ejecutivo superior.
+- Alertas operativas arriba.
+- Top oportunidades separado.
+- Cartera abierta resumida.
+- Riesgo y desempeño con menos ruido visual.
+- Ranking completo como vista avanzada.
+- Historial como vista avanzada.
+- Documentación organizada.
+- Workflow ajustado para reducir conflictos por archivos paper generados.
+
+Ver:
+- `docs/PASO_A_PASO_V4_1.md`
+- `docs/CURRENT_ARCHITECTURE.md`
+- `docs/ROADMAP.md`
+- `docs/CHANGELOG.md`
