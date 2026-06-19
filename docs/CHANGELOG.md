@@ -1,5 +1,11 @@
 # Changelog
 
+## V4.4.1 Hotfix Dashboard Cargando
+- Corrige error JS que dejaba la página en Cargando.
+- Agrega protección por secciones de renderizado.
+- Mantiene intacta la lógica del motor V4.4.
+
+
 ## V4.4 Reglas Operativas
 - Exposición, riesgo abierto y drawdown pasan a reglas operativas.
 - Nuevo panel `Reglas operativas V4.4`.

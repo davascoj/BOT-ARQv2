@@ -1,16 +1,14 @@
 {
-  "version_actual": "V4.4",
-  "nombre": "BOT-ARQv4_4_REGLAS_OPERATIVAS",
-  "base": "V4.3_AUDITORIA_BLOQUEOS",
-  "fecha_generacion": "2026-06-19 19:37:02 UTC",
+  "version_actual": "V4.4.1",
+  "nombre": "BOT-ARQv4_4_1_HOTFIX_CARGANDO",
+  "base": "V4.4_REGLAS_OPERATIVAS",
+  "fecha_generacion": "2026-06-19 20:31:15 UTC",
   "cambios": [
-    "Convierte exposición abierta en regla operativa de bloqueo.",
-    "Convierte riesgo abierto total en regla operativa de bloqueo.",
-    "Convierte drawdown en regla operativa defensiva/bloqueante.",
-    "Agrega resumen de reglas operativas al historial.",
-    "Agrega paper_operational_rules.json.",
-    "Actualiza dashboard con panel de reglas operativas.",
-    "Mantiene las señales, paper trading, auditoría y dashboard previos."
+    "Corrige error JavaScript que dejaba todo el dashboard en Cargando.",
+    "Elimina asignación accidental de operationalRulesV44 antes de su declaración.",
+    "Agrega protección por secciones para que un error visual no bloquee toda la página.",
+    "Mantiene intacto el motor V4.4 de reglas operativas."
   ],
-  "siguiente_version_recomendada": "V4.5 Position Sizing Pro"
+  "siguiente_version_recomendada": "V4.4.2 Ticker Health Filter",
+  "tipo": "HOTFIX"
 }

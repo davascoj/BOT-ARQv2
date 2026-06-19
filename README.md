@@ -1,4 +1,4 @@
-# BOT-ARQ v4.4 - Reglas Operativas
+# BOT-ARQ v4.4.1 - Hotfix Dashboard Cargando
 
 Incluye V4.2.1 y V4.2.2. Agrega auditoría visual de señales bloqueadas usando lógica existente del bot.
 
@@ -84,3 +84,16 @@ Nueva sección en dashboard:
 - `Reglas operativas V4.4`
 
 No ejecuta dinero real.
+
+
+---
+
+## V4.4.1 Hotfix Dashboard Cargando
+
+Corrección crítica visual:
+
+- Se corrige un error en `script.js` que podía detener toda la página antes de cargar datos.
+- Se elimina una asignación accidental de `operationalRulesV44` antes de su declaración.
+- Se agrega protección por secciones para que, si una tarjeta falla, el resto del dashboard siga cargando.
+
+No cambia el motor de análisis ni las reglas operativas V4.4.

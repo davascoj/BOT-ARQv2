@@ -17,7 +17,6 @@ let benchmarkBot = {};
 let resumenDiario = [];
 let paperTradingV4 = null;
 let paperAuditV43 = null;
-    operationalRulesV44 = null;
 let operationalRulesV44 = null;
 let renderLazyInicializado = false;
 let rankingRenderizado = false;
@@ -46,6 +45,19 @@ function actualizarAutoRefreshInfo(mensaje = "") {
   if (!info) return;
   const hora = new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   info.textContent = mensaje || `Vista actualizada a las ${hora}. Se vuelve a refrescar sola cada 60 segundos. Los datos del mercado los actualiza GitHub Actions cada 5 minutos en horario de mercado.`;
+}
+
+function ejecutarBloqueSeguro(nombre, fn) {
+  try {
+    return fn();
+  } catch (error) {
+    console.error(`BOT-ARQ: error pintando ${nombre}`, error);
+    const info = document.getElementById("autoRefreshInfo");
+    if (info) {
+      info.textContent = `Datos cargados, pero hubo un error visual en: ${nombre}. Revisa consola del navegador.`;
+    }
+    return null;
+  }
 }
 
 async function cargarDatos() {
@@ -88,20 +100,20 @@ async function cargarDatos() {
     const historialFecha = document.getElementById("historialFecha");
     if (historialFecha) historialFecha.textContent = "Actualizado: " + (data.historial?.actualizado || data.actualizado || "sin fecha");
 
-    pintarMercado();
-    pintarResumen();
-    pintarDashboardEjecutivo();
-    pintarAlertasEjecutivas();
-    pintarReglasOperativasV44();
-    pintarAuditoriaBloqueos();
-    renderTopOportunidades();
-    pintarHistorialResumen();
-    pintarPanelProfesional();
-    pintarPaperTradingV4();
-    dibujarEquityCurve();
-    renderCarteraAbierta();
-    inicializarRenderDiferido();
-    refrescarVistasAvanzadasSiAbiertas();
+    ejecutarBloqueSeguro("Mercado", pintarMercado);
+    ejecutarBloqueSeguro("Resumen", pintarResumen);
+    ejecutarBloqueSeguro("Panel ejecutivo", pintarDashboardEjecutivo);
+    ejecutarBloqueSeguro("Alertas", pintarAlertasEjecutivas);
+    ejecutarBloqueSeguro("Reglas operativas", pintarReglasOperativasV44);
+    ejecutarBloqueSeguro("Auditoría de bloqueos", pintarAuditoriaBloqueos);
+    ejecutarBloqueSeguro("Top oportunidades", renderTopOportunidades);
+    ejecutarBloqueSeguro("Resumen historial", pintarHistorialResumen);
+    ejecutarBloqueSeguro("Panel profesional", pintarPanelProfesional);
+    ejecutarBloqueSeguro("Paper trading", pintarPaperTradingV4);
+    ejecutarBloqueSeguro("Curva de capital", dibujarEquityCurve);
+    ejecutarBloqueSeguro("Cartera abierta", renderCarteraAbierta);
+    ejecutarBloqueSeguro("Render diferido", inicializarRenderDiferido);
+    ejecutarBloqueSeguro("Vistas avanzadas", refrescarVistasAvanzadasSiAbiertas);
 
   } catch (e) {
     fecha.textContent = "Sin datos";
