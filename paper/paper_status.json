@@ -1,14 +1,16 @@
 {
-  "updated": "19-06-2026 01:25 PM Colombia",
-  "version": "V4",
+  "updated": "19-06-2026 02:37 PM Colombia",
+  "version": "V4.4",
   "engine": "PAPER_TRADING_ENGINE",
   "mode": "PAPER_ONLY_NO_REAL_ORDERS",
   "health": "WARNING",
-  "warnings_count": 3,
+  "warnings_count": 5,
   "warnings": [
     "Máximo de posiciones abiertas alcanzado.",
     "Exposición estimada supera el límite configurado.",
-    "Riesgo abierto total elevado."
+    "Riesgo abierto total elevado.",
+    "Diagnóstico general marca riesgo ALTO.",
+    "Reglas operativas V4.4 en modo DEFENSIVO."
   ],
   "market": {
     "estado": "NEUTRO +",
@@ -122,6 +124,7 @@
   "trades_closed": 280,
   "signals_available": 275,
   "broker_real_enabled": false,
+  "operational_mode": "DEFENSIVO",
   "files": {
     "portfolio": "paper/paper_portfolio.json",
     "orders": "paper/paper_orders.json",
@@ -129,6 +132,7 @@
     "risk": "paper/paper_risk.json",
     "status": "paper/paper_status.json",
     "state": "paper/paper_state.json",
-    "audit": "paper/paper_audit.json"
+    "audit": "paper/paper_audit.json",
+    "operational_rules": "paper/paper_operational_rules.json"
   }
 }

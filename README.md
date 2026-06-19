@@ -1,4 +1,4 @@
-# BOT-ARQ v4.3 - Auditoría de Bloqueos
+# BOT-ARQ v4.4 - Reglas Operativas
 
 Incluye V4.2.1 y V4.2.2. Agrega auditoría visual de señales bloqueadas usando lógica existente del bot.
 
@@ -61,3 +61,26 @@ El código mantiene valores por defecto seguros si el archivo falta o tiene erro
 No ejecuta dinero real.  
 Broker real sigue OFF.  
 Este sistema continúa en paper trading / simulación.
+
+
+---
+
+## V4.4 Reglas Operativas
+
+Esta versión convierte métricas existentes en decisiones operativas configurables:
+
+- Exposición abierta.
+- Riesgo abierto.
+- Drawdown.
+- Modo defensivo.
+- Bloqueo de entradas.
+
+Nuevo archivo:
+
+- `paper/paper_operational_rules.json`
+
+Nueva sección en dashboard:
+
+- `Reglas operativas V4.4`
+
+No ejecuta dinero real.

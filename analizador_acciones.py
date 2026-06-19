@@ -191,6 +191,18 @@ DEFAULT_CONFIG_SIMULACION = {
     "rr_minimo": 1.50,
     "volumen_relativo_minimo": 0.80,
     "permitir_buy_strong_en_mercado_debil": False,
+
+    # V4.4 - Reglas operativas reales usando métricas existentes.
+    "max_riesgo_total_abierto_pct": 10.0,
+    "modo_defensivo_drawdown_pct": 12.0,
+    "bloquear_entradas_drawdown_pct": 25.0,
+    "activar_reglas_operativas": True,
+    "usar_exposicion_como_bloqueo": True,
+    "usar_riesgo_abierto_como_bloqueo": True,
+    "usar_drawdown_como_bloqueo": True,
+    "permitir_buy_strong_en_modo_defensivo_drawdown": True,
+    "permitir_buy_strong_sobre_exposicion": False,
+    "permitir_buy_strong_sobre_riesgo": False,
 }
 
 # CONFIG_SIMULACION real usada por el motor.
@@ -1354,6 +1366,130 @@ def resumen_operacion_top(op):
     }
 
 
+
+# ============================================================
+# BOT-ARQ V4.4 - REGLAS OPERATIVAS
+# No duplica el riesgo: convierte métricas existentes en bloqueo real.
+# ============================================================
+
+def _num_cfg_(key, default=0.0):
+    try: return float(CONFIG_SIMULACION.get(key, default))
+    except Exception: return float(default)
+
+def _bool_cfg_(key, default=False):
+    v = CONFIG_SIMULACION.get(key, default)
+    if isinstance(v, str): return v.strip().lower() in ("true", "1", "si", "sí", "yes", "on")
+    return bool(v)
+
+def _safe_num_(value, default=0.0):
+    try:
+        if value is None or value == "": return float(default)
+        return float(value)
+    except Exception:
+        return float(default)
+
+def calcular_contexto_reglas_operativas_(operaciones, mercado):
+    try:
+        metricas_previas = calcular_metricas_avanzadas(operaciones, mercado)
+    except Exception as e:
+        metricas_previas = {}
+        print("ADVERTENCIA: no se pudo calcular contexto operativo:", e)
+
+    riesgo = dict(metricas_previas.get("riesgo", {}) or {})
+    sim = dict(metricas_previas.get("simulacion", {}) or {})
+    diagnostico = dict(metricas_previas.get("diagnostico_bot", {}) or {})
+    capital_operativo = _safe_num_(sim.get("capital_actual_cerrado"), CONFIG_SIMULACION.get("capital_inicial", 5000.0))
+    if capital_operativo <= 0: capital_operativo = _safe_num_(CONFIG_SIMULACION.get("capital_inicial"), 5000.0)
+    exposicion_usd = _safe_num_(riesgo.get("exposicion_abierta_usd"), 0)
+    riesgo_usd = _safe_num_(riesgo.get("riesgo_total_abierto_usd"), 0)
+    drawdown_pct = _safe_num_(riesgo.get("max_drawdown_pct"), 0)
+    return {
+        "version":"V4.4", "capital_operativo":capital_operativo,
+        "exposicion_abierta_usd":exposicion_usd, "riesgo_abierto_usd":riesgo_usd,
+        "exposicion_abierta_pct":round((exposicion_usd/capital_operativo)*100,2) if capital_operativo else 0,
+        "riesgo_abierto_pct":round((riesgo_usd/capital_operativo)*100,2) if capital_operativo else 0,
+        "drawdown_pct":round(drawdown_pct,2), "modo_previo":diagnostico.get("modo","ACTIVO"),
+        "riesgo_sistema_previo":diagnostico.get("riesgo_sistema","SIN DATOS"),
+        "max_exposicion_total_pct":_num_cfg_("max_exposicion_total_pct",80),
+        "max_riesgo_total_abierto_pct":_num_cfg_("max_riesgo_total_abierto_pct",10),
+        "modo_defensivo_drawdown_pct":_num_cfg_("modo_defensivo_drawdown_pct",12),
+        "bloquear_entradas_drawdown_pct":_num_cfg_("bloquear_entradas_drawdown_pct",25),
+        "activar_reglas_operativas":_bool_cfg_("activar_reglas_operativas",True),
+        "usar_exposicion_como_bloqueo":_bool_cfg_("usar_exposicion_como_bloqueo",True),
+        "usar_riesgo_abierto_como_bloqueo":_bool_cfg_("usar_riesgo_abierto_como_bloqueo",True),
+        "usar_drawdown_como_bloqueo":_bool_cfg_("usar_drawdown_como_bloqueo",True),
+        "permitir_buy_strong_en_modo_defensivo_drawdown":_bool_cfg_("permitir_buy_strong_en_modo_defensivo_drawdown",True),
+        "permitir_buy_strong_sobre_exposicion":_bool_cfg_("permitir_buy_strong_sobre_exposicion",False),
+        "permitir_buy_strong_sobre_riesgo":_bool_cfg_("permitir_buy_strong_sobre_riesgo",False),
+        "bloqueos_generados":0, "ultimo_motivo":""
+    }
+
+def evaluar_reglas_operativas_candidato_(r, posicion, contexto, senal_bot):
+    if not contexto.get("activar_reglas_operativas", True): return ""
+    capital = _safe_num_(contexto.get("capital_operativo"), CONFIG_SIMULACION.get("capital_inicial", 5000.0))
+    if capital <= 0: return ""
+    posicion_usd = _safe_num_(posicion.get("posicion_usd"), 0)
+    riesgo_usd = _safe_num_(posicion.get("riesgo_usd"), 0)
+    exposicion_actual_usd = _safe_num_(contexto.get("exposicion_abierta_usd"), 0)
+    riesgo_actual_usd = _safe_num_(contexto.get("riesgo_abierto_usd"), 0)
+    exposicion_actual_pct = (exposicion_actual_usd / capital) * 100
+    exposicion_resultante_pct = ((exposicion_actual_usd + posicion_usd) / capital) * 100
+    riesgo_actual_pct = (riesgo_actual_usd / capital) * 100
+    riesgo_resultante_pct = ((riesgo_actual_usd + riesgo_usd) / capital) * 100
+    drawdown_pct = _safe_num_(contexto.get("drawdown_pct"), 0)
+    if contexto.get("usar_drawdown_como_bloqueo", True):
+        if drawdown_pct >= contexto.get("bloquear_entradas_drawdown_pct", 25):
+            return f"Bloqueo operativo por drawdown máximo: {round(drawdown_pct, 2)}%"
+        if drawdown_pct >= contexto.get("modo_defensivo_drawdown_pct", 12):
+            if senal_bot != "BUY STRONG" or not contexto.get("permitir_buy_strong_en_modo_defensivo_drawdown", True):
+                return f"Modo defensivo por drawdown: {round(drawdown_pct, 2)}%"
+    if contexto.get("usar_exposicion_como_bloqueo", True):
+        max_exp = contexto.get("max_exposicion_total_pct", 80)
+        if exposicion_actual_pct >= max_exp and (senal_bot != "BUY STRONG" or not contexto.get("permitir_buy_strong_sobre_exposicion", False)):
+            return f"Exposición abierta ya supera límite: {round(exposicion_actual_pct, 2)}%"
+        if exposicion_resultante_pct > max_exp and (senal_bot != "BUY STRONG" or not contexto.get("permitir_buy_strong_sobre_exposicion", False)):
+            return f"Exposición resultante superaría límite: {round(exposicion_resultante_pct, 2)}%"
+    if contexto.get("usar_riesgo_abierto_como_bloqueo", True):
+        max_risk = contexto.get("max_riesgo_total_abierto_pct", 10)
+        if riesgo_actual_pct >= max_risk and (senal_bot != "BUY STRONG" or not contexto.get("permitir_buy_strong_sobre_riesgo", False)):
+            return f"Riesgo abierto ya supera límite: {round(riesgo_actual_pct, 2)}%"
+        if riesgo_resultante_pct > max_risk and (senal_bot != "BUY STRONG" or not contexto.get("permitir_buy_strong_sobre_riesgo", False)):
+            return f"Riesgo resultante superaría límite: {round(riesgo_resultante_pct, 2)}%"
+    return ""
+
+def actualizar_contexto_reglas_operativas_(contexto, posicion):
+    capital = _safe_num_(contexto.get("capital_operativo"), CONFIG_SIMULACION.get("capital_inicial", 5000.0))
+    contexto["exposicion_abierta_usd"] = _safe_num_(contexto.get("exposicion_abierta_usd"),0) + _safe_num_(posicion.get("posicion_usd"),0)
+    contexto["riesgo_abierto_usd"] = _safe_num_(contexto.get("riesgo_abierto_usd"),0) + _safe_num_(posicion.get("riesgo_usd"),0)
+    contexto["exposicion_abierta_pct"] = round((contexto["exposicion_abierta_usd"]/capital)*100,2) if capital else 0
+    contexto["riesgo_abierto_pct"] = round((contexto["riesgo_abierto_usd"]/capital)*100,2) if capital else 0
+    return contexto
+
+def resumen_reglas_operativas_(contexto, bloqueadas):
+    motivos = {}
+    for b in bloqueadas or []:
+        m = str(b.get("motivo","")).strip() or "SIN MOTIVO"
+        motivos[m] = motivos.get(m,0)+1
+    estado = "NORMAL"
+    if contexto.get("drawdown_pct",0) >= contexto.get("bloquear_entradas_drawdown_pct",25): estado = "BLOQUEADO"
+    elif (contexto.get("exposicion_abierta_pct",0) >= contexto.get("max_exposicion_total_pct",80) or contexto.get("riesgo_abierto_pct",0) >= contexto.get("max_riesgo_total_abierto_pct",10) or contexto.get("drawdown_pct",0) >= contexto.get("modo_defensivo_drawdown_pct",12)):
+        estado = "DEFENSIVO"
+    return {
+        "version":"V4.4", "estado":estado,
+        "exposicion_abierta_pct":round(_safe_num_(contexto.get("exposicion_abierta_pct")),2),
+        "riesgo_abierto_pct":round(_safe_num_(contexto.get("riesgo_abierto_pct")),2),
+        "drawdown_pct":round(_safe_num_(contexto.get("drawdown_pct")),2),
+        "max_exposicion_total_pct":contexto.get("max_exposicion_total_pct"),
+        "max_riesgo_total_abierto_pct":contexto.get("max_riesgo_total_abierto_pct"),
+        "modo_defensivo_drawdown_pct":contexto.get("modo_defensivo_drawdown_pct"),
+        "bloquear_entradas_drawdown_pct":contexto.get("bloquear_entradas_drawdown_pct"),
+        "bloqueos_generados":len(bloqueadas or []),
+        "motivo_principal":max(motivos, key=motivos.get) if motivos else "SIN BLOQUEOS",
+        "reglas_activas":{"exposicion":bool(contexto.get("usar_exposicion_como_bloqueo",True)),"riesgo_abierto":bool(contexto.get("usar_riesgo_abierto_como_bloqueo",True)),"drawdown":bool(contexto.get("usar_drawdown_como_bloqueo",True))},
+        "nota":"V4.4 usa métricas existentes como reglas operativas de entrada. No duplica el motor de riesgo."
+    }
+
+
 def actualizar_historial(historial, resultados, mercado):
     """
     Simulación tipo paper tracking:
@@ -1442,6 +1578,7 @@ def actualizar_historial(historial, resultados, mercado):
     cerradas_previas = [op for op in operaciones if op.get("estado") == "CERRADA"]
     rachas_previas = calcular_rachas(cerradas_previas)
     nuevas_bloqueadas = []
+    contexto_reglas_operativas = calcular_contexto_reglas_operativas_(operaciones, mercado)
 
     for r in resultados:
         ticker = r.get("Accion")
@@ -1454,14 +1591,18 @@ def actualizar_historial(historial, resultados, mercado):
         if senal_bot not in ["BUY STRONG", "BUY"]:
             continue
 
+        if ticker in abiertas:
+            continue
+        elif (ticker, hoy) in creadas_hoy:
+            continue
+
+        precio = float(r.get("Precio actual") or 0)
+        posicion = calcular_posicion(CONFIG_SIMULACION["capital_inicial"], precio, r.get("Stop loss"))
+
         if riesgo == "ALTO":
             motivo_bloqueo = "Riesgo alto"
         elif rr < CONFIG_SIMULACION["rr_minimo"]:
             motivo_bloqueo = f"R/R menor a {CONFIG_SIMULACION['rr_minimo']}"
-        elif ticker in abiertas:
-            continue
-        elif (ticker, hoy) in creadas_hoy:
-            continue
         elif len(abiertas) >= CONFIG_SIMULACION["max_operaciones_abiertas"]:
             motivo_bloqueo = "Máximo de operaciones abiertas alcanzado"
         elif rachas_previas.get("racha_actual_tipo") == "PERDIDAS" and rachas_previas.get("racha_actual", 0) >= CONFIG_SIMULACION["bloquear_si_perdidas_seguidas"]:
@@ -1476,6 +1617,8 @@ def actualizar_historial(historial, resultados, mercado):
             motivo_bloqueo = "Confirmación baja"
         elif r.get("Contexto sector") == "NO ACOMPAÑA":
             motivo_bloqueo = "Sector no acompaña"
+        else:
+            motivo_bloqueo = evaluar_reglas_operativas_candidato_(r, posicion, contexto_reglas_operativas, senal_bot)
 
         if motivo_bloqueo:
             nuevas_bloqueadas.append({
@@ -1485,11 +1628,15 @@ def actualizar_historial(historial, resultados, mercado):
                 "motivo": motivo_bloqueo,
                 "rr": rr,
                 "riesgo": riesgo,
+                "score": r.get("Score calidad", 0),
+                "precio": precio,
+                "exposicion_abierta_pct": contexto_reglas_operativas.get("exposicion_abierta_pct", 0),
+                "riesgo_abierto_pct": contexto_reglas_operativas.get("riesgo_abierto_pct", 0),
+                "drawdown_pct": contexto_reglas_operativas.get("drawdown_pct", 0),
+                "regla_operativa": motivo_bloqueo.startswith(("Exposición", "Riesgo", "Bloqueo operativo", "Modo defensivo")),
             })
             continue
 
-        precio = float(r.get("Precio actual") or 0)
-        posicion = calcular_posicion(CONFIG_SIMULACION["capital_inicial"], precio, r.get("Stop loss"))
 
         nueva = {
             "id": f"{hoy}-{ticker}",
@@ -1540,6 +1687,7 @@ def actualizar_historial(historial, resultados, mercado):
         operaciones.append(nueva)
         abiertas.add(ticker)
         creadas_hoy.add((ticker, hoy))
+        actualizar_contexto_reglas_operativas_(contexto_reglas_operativas, posicion)
 
     operaciones = sorted(
         operaciones,
@@ -1562,6 +1710,7 @@ def actualizar_historial(historial, resultados, mercado):
     promedio_cerradas = round(rentabilidad_cerrada / len(cerradas), 2) if cerradas else 0
 
     avanzadas = calcular_metricas_avanzadas(operaciones, mercado)
+    reglas_operativas = resumen_reglas_operativas_(contexto_reglas_operativas, nuevas_bloqueadas)
 
     resumen = {
         "total_operaciones": len(operaciones),
@@ -1573,7 +1722,8 @@ def actualizar_historial(historial, resultados, mercado):
         "rentabilidad_cerrada_pct": rentabilidad_cerrada,
         "rentabilidad_abierta_pct": rentabilidad_abierta,
         "promedio_cerradas_pct": promedio_cerradas,
-        "nuevas_bloqueadas": nuevas_bloqueadas[:30],
+        "nuevas_bloqueadas": nuevas_bloqueadas[:50],
+        "reglas_operativas": reglas_operativas,
         "config_simulacion": CONFIG_SIMULACION,
         "nota": "Simulación avanzada paper trading: tamaño de posición, costos estimados, drawdown y riesgo. No ejecuta compras reales.",
     }

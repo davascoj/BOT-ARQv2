@@ -1,17 +1,19 @@
 {
-  "updated": "19-06-2026 01:25 PM Colombia",
-  "version": "V4.3",
+  "updated": "19-06-2026 02:37 PM Colombia",
+  "version": "V4.4",
   "status": {
-    "updated": "19-06-2026 01:25 PM Colombia",
-    "version": "V4",
+    "updated": "19-06-2026 02:37 PM Colombia",
+    "version": "V4.4",
     "engine": "PAPER_TRADING_ENGINE",
     "mode": "PAPER_ONLY_NO_REAL_ORDERS",
     "health": "WARNING",
-    "warnings_count": 3,
+    "warnings_count": 5,
     "warnings": [
       "Máximo de posiciones abiertas alcanzado.",
       "Exposición estimada supera el límite configurado.",
-      "Riesgo abierto total elevado."
+      "Riesgo abierto total elevado.",
+      "Diagnóstico general marca riesgo ALTO.",
+      "Reglas operativas V4.4 en modo DEFENSIVO."
     ],
     "market": {
       "estado": "NEUTRO +",
@@ -125,6 +127,7 @@
     "trades_closed": 280,
     "signals_available": 275,
     "broker_real_enabled": false,
+    "operational_mode": "DEFENSIVO",
     "files": {
       "portfolio": "paper/paper_portfolio.json",
       "orders": "paper/paper_orders.json",
@@ -132,12 +135,13 @@
       "risk": "paper/paper_risk.json",
       "status": "paper/paper_status.json",
       "state": "paper/paper_state.json",
-      "audit": "paper/paper_audit.json"
+      "audit": "paper/paper_audit.json",
+      "operational_rules": "paper/paper_operational_rules.json"
     }
   },
   "portfolio": {
-    "updated": "19-06-2026 01:25 PM Colombia",
-    "version": "V4",
+    "updated": "19-06-2026 02:37 PM Colombia",
+    "version": "V4.4",
     "mode": "PAPER_TRADING_SIMULATED",
     "capital_initial_usd": 5000.0,
     "cash_model_note": "Cash derivado de simulación histórica; no representa cuenta broker real.",
@@ -734,7 +738,7 @@
     ]
   },
   "orders": {
-    "updated": "19-06-2026 01:25 PM Colombia",
+    "updated": "19-06-2026 02:37 PM Colombia",
     "mode": "PAPER_ONLY",
     "orders": [
       {
@@ -11480,7 +11484,7 @@
     ]
   },
   "trades": {
-    "updated": "19-06-2026 01:25 PM Colombia",
+    "updated": "19-06-2026 02:37 PM Colombia",
     "mode": "PAPER_ONLY",
     "trades": [
       {
@@ -17366,8 +17370,8 @@
     ]
   },
   "risk": {
-    "updated": "19-06-2026 01:25 PM Colombia",
-    "version": "V4",
+    "updated": "19-06-2026 02:37 PM Colombia",
+    "version": "V4.4",
     "mode": "PAPER_TRADING_SIMULATED",
     "market_state": {
       "estado": "NEUTRO +",
@@ -17481,7 +17485,25 @@
       "riesgo_por_operacion_pct": 1.0,
       "max_posicion_pct": 20.0,
       "max_operaciones_abiertas": 20,
-      "max_exposicion_total_pct": 80.0
+      "max_exposicion_total_pct": 80.0,
+      "comision_por_operacion_pct": 0.05,
+      "slippage_pct": 0.05,
+      "spread_pct": 0.03,
+      "pausar_si_perdidas_seguidas": 8,
+      "bloquear_si_perdidas_seguidas": 12,
+      "rr_minimo": 1.5,
+      "volumen_relativo_minimo": 0.8,
+      "permitir_buy_strong_en_mercado_debil": false,
+      "max_riesgo_total_abierto_pct": 10.0,
+      "modo_defensivo_drawdown_pct": 12.0,
+      "bloquear_entradas_drawdown_pct": 25.0,
+      "activar_reglas_operativas": true,
+      "usar_exposicion_como_bloqueo": true,
+      "usar_riesgo_abierto_como_bloqueo": true,
+      "usar_drawdown_como_bloqueo": true,
+      "permitir_buy_strong_en_modo_defensivo_drawdown": true,
+      "permitir_buy_strong_sobre_exposicion": false,
+      "permitir_buy_strong_sobre_riesgo": false
     },
     "summary_from_bot": {
       "max_drawdown_pct": 27.55,
@@ -17519,28 +17541,44 @@
     "warnings": [
       "Máximo de posiciones abiertas alcanzado.",
       "Exposición estimada supera el límite configurado.",
-      "Riesgo abierto total elevado."
+      "Riesgo abierto total elevado.",
+      "Diagnóstico general marca riesgo ALTO.",
+      "Reglas operativas V4.4 en modo DEFENSIVO."
     ],
     "can_open_more_positions": false,
     "remaining_position_slots": 0,
     "exposure_pct": 435.27,
-    "open_risk_pct": 17.24
+    "open_risk_pct": 17.24,
+    "operational_rules": {
+      "version": "V4.4",
+      "estado": "DEFENSIVO",
+      "exposicion_abierta_pct": 435.27,
+      "riesgo_abierto_pct": 17.24,
+      "drawdown_pct": 27.55,
+      "max_exposicion_total_pct": 80.0,
+      "max_riesgo_total_abierto_pct": 10.0,
+      "bloqueos_generados": 30,
+      "motivo_principal": "DERIVADO_DE_METRICAS_EXISTENTES",
+      "nota": "Fallback generado desde paper_trading_engine si historial no trae reglas_operativas."
+    }
   },
   "audit": {
-    "updated": "19-06-2026 01:25 PM Colombia",
-    "version": "V4.3",
+    "updated": "19-06-2026 02:37 PM Colombia",
+    "version": "V4.4",
     "mode": "AUDITORIA_BLOQUEOS_EXISTENTES",
     "summary": {
       "blocked_count": 30,
       "buy_candidates_count": 80,
       "open_positions_count": 20,
-      "warnings_count": 3,
+      "warnings_count": 5,
       "main_block_reason": "Máximo de operaciones abiertas alcanzado"
     },
     "warnings": [
       "Máximo de posiciones abiertas alcanzado.",
       "Exposición estimada supera el límite configurado.",
-      "Riesgo abierto total elevado."
+      "Riesgo abierto total elevado.",
+      "Diagnóstico general marca riesgo ALTO.",
+      "Reglas operativas V4.4 en modo DEFENSIVO."
     ],
     "block_reasons": [
       {
@@ -17557,6 +17595,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17567,6 +17611,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17577,6 +17627,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "MEDIO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17587,6 +17643,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "MEDIO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17597,6 +17659,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "MEDIO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17607,6 +17675,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17617,6 +17691,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17627,6 +17707,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17637,6 +17723,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17647,6 +17739,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17657,6 +17755,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17667,6 +17771,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17677,6 +17787,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17687,6 +17803,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17697,6 +17819,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17707,6 +17835,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17717,6 +17851,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17727,6 +17867,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17737,6 +17883,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17747,6 +17899,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17757,6 +17915,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17767,6 +17931,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17777,6 +17947,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17787,6 +17963,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17797,6 +17979,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17807,6 +17995,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17817,6 +18011,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17827,6 +18027,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.66,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17837,6 +18043,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       },
       {
@@ -17847,6 +18059,12 @@
         "reason": "Máximo de operaciones abiertas alcanzado",
         "risk": "BAJO",
         "rr": 1.63,
+        "score": 0.0,
+        "price": 0.0,
+        "exposure_pct": 0.0,
+        "open_risk_pct": 0.0,
+        "drawdown_pct": 0.0,
+        "operational_rule": false,
         "decision": "BLOCKED_BY_EXISTING_RULE"
       }
     ],
@@ -18656,5 +18874,17 @@
       "Este archivo no crea lógica nueva; resume bloqueos ya existentes en historial_senales.json.",
       "Sirve para explicar por qué el bot no abrió compras aunque hubiera señales BUY."
     ]
+  },
+  "operational_rules": {
+    "version": "V4.4",
+    "estado": "DEFENSIVO",
+    "exposicion_abierta_pct": 435.27,
+    "riesgo_abierto_pct": 17.24,
+    "drawdown_pct": 27.55,
+    "max_exposicion_total_pct": 80.0,
+    "max_riesgo_total_abierto_pct": 10.0,
+    "bloqueos_generados": 30,
+    "motivo_principal": "DERIVADO_DE_METRICAS_EXISTENTES",
+    "nota": "Fallback generado desde paper_trading_engine si historial no trae reglas_operativas."
   }
 }

@@ -1,5 +1,12 @@
 # Changelog
 
+## V4.4 Reglas Operativas
+- Exposición, riesgo abierto y drawdown pasan a reglas operativas.
+- Nuevo panel `Reglas operativas V4.4`.
+- Nuevo archivo `paper/paper_operational_rules.json`.
+- No se duplica risk engine; usa métricas existentes.
+
+
 ## V4.3 Auditoría de Bloqueos
 - Nuevo paper_audit.json derivado de nuevas_bloqueadas.
 - Nuevo panel visual para explicar señales bloqueadas.

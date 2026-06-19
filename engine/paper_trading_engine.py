@@ -201,7 +201,13 @@ def _audit_from_historial(historial, resultados, positions, warnings, config):
             "reason": _safe_text(b.get("motivo")),
             "risk": _safe_text(b.get("riesgo")),
             "rr": _round(b.get("rr")),
-            "decision": "BLOCKED_BY_EXISTING_RULE"
+            "score": _round(b.get("score")),
+            "price": _round(b.get("precio")),
+            "exposure_pct": _round(b.get("exposicion_abierta_pct")),
+            "open_risk_pct": _round(b.get("riesgo_abierto_pct")),
+            "drawdown_pct": _round(b.get("drawdown_pct")),
+            "operational_rule": bool(b.get("regla_operativa")),
+            "decision": "BLOCKED_BY_OPERATIONAL_RULE" if b.get("regla_operativa") else "BLOCKED_BY_EXISTING_RULE"
         })
 
     buy_candidates = []
@@ -227,7 +233,7 @@ def _audit_from_historial(historial, resultados, positions, warnings, config):
 
     return {
         "updated": _now_visible(),
-        "version": "V4.3",
+        "version": "V4.4",
         "mode": "AUDITORIA_BLOQUEOS_EXISTENTES",
         "summary": {
             "blocked_count": len(blocked),
@@ -264,6 +270,7 @@ def build_paper_state(historial, resultados, mercado, config):
     risk = dict(resumen.get("riesgo", {}) or {})
     metrics = dict(resumen.get("metricas", {}) or {})
     diagnostico = dict(resumen.get("diagnostico_bot", {}) or {})
+    operational_rules = dict(resumen.get("reglas_operativas", {}) or {})
 
     capital_inicial = _num(config.get("capital_inicial"), _num(sim.get("capital_inicial"), 5000))
     exposure_usd = sum(_num(p.get("market_value_usd")) for p in positions)
@@ -275,6 +282,20 @@ def build_paper_state(historial, resultados, mercado, config):
     exposure_pct = (exposure_usd / capital_inicial * 100) if capital_inicial else 0
     risk_pct = (open_risk_usd / capital_inicial * 100) if capital_inicial else 0
 
+    if not operational_rules:
+        operational_rules = {
+            "version": "V4.4",
+            "estado": "DEFENSIVO" if exposure_pct >= _num(config.get("max_exposicion_total_pct"), 80) or risk_pct >= _num(config.get("max_riesgo_total_abierto_pct"), 10) else "NORMAL",
+            "exposicion_abierta_pct": _round(exposure_pct),
+            "riesgo_abierto_pct": _round(risk_pct),
+            "drawdown_pct": _round(risk.get("max_drawdown_pct", 0)),
+            "max_exposicion_total_pct": _num(config.get("max_exposicion_total_pct"), 80),
+            "max_riesgo_total_abierto_pct": _num(config.get("max_riesgo_total_abierto_pct"), 10),
+            "bloqueos_generados": len(resumen.get("nuevas_bloqueadas", []) or []),
+            "motivo_principal": "DERIVADO_DE_METRICAS_EXISTENTES",
+            "nota": "Fallback generado desde paper_trading_engine si historial no trae reglas_operativas."
+        }
+
     warnings = []
     if len(positions) >= max_positions:
         warnings.append("Máximo de posiciones abiertas alcanzado.")
@@ -282,12 +303,16 @@ def build_paper_state(historial, resultados, mercado, config):
         warnings.append("Exposición estimada supera el límite configurado.")
     if risk_pct > 10:
         warnings.append("Riesgo abierto total elevado.")
-    if diagnostico.get("riesgo") == "ALTO":
+    if diagnostico.get("riesgo") == "ALTO" or diagnostico.get("riesgo_sistema") == "ALTO":
         warnings.append("Diagnóstico general marca riesgo ALTO.")
+    if operational_rules.get("estado") == "BLOQUEADO":
+        warnings.append("Reglas operativas V4.4 en estado BLOQUEADO.")
+    elif operational_rules.get("estado") == "DEFENSIVO":
+        warnings.append("Reglas operativas V4.4 en modo DEFENSIVO.")
 
     portfolio = {
         "updated": _now_visible(),
-        "version": "V4",
+        "version": "V4.4",
         "mode": "PAPER_TRADING_SIMULATED",
         "capital_initial_usd": _round(capital_inicial),
         "cash_model_note": "Cash derivado de simulación histórica; no representa cuenta broker real.",
@@ -305,7 +330,7 @@ def build_paper_state(historial, resultados, mercado, config):
 
     risk_state = {
         "updated": _now_visible(),
-        "version": "V4",
+        "version": "V4.4",
         "mode": "PAPER_TRADING_SIMULATED",
         "market_state": mercado,
         "risk_config": config,
@@ -316,12 +341,13 @@ def build_paper_state(historial, resultados, mercado, config):
         "can_open_more_positions": len(positions) < max_positions,
         "remaining_position_slots": max(max_positions - len(positions), 0),
         "exposure_pct": _round(exposure_pct),
-        "open_risk_pct": _round(risk_pct)
+        "open_risk_pct": _round(risk_pct),
+        "operational_rules": operational_rules
     }
 
     status = {
         "updated": _now_visible(),
-        "version": "V4",
+        "version": "V4.4",
         "engine": "PAPER_TRADING_ENGINE",
         "mode": "PAPER_ONLY_NO_REAL_ORDERS",
         "health": "OK" if not warnings else "WARNING",
@@ -333,6 +359,7 @@ def build_paper_state(historial, resultados, mercado, config):
         "trades_closed": len(trades),
         "signals_available": len(resultados or []),
         "broker_real_enabled": False,
+        "operational_mode": operational_rules.get("estado", "NORMAL"),
         "files": {
             "portfolio": "paper/paper_portfolio.json",
             "orders": "paper/paper_orders.json",
@@ -340,7 +367,8 @@ def build_paper_state(historial, resultados, mercado, config):
             "risk": "paper/paper_risk.json",
             "status": "paper/paper_status.json",
             "state": "paper/paper_state.json",
-            "audit": "paper/paper_audit.json"
+            "audit": "paper/paper_audit.json",
+            "operational_rules": "paper/paper_operational_rules.json"
         }
     }
 
@@ -348,7 +376,7 @@ def build_paper_state(historial, resultados, mercado, config):
 
     state = {
         "updated": _now_visible(),
-        "version": "V4.3",
+        "version": "V4.4",
         "status": status,
         "portfolio": portfolio,
         "orders": {
@@ -362,7 +390,8 @@ def build_paper_state(historial, resultados, mercado, config):
             "trades": trades[-600:]
         },
         "risk": risk_state,
-        "audit": audit
+        "audit": audit,
+        "operational_rules": operational_rules
     }
 
     return state
@@ -378,6 +407,7 @@ def export_paper_state(historial, resultados, mercado, config):
     _write_json(PAPER_DIR / "paper_risk.json", state["risk"])
     _write_json(PAPER_DIR / "paper_status.json", state["status"])
     _write_json(PAPER_DIR / "paper_audit.json", state["audit"])
+    _write_json(PAPER_DIR / "paper_operational_rules.json", state["operational_rules"])
     _write_json(PAPER_DIR / "paper_state.json", state)
 
     return state

@@ -1,6 +1,6 @@
 {
-  "version": "4.2",
-  "name": "BOT-ARQ V4.2 - Configuración Real del Motor",
+  "version": "4.4",
+  "name": "BOT-ARQ V4.4 - Reglas Operativas",
   "mode": "PAPER_TRADING_SIMULATED",
   "data_source": "yfinance",
   "dashboard": {
@@ -24,7 +24,17 @@
     "bloquear_si_perdidas_seguidas": 12,
     "rr_minimo": 1.5,
     "volumen_relativo_minimo": 0.8,
-    "permitir_buy_strong_en_mercado_debil": false
+    "permitir_buy_strong_en_mercado_debil": false,
+    "max_riesgo_total_abierto_pct": 10.0,
+    "modo_defensivo_drawdown_pct": 12.0,
+    "bloquear_entradas_drawdown_pct": 25.0,
+    "activar_reglas_operativas": true,
+    "usar_exposicion_como_bloqueo": true,
+    "usar_riesgo_abierto_como_bloqueo": true,
+    "usar_drawdown_como_bloqueo": true,
+    "permitir_buy_strong_en_modo_defensivo_drawdown": true,
+    "permitir_buy_strong_sobre_exposicion": false,
+    "permitir_buy_strong_sobre_riesgo": false
   },
   "paper_trading": {
     "enabled": true,
@@ -43,8 +53,9 @@
     "force_manual_supported": true
   },
   "notes": [
-    "Este archivo ahora controla CONFIG_SIMULACION en analizador_acciones.py.",
-    "Si este archivo no existe o tiene errores, el bot usa valores por defecto seguros.",
+    "V4.4 convierte métricas existentes en reglas operativas configurables.",
+    "No crea otro motor de riesgo paralelo; usa la simulación y métricas existentes.",
+    "Puede bloquear nuevas entradas por exposición, riesgo abierto o drawdown.",
     "No ejecuta dinero real. Broker real permanece deshabilitado."
   ]
 }

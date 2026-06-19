@@ -1,13 +1,16 @@
 {
-  "version_actual": "V4.3",
-  "nombre": "BOT-ARQv4_3_AUDITORIA_BLOQUEOS",
-  "base": "BOT-ARQ V4.2",
-  "fecha_generacion": "2026-06-19 18:25:50 UTC",
+  "version_actual": "V4.4",
+  "nombre": "BOT-ARQv4_4_REGLAS_OPERATIVAS",
+  "base": "V4.3_AUDITORIA_BLOQUEOS",
+  "fecha_generacion": "2026-06-19 19:37:02 UTC",
   "cambios": [
-    "Exporta paper/paper_audit.json basado en nuevas_bloqueadas existentes.",
-    "Dashboard muestra auditoría de señales bloqueadas.",
-    "No duplica motor de riesgo ni paper trading.",
-    "Incluye V4.2.1 y V4.2.2."
+    "Convierte exposición abierta en regla operativa de bloqueo.",
+    "Convierte riesgo abierto total en regla operativa de bloqueo.",
+    "Convierte drawdown en regla operativa defensiva/bloqueante.",
+    "Agrega resumen de reglas operativas al historial.",
+    "Agrega paper_operational_rules.json.",
+    "Actualiza dashboard con panel de reglas operativas.",
+    "Mantiene las señales, paper trading, auditoría y dashboard previos."
   ],
-  "siguiente_version_recomendada": "V4.4 Reglas operativas con métricas existentes"
+  "siguiente_version_recomendada": "V4.5 Position Sizing Pro"
 }

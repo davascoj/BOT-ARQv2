@@ -17,6 +17,8 @@ let benchmarkBot = {};
 let resumenDiario = [];
 let paperTradingV4 = null;
 let paperAuditV43 = null;
+    operationalRulesV44 = null;
+let operationalRulesV44 = null;
 let renderLazyInicializado = false;
 let rankingRenderizado = false;
 let historialRenderizado = false;
@@ -90,6 +92,7 @@ async function cargarDatos() {
     pintarResumen();
     pintarDashboardEjecutivo();
     pintarAlertasEjecutivas();
+    pintarReglasOperativasV44();
     pintarAuditoriaBloqueos();
     renderTopOportunidades();
     pintarHistorialResumen();
@@ -952,10 +955,37 @@ async function cargarPaperTradingV4() {
     if (!resp.ok) throw new Error("No existe paper_state.json");
     paperTradingV4 = await resp.json();
     paperAuditV43 = paperTradingV4.audit || null;
+    operationalRulesV44 = paperTradingV4.operational_rules || paperTradingV4.risk?.operational_rules || null;
   } catch (e) {
     paperTradingV4 = null;
     paperAuditV43 = null;
+    operationalRulesV44 = null;
   }
+}
+
+
+
+function pintarReglasOperativasV44() {
+  const box = document.getElementById("operationalRulesResumen");
+  const badge = document.getElementById("operationalRulesBadge");
+  if (!box) return;
+  if (!operationalRulesV44) {
+    box.innerHTML = `<div class="metric-box">Reglas operativas pendientes. Se llenarán en la próxima ejecución del bot.</div>`;
+    if (badge) { badge.textContent = "Pendiente"; badge.className = "mode-badge v4-badge warning"; }
+    return;
+  }
+  const estado = operationalRulesV44.estado || "NORMAL";
+  if (badge) { badge.textContent = estado; badge.className = "mode-badge v4-badge " + (estado === "NORMAL" ? "ok" : "warning"); }
+  const reglas = operationalRulesV44.reglas_activas || {};
+  box.innerHTML = `
+    <div class="metric-box"><strong>${safe(estado)}</strong><span>estado operativo</span></div>
+    <div class="metric-box"><strong>${numero(operationalRulesV44.exposicion_abierta_pct ?? 0)}%</strong><span>exposición actual / máx ${numero(operationalRulesV44.max_exposicion_total_pct ?? 0)}%</span></div>
+    <div class="metric-box"><strong>${numero(operationalRulesV44.riesgo_abierto_pct ?? 0)}%</strong><span>riesgo abierto / máx ${numero(operationalRulesV44.max_riesgo_total_abierto_pct ?? 0)}%</span></div>
+    <div class="metric-box"><strong>${numero(operationalRulesV44.drawdown_pct ?? 0)}%</strong><span>drawdown máx. bloqueo ${numero(operationalRulesV44.bloquear_entradas_drawdown_pct ?? 0)}%</span></div>
+    <div class="metric-box"><strong>${safe(operationalRulesV44.bloqueos_generados ?? 0)}</strong><span>bloqueos generados</span></div>
+    <div class="metric-box"><strong>${safe(operationalRulesV44.motivo_principal || "SIN BLOQUEOS")}</strong><span>motivo principal</span></div>
+    <div class="metric-box"><strong>${reglas.exposicion ? "ON" : "OFF"}</strong><span>bloqueo exposición</span></div>
+    <div class="metric-box"><strong>${reglas.drawdown ? "ON" : "OFF"}</strong><span>bloqueo drawdown</span></div>`;
 }
 
 
@@ -997,7 +1027,7 @@ function pintarAuditoriaBloqueos() {
       <td><span class="bot-badge ${claseBot(b.signal)}">${safe(b.signal)}</span></td>
       <td><span class="badge ${String(b.risk || "").toLowerCase()}">${safe(b.risk)}</span></td>
       <td class="num">${numero(b.rr ?? 0, 2)}</td>
-      <td>${safe(b.reason)}</td>
+      <td>${b.operational_rule ? '<span class="op-rule-dot">OP</span> ' : ''}${safe(b.reason)}</td>
       <td>${safe(b.date)}</td>
     </tr>
   `).join("");
