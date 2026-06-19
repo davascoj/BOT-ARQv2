@@ -1,12 +1,19 @@
 {
   "version": "V4.4",
-  "estado": "DEFENSIVO",
-  "exposicion_abierta_pct": 435.27,
-  "riesgo_abierto_pct": 17.24,
+  "estado": "BLOQUEADO",
+  "exposicion_abierta_pct": 369.54,
+  "riesgo_abierto_pct": 14.61,
   "drawdown_pct": 27.55,
   "max_exposicion_total_pct": 80.0,
   "max_riesgo_total_abierto_pct": 10.0,
-  "bloqueos_generados": 30,
-  "motivo_principal": "DERIVADO_DE_METRICAS_EXISTENTES",
-  "nota": "Fallback generado desde paper_trading_engine si historial no trae reglas_operativas."
+  "modo_defensivo_drawdown_pct": 12.0,
+  "bloquear_entradas_drawdown_pct": 25.0,
+  "bloqueos_generados": 85,
+  "motivo_principal": "Máximo de operaciones abiertas alcanzado",
+  "reglas_activas": {
+    "exposicion": true,
+    "riesgo_abierto": true,
+    "drawdown": true
+  },
+  "nota": "V4.4 usa métricas existentes como reglas operativas de entrada. No duplica el motor de riesgo."
 }
