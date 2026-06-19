@@ -586,3 +586,82 @@ td small {
   color: #cbd5e1;
   font-size: 12px;
 }
+
+
+/* ================================
+   BOT-ARQ V4 PAPER TRADING ENGINE
+   ================================ */
+.paper-v4-card {
+  border-color: rgba(56, 189, 248, 0.45);
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 34%),
+    #0f172a;
+}
+
+.paper-v4-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  padding: 0 14px 14px;
+}
+
+.paper-v4-grid .metric-box,
+.metric-box {
+  background: #0b1220;
+  border: 1px solid #263247;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.paper-v4-grid strong,
+.metric-box strong {
+  display: block;
+  color: #67e8f9;
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.paper-v4-grid span,
+.metric-box span {
+  display: block;
+  color: #cbd5e1;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-top: 5px;
+}
+
+.v4-badge {
+  background: #0f172a;
+  color: #dbeafe;
+  border: 1px solid #334155;
+}
+
+.v4-badge.ok {
+  background: #064e3b;
+  color: #a7f3d0;
+  border-color: rgba(34, 197, 94, .45);
+}
+
+.v4-badge.warning {
+  background: #78350f;
+  color: #fde68a;
+  border-color: rgba(245, 158, 11, .45);
+}
+
+.paper-v4-warnings {
+  padding: 0 16px 16px;
+  color: #fde68a;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.paper-v4-warnings ul {
+  margin: 8px 0 0 18px;
+  padding: 0;
+}
+
+.paper-ok {
+  color: #a7f3d0;
+  font-weight: 800;
+}

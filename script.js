@@ -15,6 +15,7 @@ let peoresOperaciones = [];
 let diagnosticoBot = {};
 let benchmarkBot = {};
 let resumenDiario = [];
+let paperTradingV4 = null;
 const AUTO_REFRESH_MS = 60 * 1000;
 let autoRefreshActivo = true;
 
@@ -75,6 +76,7 @@ async function cargarDatos() {
     mejoresOperaciones = historialResumen.mejores_operaciones || [];
     peoresOperaciones = historialResumen.peores_operaciones || [];
     diagnosticoBot = historialResumen.diagnostico_bot || {};
+    await cargarPaperTradingV4();
 
     const historialFecha = document.getElementById("historialFecha");
     if (historialFecha) historialFecha.textContent = "Actualizado: " + (data.historial?.actualizado || data.actualizado || "sin fecha");
@@ -84,6 +86,7 @@ async function cargarDatos() {
     renderTabla();
     pintarHistorialResumen();
     pintarPanelProfesional();
+    pintarPaperTradingV4();
     dibujarEquityCurve();
     renderTablasAvanzadas();
     renderCarteraAbierta();
@@ -683,3 +686,85 @@ function actualizarAvisoSistemaARQ() {
 
 actualizarAvisoSistemaARQ();
 setInterval(actualizarAvisoSistemaARQ, 30000);
+
+
+
+async function cargarPaperTradingV4() {
+  try {
+    const resp = await fetch("paper/paper_state.json?nocache=" + Date.now());
+    if (!resp.ok) throw new Error("No existe paper_state.json");
+    paperTradingV4 = await resp.json();
+  } catch (e) {
+    paperTradingV4 = null;
+  }
+}
+
+function pintarPaperTradingV4() {
+  const box = document.getElementById("paperV4Resumen");
+  const health = document.getElementById("paperV4Health");
+  const warnings = document.getElementById("paperV4Warnings");
+
+  if (!box) return;
+
+  if (!paperTradingV4 || !paperTradingV4.status) {
+    box.innerHTML = `<div class="metric-box">Motor V4 pendiente. Espera la próxima ejecución de GitHub Actions.</div>`;
+    if (health) {
+      health.textContent = "V4 pendiente";
+      health.className = "mode-badge v4-badge warning";
+    }
+    if (warnings) warnings.innerHTML = "";
+    return;
+  }
+
+  const status = paperTradingV4.status || {};
+  const portfolio = paperTradingV4.portfolio || {};
+  const risk = paperTradingV4.risk || {};
+  const warningList = status.warnings || [];
+
+  if (health) {
+    health.textContent = `${status.health || "OK"} · ${status.mode || "PAPER"}`;
+    health.className = "mode-badge v4-badge " + ((status.health || "OK") === "OK" ? "ok" : "warning");
+  }
+
+  box.innerHTML = `
+    <div class="metric-box">
+      <strong>${safe(status.positions_open ?? 0)}</strong>
+      <span>posiciones paper abiertas</span>
+    </div>
+    <div class="metric-box">
+      <strong>${safe(status.orders_total ?? 0)}</strong>
+      <span>órdenes simuladas</span>
+    </div>
+    <div class="metric-box">
+      <strong>${safe(status.trades_closed ?? 0)}</strong>
+      <span>trades cerrados</span>
+    </div>
+    <div class="metric-box">
+      <strong>$${numero(portfolio.exposure_usd ?? 0, 2)}</strong>
+      <span>exposición paper</span>
+    </div>
+    <div class="metric-box">
+      <strong>$${numero(portfolio.open_risk_usd ?? 0, 2)}</strong>
+      <span>riesgo abierto paper</span>
+    </div>
+    <div class="metric-box">
+      <strong>$${numero(portfolio.total_pnl_usd_estimated ?? 0, 2)}</strong>
+      <span>G/P total estimada</span>
+    </div>
+    <div class="metric-box">
+      <strong>${numero(risk.remaining_position_slots ?? 0, 0)}</strong>
+      <span>cupos disponibles</span>
+    </div>
+    <div class="metric-box">
+      <strong>${safe(status.broker_real_enabled ? "ON" : "OFF")}</strong>
+      <span>broker real</span>
+    </div>
+  `;
+
+  if (warnings) {
+    warnings.innerHTML = warningList.length
+      ? `<strong>Alertas V4:</strong><ul>${warningList.map(w => `<li>${safe(w)}</li>`).join("")}</ul>`
+      : `<span class="paper-ok">Sin alertas críticas del motor V4.</span>`;
+  }
+}
+

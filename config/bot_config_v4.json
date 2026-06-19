@@ -1,0 +1,17 @@
+{
+  "version": "4.0-paper-trading-engine",
+  "modo": "PAPER_TRADING_SIMULADO",
+  "descripcion": "Formaliza el paper trading actual como motor profesional de ejecución simulada sin broker real.",
+  "capital_inicial": 5000.0,
+  "broker_real_habilitado": false,
+  "paper_trading": {
+    "generar_archivos_paper": true,
+    "archivo_portfolio": "paper/paper_portfolio.json",
+    "archivo_orders": "paper/paper_orders.json",
+    "archivo_trades": "paper/paper_trades.json",
+    "archivo_risk": "paper/paper_risk.json",
+    "archivo_status": "paper/paper_status.json",
+    "archivo_state": "paper/paper_state.json"
+  },
+  "proximo_paso": "Integrar broker adapter en modo paper con Alpaca/IBKR cuando el motor tenga meses de validación."
+}

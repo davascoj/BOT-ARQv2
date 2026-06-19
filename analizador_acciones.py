@@ -11,6 +11,19 @@ ZONA_HORARIA = ZoneInfo("America/Bogota")
 HISTORIAL_FILE = "historial_senales.json"
 HISTORIAL_XLSX = "historial_senales.xlsx"
 
+# ============================================================
+# BOT-ARQ V4 - PAPER TRADING ENGINE
+# Exporta el estado del paper trading a archivos JSON separados,
+# sin ejecutar órdenes reales ni romper la simulación existente.
+# ============================================================
+try:
+    from engine.paper_trading_engine import export_paper_state
+except Exception as e:
+    export_paper_state = None
+    PAPER_ENGINE_IMPORT_ERROR = str(e)
+else:
+    PAPER_ENGINE_IMPORT_ERROR = ""
+
 ACCIONES_INFO = {
     # Tecnología, IA y software
     "NVDA": "IA / Chips", "AMD": "IA / Chips", "MSFT": "Tecnología",
@@ -1664,10 +1677,26 @@ def main():
     historial = actualizar_historial(historial, resultados, mercado)
     guardar_historial(historial)
 
+    paper_state = None
+    if export_paper_state:
+        try:
+            paper_state = export_paper_state(historial, resultados, mercado, CONFIG_SIMULACION)
+            print("PAPER TRADING V4 EXPORTADO")
+        except Exception as e:
+            print("ADVERTENCIA: no se pudo exportar paper trading V4:", e)
+    else:
+        print("ADVERTENCIA: paper trading engine V4 no disponible:", PAPER_ENGINE_IMPORT_ERROR)
+
     salida = {
         "actualizado": fecha_visible(),
+        "version_bot": "V4 PAPER TRADING ENGINE",
         "contexto_mercado": mercado,
         "resultados": resultados,
+        "paper_trading": paper_state.get("status", {}) if paper_state else {
+            "version": "V4",
+            "health": "NO_EXPORT",
+            "error": PAPER_ENGINE_IMPORT_ERROR
+        },
         "historial": {
             "actualizado": historial.get("actualizado", ""),
             "resumen": historial.get("resumen", {}),

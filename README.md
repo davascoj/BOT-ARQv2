@@ -1,8 +1,8 @@
-# BOT-ARQ v3 - Real migrado desde V2
+# BOT-ARQ v4 - Paper Trading Engine
 
 Sistema automatizado de análisis técnico, señales simuladas y seguimiento de cartera.
 
-Esta versión V3 conserva el motor real de V2 y agrega estructura profesional para evolucionar hacia:
+Esta versión V4 conserva el motor real de V2 y agrega estructura profesional para evolucionar hacia:
 - arquitectura modular
 - risk engine más fuerte
 - paper trading
@@ -50,3 +50,24 @@ Ver:
 
 - `docs/PASO_A_PASO_IMPLEMENTACION.md`
 - `docs/ARQUITECTURA_V3.md`
+
+
+---
+
+## V4 Paper Trading Engine
+
+V4 formaliza el paper trading actual.
+
+Archivos principales nuevos:
+
+- `engine/paper_trading_engine.py`
+- `paper/paper_portfolio.json`
+- `paper/paper_orders.json`
+- `paper/paper_trades.json`
+- `paper/paper_risk.json`
+- `paper/paper_status.json`
+- `paper/paper_state.json`
+- `docs/V4_PAPER_TRADING_ENGINE.md`
+- `docs/PASO_A_PASO_V4.md`
+
+El bot sigue en modo simulación. No ejecuta órdenes reales.
