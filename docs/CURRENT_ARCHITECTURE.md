@@ -20,7 +20,7 @@ GitHub Actions (cada 5 min, mercado abierto) → `analizador_acciones.py` → ca
 | `paper/paper_state.json` (ligero) | ✅ | — | ✅ |
 | `historial_senales.json` | — | ✅ (lo lee al arrancar) | ✅ |
 | `paper/paper_orders.json`, `paper_trades.json`, etc. | — | — | ✅ (auditoría) |
-| `*.xlsx` | — | — | ⚠️ recomendado no versionar |
+| `*.xlsx` | — | — | ❌ no versionado (opt-in `BOT_ARQ_EXPORT_XLSX=1`) |
 
 ## Notas de diseño
 

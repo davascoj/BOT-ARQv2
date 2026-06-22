@@ -11,6 +11,10 @@ ZONA_HORARIA = ZoneInfo("America/Bogota")
 HISTORIAL_FILE = "historial_senales.json"
 HISTORIAL_XLSX = "historial_senales.xlsx"
 
+# Reportes Excel: OFF por defecto para no versionar binarios pesados en CI/GitHub.
+# Los datos viven en los JSON. Para generarlos localmente: BOT_ARQ_EXPORT_XLSX=1
+EXPORT_XLSX = os.getenv("BOT_ARQ_EXPORT_XLSX", "0").strip().lower() in ("1", "true", "yes", "on")
+
 # ============================================================
 # BOT-ARQ V4 - PAPER TRADING ENGINE
 # Exporta el estado del paper trading a archivos JSON separados,
@@ -1795,6 +1799,8 @@ def guardar_historial(historial):
         "max_exposicion_total_pct": CONFIG_SIMULACION.get("max_exposicion_total_pct"),
     }]
 
+    if not EXPORT_XLSX:
+        return
     with pd.ExcelWriter(HISTORIAL_XLSX, engine="openpyxl") as writer:
         df_ops.to_excel(writer, sheet_name="Historial completo", index=False)
         _df_limpio(resumen.get("resumen_diario", [])).to_excel(writer, sheet_name="Resumen diario", index=False)
@@ -1893,7 +1899,8 @@ def main():
     with open("datos_acciones.json", "w", encoding="utf-8") as f:
         json.dump(salida, f, ensure_ascii=False, indent=2)
 
-    pd.DataFrame(resultados).to_excel("analisis_acciones.xlsx", index=False)
+    if EXPORT_XLSX:
+        pd.DataFrame(resultados).to_excel("analisis_acciones.xlsx", index=False)
 
     print("ARCHIVOS GENERADOS")
 

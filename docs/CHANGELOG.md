@@ -1,7 +1,7 @@
 # Changelog
 
 ## V4.4.5 Limpieza de repositorio y documentación
-- Recomendación: dejar de versionar los reportes `*.xlsx` (binarios, no usados por la web; causan conflictos en GitHub Desktop). **Pendiente de un cambio manual en el workflow** (el bot no tiene permiso para editar `.github/workflows/`): quitar `analisis_acciones.xlsx` e `historial_senales.xlsx` del bucle `git add`, añadir `*.xlsx` a `.gitignore` y hacer `git rm --cached` de ambos.
+- Reportes `*.xlsx` ahora **opt-in** (`BOT_ARQ_EXPORT_XLSX=1`): por defecto el motor no los genera, así CI deja de commitear binarios que causaban conflictos en GitHub Desktop. Se quitaron del versionado con `git rm --cached` y se añadió `*.xlsx` a `.gitignore`. No requiere editar el workflow (si el archivo no existe, el paso `git add` simplemente lo omite).
 - `historial_senales.json` se conserva versionado: es el estado persistente que el motor lee entre corridas.
 - Archiva la documentación obsoleta de instalación por ZIP en `docs/archive/`.
 - README reescrito; ROADMAP y CURRENT_ARCHITECTURE actualizados a la arquitectura real.

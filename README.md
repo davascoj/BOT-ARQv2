@@ -62,7 +62,7 @@ El **dashboard solo consume dos archivos**: `datos_acciones.json` y `paper/paper
 ### Datos generados
 
 - **Se versionan:** `datos_acciones.json`, `historial_senales.json` (estado persistente del motor) y `paper/*.json`.
-- **`*.xlsx`:** se generan en cada corrida pero la web no los usa. **Recomendado dejar de versionarlos** (requiere una edición manual del workflow; ver `docs/CHANGELOG.md`).
+- **`*.xlsx`:** ya **no se generan ni se versionan** en CI (la web usa los JSON). Para generarlos localmente: `BOT_ARQ_EXPORT_XLSX=1 python analizador_acciones.py`.
 - **No editar a mano** ningún archivo generado: los reescribe GitHub Actions.
 
 ---

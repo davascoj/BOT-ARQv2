@@ -16,7 +16,7 @@
     "Debounce en busquedas; panel de diagnostico de carga visible.",
     "paper_state.json ligero: sin arrays orders/trades (su detalle vive en paper_orders.json y paper_trades.json). Solo serializacion; no toca el risk engine.",
     "Coherencia de version en HTML, JS, config y motor (version_bot).",
-    "Recomendado dejar de versionar los XLSX (binarios no usados por la web); pendiente de una edicion manual del workflow. historial_senales.json se conserva por ser estado persistente del motor."
+    "Reportes XLSX ahora opt-in (BOT_ARQ_EXPORT_XLSX=1): por defecto no se generan ni se versionan; quitados con git rm --cached y agregados a .gitignore. historial_senales.json se conserva por ser estado persistente del motor."
   ],
   "no_toca": [
     "engine/paper_trading_engine.py (logica de riesgo)",
