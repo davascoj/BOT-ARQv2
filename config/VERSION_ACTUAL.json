@@ -1,14 +1,28 @@
 {
-  "version_actual": "V4.4.1",
-  "nombre": "BOT-ARQv4_4_1_HOTFIX_CARGANDO",
-  "base": "V4.4_REGLAS_OPERATIVAS",
-  "fecha_generacion": "2026-06-19 20:31:15 UTC",
-  "cambios": [
-    "Corrige error JavaScript que dejaba todo el dashboard en Cargando.",
-    "Elimina asignación accidental de operationalRulesV44 antes de su declaración.",
-    "Agrega protección por secciones para que un error visual no bloquee toda la página.",
-    "Mantiene intacto el motor V4.4 de reglas operativas."
+  "version_actual": "V4.4.5",
+  "nombre": "BOT-ARQ_V4_4_5_DASHBOARD_PROFESIONAL",
+  "base": "V4.4.1_HOTFIX_CARGANDO",
+  "fecha_generacion": "2026-06-22",
+  "incluye": [
+    "V4.4.3 Profesionalizacion visual base",
+    "V4.4.4 Rendimiento y refresh inteligente",
+    "V4.4.5 Limpieza de repositorio y documentacion"
   ],
-  "siguiente_version_recomendada": "V4.4.2 Ticker Health Filter",
-  "tipo": "HOTFIX"
+  "cambios": [
+    "Nuevo layout A-H: barra superior compacta, panel ejecutivo, estado de mercado, reglas operativas con barras, alertas, top oportunidades (con R/R), cartera abierta, auditoria de bloqueos y vistas avanzadas.",
+    "Elimina metricas duplicadas entre paneles; broker/modo/version viven solo en la barra superior.",
+    "Cache-busting por version para script.js y style.css; bucket de 5 minutos para los datos.",
+    "Refresh inteligente cada 5 minutos y omision de repintado si no cambio la fecha de datos.",
+    "Debounce en busquedas; panel de diagnostico de carga visible.",
+    "paper_state.json ligero: sin arrays orders/trades (su detalle vive en paper_orders.json y paper_trades.json). Solo serializacion; no toca el risk engine.",
+    "Coherencia de version en HTML, JS, config y motor (version_bot).",
+    "Recomendado dejar de versionar los XLSX (binarios no usados por la web); pendiente de una edicion manual del workflow. historial_senales.json se conserva por ser estado persistente del motor."
+  ],
+  "no_toca": [
+    "engine/paper_trading_engine.py (logica de riesgo)",
+    "Reglas operativas V4.4",
+    "Broker real (sigue OFF)"
+  ],
+  "siguiente_version_recomendada": "V4.5 Position Sizing Pro",
+  "tipo": "MEJORA_VISUAL_RENDIMIENTO_LIMPIEZA"
 }

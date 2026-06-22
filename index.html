@@ -3,90 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BOT-ARQ V4.4.1 · Hotfix Dashboard</title>
-  <link rel="stylesheet" href="style.css"/>
+  <title>BOT-ARQ V4.4.5 · Dashboard</title>
+  <link rel="stylesheet" href="style.css?v=4.4.5"/>
 </head>
 
 <body>
   <main class="container">
-    <section class="hero hero-v41">
-      <div class="hero-main">
-        <div>
-          <p class="eyebrow">BOT-ARQ V4.4.1 · Hotfix Dashboard</p>
-          <h1>Paper Trading Engine</h1>
-          <p class="hero-copy">
-            Motor automatizado de señales, simulación de operaciones, control de cartera paper y seguimiento de riesgo.
-            GitHub Actions actualiza el sistema y GitHub Pages muestra el panel operativo.
-          </p>
-        </div>
 
-        <div class="hero-status">
-          <div id="marketStatusBadge" class="market-status-badge market-off">
-            <span class="market-status-dot"></span>
-            <span id="marketStatusText">sistema off</span>
-          </div>
-          <div class="market-box" id="marketBox">Mercado: cargando...</div>
-        </div>
+    <!-- ============ A. BARRA SUPERIOR COMPACTA ============ -->
+    <header class="topbar-global">
+      <div class="tb-brand">
+        <span class="tb-logo">BOT-ARQ</span>
+        <span class="tb-version" id="tbVersion">V4.4.5</span>
+        <span class="tb-tag tb-paper" id="tbModo">MODO PAPER</span>
+        <span class="tb-tag tb-broker" id="tbBroker">BROKER REAL OFF</span>
       </div>
 
-      <div class="buttons">
-        <button onclick="cargarDatos()">Actualizar vista ahora</button>
-        <button onclick="ejecutarAnalisis()">Abrir GitHub Actions</button>
-        <button onclick="mostrarTop4()">Top 4 para mañana</button>
-        <button onclick="scrollHistorial()">Ver historial</button>
-      </div>
-
-      <div id="autoRefreshInfo" class="auto-refresh-info">
-        La vista se refresca sola cada 60 segundos. GitHub Actions actualiza datos cada 5 minutos en horario de mercado.
-      </div>
-
-      <details class="filter-panel">
-        <summary>Filtros y búsqueda avanzada</summary>
-        <div class="filtros">
-          <button onclick="filtrarSector('TODOS')">Todos</button>
-          <button onclick="filtrarSector('IA')">IA</button>
-          <button onclick="filtrarSector('Chips')">Chips</button>
-          <button onclick="filtrarSector('Trading')">Trading</button>
-          <button onclick="filtrarSector('Energía')">Energía</button>
-          <button onclick="filtrarSector('Tecnología')">Tecnología</button>
-          <button onclick="filtrarSector('Salud')">Salud</button>
-          <button onclick="filtrarSector('Consumo')">Consumo</button>
-          <button onclick="filtrarSector('Industrial')">Industrial</button>
-          <button onclick="filtrarSector('Defensa')">Defensa</button>
-          <button onclick="filtrarSector('ETF')">ETF</button>
-          <button onclick="filtrarSector('Robótica')">Robótica</button>
-
-          <input
-            type="text"
-            id="buscarAccion"
-            placeholder="Buscar acción: NVDA, AMD, TSLA..."
-            oninput="renderTabla()"
-          />
-
-          <button onclick="limpiarBusqueda()">Quitar filtro</button>
-
-          <label><input type="checkbox" id="soloCompra" onchange="renderTabla()"> Solo compra</label>
-          <label><input type="checkbox" id="soloHot" onchange="renderTabla()"> Solo HOT</label>
-          <label><input type="checkbox" id="ocultarAlto" onchange="renderTabla()"> Ocultar riesgo alto</label>
+      <div class="tb-meta">
+        <div id="marketStatusBadge" class="market-status-badge market-off">
+          <span class="market-status-dot"></span>
+          <span id="marketStatusText">sistema off</span>
         </div>
-      </details>
-    </section>
+        <span class="tb-update" id="fecha">Cargando...</span>
+        <span class="tb-load" id="loadStatus">Cargando datos...</span>
+      </div>
 
+      <div class="tb-actions">
+        <button onclick="actualizarManual()">Actualizar</button>
+        <button class="btn-ghost" onclick="ejecutarAnalisis()">GitHub Actions</button>
+        <button class="btn-ghost" onclick="mostrarTop4()">Top 4</button>
+        <button class="btn-ghost" onclick="scrollHistorial()">Historial</button>
+      </div>
+    </header>
+
+    <div id="autoRefreshInfo" class="auto-refresh-info">
+      La vista se refresca sola cada 5 minutos. GitHub Actions actualiza los datos cada 5 minutos en horario de mercado.
+    </div>
+
+    <!-- ============ B. PANEL EJECUTIVO ============ -->
     <section class="card executive-card">
       <div class="topbar">
         <div>
           <h2>Panel ejecutivo</h2>
-          <span>Estado rápido del mercado, del bot y de la cartera paper.</span>
+          <span>Estado rápido de capital, cartera paper y riesgo.</span>
         </div>
-        <span id="fecha">Cargando...</span>
       </div>
       <div class="executive-grid" id="dashboardEjecutivo">
         <div class="metric-box">Cargando panel ejecutivo...</div>
       </div>
     </section>
 
-    <section class="card alert-card">
+    <!-- ============ C. ESTADO DEL MERCADO ============ -->
+    <section class="card market-card" id="marketCard">
       <div class="topbar">
+        <div>
+          <h2>Estado del mercado</h2>
+          <span id="marketBox">Mercado: cargando...</span>
+        </div>
+        <span class="mode-badge" id="marketBadge">—</span>
+      </div>
+      <div class="market-grid" id="marketGrid">
+        <div class="metric-box">Cargando mercado...</div>
+      </div>
+    </section>
+
+    <!-- ============ D. REGLAS OPERATIVAS V4.4 ============ -->
+    <section class="card operational-card" id="reglasOperativasCard">
+      <div class="topbar">
+        <div>
+          <h2>Reglas operativas V4.4</h2>
+          <span>Exposición, riesgo abierto y drawdown convertidos en decisiones de entrada.</span>
+        </div>
+        <span class="mode-badge v4-badge" id="operationalRulesBadge">Cargando...</span>
+      </div>
+      <div class="operational-grid" id="operationalRulesResumen">
+        <div class="metric-box">Cargando reglas operativas...</div>
+      </div>
+      <div class="rules-note" id="operationalRulesMotivo"></div>
+    </section>
+
+    <!-- ============ ALERTAS OPERATIVAS (franja siempre visible) ============ -->
+    <section class="card alert-card">
+      <div class="topbar compact-topbar">
         <div>
           <h2>Alertas operativas</h2>
           <span>Riesgo, exposición, drawdown y restricciones del bot.</span>
@@ -95,72 +93,7 @@
       <div id="alertasEjecutivas" class="alerts-list">Cargando alertas...</div>
     </section>
 
-
-    <section class="card operational-card" id="reglasOperativasCard">
-      <div class="topbar">
-        <div>
-          <h2>Reglas operativas V4.4</h2>
-          <span>Convierte exposición, riesgo abierto y drawdown en decisiones operativas reales.</span>
-        </div>
-        <span class="mode-badge v4-badge" id="operationalRulesBadge">Cargando...</span>
-      </div>
-      <div class="operational-grid" id="operationalRulesResumen">
-        <div class="metric-box">Cargando reglas operativas...</div>
-      </div>
-    </section>
-
-    <section class="card audit-card" id="auditoriaBloqueosCard">
-      <div class="topbar">
-        <div>
-          <h2>Auditoría de bloqueos</h2>
-          <span>Explica señales BUY que el bot no abrió por filtros existentes y reglas operativas V4.4.</span>
-        </div>
-        <span class="mode-badge warning" id="auditBadge">Auditoría V4.4</span>
-      </div>
-      <div class="audit-summary" id="auditSummary">Cargando auditoría...</div>
-      <div class="table-wrap">
-        <table class="compact-table">
-          <thead>
-            <tr>
-              <th>Ticker</th>
-              <th>Señal</th>
-              <th>Riesgo</th>
-              <th>R/R</th>
-              <th>Motivo</th>
-              <th>Fecha</th>
-            </tr>
-          </thead>
-          <tbody id="tablaBloqueos"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section class="card paper-v4-card" id="paperTradingV4Card">
-      <div class="topbar">
-        <div>
-          <h2>Paper Trading Engine</h2>
-          <span>Órdenes, cartera y riesgo simulados en archivos JSON separados. Sin dinero real.</span>
-        </div>
-        <span class="mode-badge v4-badge" id="paperV4Health">V4 cargando...</span>
-      </div>
-
-      <div class="paper-v4-grid" id="paperV4Resumen">
-        <div class="metric-box">Cargando motor paper trading...</div>
-      </div>
-
-      <div class="paper-v4-warnings" id="paperV4Warnings"></div>
-    </section>
-
-    <section class="card summary-card">
-      <div class="topbar compact-topbar">
-        <div>
-          <h2>Señales rápidas</h2>
-          <span>Resumen técnico sin entrar todavía al ranking completo.</span>
-        </div>
-      </div>
-      <div class="summary" id="resumen">Cargando resumen...</div>
-    </section>
-
+    <!-- ============ E. TOP OPORTUNIDADES ============ -->
     <section class="card" id="topOportunidadesCard">
       <div class="topbar">
         <div>
@@ -174,13 +107,14 @@
             <tr>
               <th>Ticker</th>
               <th>Sector</th>
-              <th>Precio</th>
+              <th class="num">Precio</th>
               <th>Bot / Señal</th>
               <th>Score</th>
               <th>Riesgo</th>
-              <th>Entrada</th>
-              <th>Stop</th>
-              <th>Objetivo</th>
+              <th class="num">Entrada</th>
+              <th class="num">Stop</th>
+              <th class="num">Objetivo</th>
+              <th class="num" title="Relación riesgo/recompensa.">R/R</th>
               <th>Acción sugerida</th>
             </tr>
           </thead>
@@ -189,27 +123,28 @@
       </div>
     </section>
 
+    <!-- ============ F. CARTERA ABIERTA ============ -->
     <section class="card" id="carteraAbiertaCard">
       <div class="topbar">
         <div>
           <h2>Cartera abierta simulada</h2>
-          <span>Vista resumida: ganancia, stop, objetivo y señal actual.</span>
+          <span>Posiciones paper abiertas: entrada, precio actual, G/P, stop, objetivo y riesgo.</span>
         </div>
       </div>
       <div class="table-wrap">
         <table class="compact-table">
           <thead>
             <tr>
-              <th>Acción</th>
+              <th>Ticker</th>
               <th>Sector</th>
-              <th>Valor cartera</th>
-              <th>G/P USD</th>
-              <th>G/P %</th>
-              <th>Pérdida máx. stop</th>
-              <th>Dist. objetivo</th>
-              <th>Dist. stop</th>
-              <th>Score</th>
-              <th>Bot actual</th>
+              <th class="num">Entrada</th>
+              <th class="num">Precio actual</th>
+              <th class="num">G/P USD</th>
+              <th class="num">G/P %</th>
+              <th class="num">Stop</th>
+              <th class="num">Objetivo</th>
+              <th class="num" title="Pérdida máxima estimada si toca el stop.">Riesgo USD</th>
+              <th>Señal actual</th>
             </tr>
           </thead>
           <tbody id="tablaCarteraAbierta"></tbody>
@@ -217,19 +152,47 @@
       </div>
     </section>
 
+    <!-- ============ G. AUDITORÍA DE BLOQUEOS ============ -->
+    <section class="card audit-card" id="auditoriaBloqueosCard">
+      <div class="topbar">
+        <div>
+          <h2>Auditoría de bloqueos</h2>
+          <span>Señales BUY que el bot no abrió, por filtros existentes y reglas operativas V4.4.</span>
+        </div>
+        <span class="mode-badge warning" id="auditBadge">Auditoría V4.4</span>
+      </div>
+      <div class="audit-summary" id="auditSummary">Cargando auditoría...</div>
+      <div class="table-wrap">
+        <table class="compact-table">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Señal</th>
+              <th>Motivo</th>
+              <th>Score</th>
+              <th title="Bloqueada por una regla operativa V4.4.">Regla op.</th>
+              <th class="num">Exposición</th>
+              <th class="num">Riesgo</th>
+              <th class="num">Drawdown</th>
+            </tr>
+          </thead>
+          <tbody id="tablaBloqueos"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ RIESGO Y DESEMPEÑO (compacto) ============ -->
     <section class="card pro-card" id="panelProfesional">
       <div class="topbar">
         <div>
           <h2>Riesgo y desempeño</h2>
-          <span>Métricas clave. El detalle completo queda en las vistas avanzadas.</span>
+          <span>Métricas clave de la simulación. El detalle completo está en vistas avanzadas.</span>
         </div>
         <span class="mode-badge" id="modoSimulacionBadge">MODO SIMULACIÓN</span>
       </div>
-
       <div class="pro-grid pro-grid-compact" id="simulacionResumen">
         <div class="metric-box">Cargando simulación...</div>
       </div>
-
       <div class="pro-subgrid">
         <div class="risk-box">
           <h3>Riesgo</h3>
@@ -242,17 +205,38 @@
       </div>
     </section>
 
-    <section class="card">
-      <div class="topbar">
-        <div>
-          <h2>Curva de capital simulada</h2>
-          <span>Equity curve neta, con costos estimados.</span>
+    <!-- ============ H. VISTAS AVANZADAS ============ -->
+    <details class="advanced-details" id="paperEngineDetails">
+      <summary>Paper Trading Engine · detalle del motor</summary>
+      <section class="card paper-v4-card">
+        <div class="topbar">
+          <div>
+            <h2>Paper Trading Engine</h2>
+            <span>Órdenes, cartera y riesgo simulados. Sin dinero real.</span>
+          </div>
+          <span class="mode-badge v4-badge" id="paperV4Health">V4 cargando...</span>
         </div>
-      </div>
-      <div class="chart-wrap">
-        <canvas id="equityChart" width="1200" height="320"></canvas>
-      </div>
-    </section>
+        <div class="paper-v4-grid" id="paperV4Resumen">
+          <div class="metric-box">Cargando motor paper trading...</div>
+        </div>
+        <div class="paper-v4-warnings" id="paperV4Warnings"></div>
+      </section>
+    </details>
+
+    <details class="advanced-details" id="equityDetails">
+      <summary>Curva de capital simulada</summary>
+      <section class="card">
+        <div class="topbar">
+          <div>
+            <h2>Curva de capital simulada</h2>
+            <span>Equity curve neta, con costos estimados.</span>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="equityChart" width="1200" height="320"></canvas>
+        </div>
+      </section>
+    </details>
 
     <details class="advanced-details" id="metricasAvanzadasDetails">
       <summary>Métricas avanzadas por sector, mercado y mejores/peores operaciones</summary>
@@ -284,9 +268,34 @@
         <div class="topbar">
           <div>
             <h2>Ranking completo</h2>
-            <span>Vista avanzada para revisar todas las acciones y detalles técnicos.</span>
+            <span>Vista avanzada con todas las acciones y detalles técnicos.</span>
           </div>
         </div>
+
+        <details class="filter-panel">
+          <summary>Filtros y búsqueda</summary>
+          <div class="filtros">
+            <button onclick="filtrarSector('TODOS')">Todos</button>
+            <button onclick="filtrarSector('IA')">IA</button>
+            <button onclick="filtrarSector('Chips')">Chips</button>
+            <button onclick="filtrarSector('Trading')">Trading</button>
+            <button onclick="filtrarSector('Energía')">Energía</button>
+            <button onclick="filtrarSector('Tecnología')">Tecnología</button>
+            <button onclick="filtrarSector('Salud')">Salud</button>
+            <button onclick="filtrarSector('Consumo')">Consumo</button>
+            <button onclick="filtrarSector('Industrial')">Industrial</button>
+            <button onclick="filtrarSector('Defensa')">Defensa</button>
+            <button onclick="filtrarSector('ETF')">ETF</button>
+            <button onclick="filtrarSector('Robótica')">Robótica</button>
+
+            <input type="text" id="buscarAccion" placeholder="Buscar acción: NVDA, AMD, TSLA..." oninput="buscarRankingDebounced()"/>
+            <button onclick="limpiarBusqueda()">Quitar filtro</button>
+
+            <label><input type="checkbox" id="soloCompra" onchange="renderTabla()"> Solo compra</label>
+            <label><input type="checkbox" id="soloHot" onchange="renderTabla()"> Solo HOT</label>
+            <label><input type="checkbox" id="ocultarAlto" onchange="renderTabla()"> Ocultar riesgo alto</label>
+          </div>
+        </details>
 
         <div class="table-wrap">
           <table>
@@ -294,23 +303,23 @@
               <tr>
                 <th title="Ticker o símbolo bursátil.">Acción</th>
                 <th title="Sector o categoría principal.">Sector</th>
-                <th title="Último precio de cierre tomado por el sistema.">Precio</th>
-                <th title="Probabilidad técnica estimada. No garantiza ganancia.">Prob.</th>
-                <th title="Movimiento reciente de 5 días.">Mom. 5D</th>
-                <th title="Fuerza contra QQQ en 20 días. Positivo = supera al Nasdaq.">Rel.</th>
+                <th class="num" title="Último precio de cierre tomado por el sistema.">Precio</th>
+                <th class="num" title="Probabilidad técnica estimada. No garantiza ganancia.">Prob.</th>
+                <th class="num" title="Movimiento reciente de 5 días.">Mom. 5D</th>
+                <th class="num" title="Fuerza contra QQQ en 20 días. Positivo = supera al Nasdaq.">Rel.</th>
                 <th title="Más fuego significa mayor fuerza técnica con riesgo controlado.">Hot</th>
                 <th title="Confirmación técnica de ruptura o fuerza.">Conf.</th>
-                <th title="ATR como porcentaje del precio. Alto ATR % significa más riesgo.">ATR %</th>
-                <th title="Zona técnica sugerida de entrada.">Entrada</th>
-                <th title="Precio sugerido para limitar pérdidas.">Stop</th>
-                <th title="Precio objetivo técnico estimado.">Objetivo</th>
-                <th title="Relación riesgo/recompensa aproximada.">R/R</th>
-                <th title="RSI: arriba de 70 puede indicar sobrecompra.">RSI</th>
+                <th class="num" title="ATR como porcentaje del precio. Alto ATR % significa más riesgo.">ATR %</th>
+                <th class="num" title="Zona técnica sugerida de entrada.">Entrada</th>
+                <th class="num" title="Precio sugerido para limitar pérdidas.">Stop</th>
+                <th class="num" title="Precio objetivo técnico estimado.">Objetivo</th>
+                <th class="num" title="Relación riesgo/recompensa aproximada.">R/R</th>
+                <th class="num" title="RSI: arriba de 70 puede indicar sobrecompra.">RSI</th>
                 <th title="Contexto general del mercado por SPY/QQQ.">Mercado</th>
                 <th title="Riesgo según volatilidad, momentum, RSI y distancia a MA20.">Riesgo</th>
                 <th title="Lectura automática para humanos.">Señal</th>
-                <th title="Calificación de calidad de la señal de 0 a 100.">Score</th>
-                <th title="Señal lista para futuro bot: BUY STRONG, BUY, HOLD o SELL / EVITAR.">Bot</th>
+                <th class="num" title="Calificación de calidad de la señal de 0 a 100.">Score</th>
+                <th title="Señal lista para bot: BUY STRONG, BUY, HOLD o SELL / EVITAR.">Bot</th>
                 <th title="Razones y alertas principales.">Detalle</th>
               </tr>
             </thead>
@@ -335,7 +344,7 @@
         </div>
 
         <div class="historial-filters">
-          <input type="text" id="buscarHistorial" placeholder="Buscar ticker o resultado..." oninput="renderHistorial()"/>
+          <input type="text" id="buscarHistorial" placeholder="Buscar ticker o resultado..." oninput="buscarHistorialDebounced()"/>
           <select id="filtroEstadoHistorial" onchange="renderHistorial()">
             <option value="TODOS">Todos los estados</option>
             <option value="ABIERTA">Abiertas</option>
@@ -356,29 +365,40 @@
               <tr>
                 <th>Estado</th>
                 <th>Acción</th>
-                <th>Entrada</th>
-                <th>Actual</th>
-                <th>G/P %</th>
-                <th>Invertido USD</th>
-                <th>Valor cartera</th>
-                <th>G/P USD</th>
-                <th>Riesgo USD</th>
-                <th>Riesgo %</th>
-                <th>Costo USD</th>
-                <th>Dist. objetivo</th>
-                <th>Dist. stop</th>
-                <th>Score</th>
-                <th>Stop</th>
-                <th>Objetivo</th>
-                <th>R/R</th>
+                <th class="num">Entrada</th>
+                <th class="num">Actual</th>
+                <th class="num">G/P %</th>
+                <th class="num">G/P USD</th>
+                <th class="num">Riesgo USD</th>
+                <th class="num">Stop</th>
+                <th class="num">Objetivo</th>
+                <th class="num">R/R</th>
                 <th>Fecha entrada</th>
-                <th>Días</th>
+                <th class="num">Días</th>
                 <th>Señal entrada</th>
                 <th>Bot actual</th>
                 <th>Resultado</th>
               </tr>
             </thead>
             <tbody id="tablaHistorial"></tbody>
+          </table>
+        </div>
+      </section>
+    </details>
+
+    <details class="advanced-details" id="configTecnicaDetails">
+      <summary>Configuración técnica del motor</summary>
+      <section class="card">
+        <div class="topbar">
+          <div>
+            <h2>Configuración técnica</h2>
+            <span>Parámetros operativos reales cargados desde <code>config/system_config.json</code>.</span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="compact-table">
+            <thead><tr><th>Parámetro</th><th class="num">Valor</th></tr></thead>
+            <tbody id="tablaConfigTecnica"></tbody>
           </table>
         </div>
       </section>
@@ -391,6 +411,6 @@
     </section>
   </main>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=4.4.5"></script>
 </body>
 </html>

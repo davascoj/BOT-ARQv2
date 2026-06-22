@@ -408,6 +408,26 @@ def export_paper_state(historial, resultados, mercado, config):
     _write_json(PAPER_DIR / "paper_status.json", state["status"])
     _write_json(PAPER_DIR / "paper_audit.json", state["audit"])
     _write_json(PAPER_DIR / "paper_operational_rules.json", state["operational_rules"])
-    _write_json(PAPER_DIR / "paper_state.json", state)
+
+    # paper_state.json se sirve al dashboard: versión LIGERA, sin los arrays completos de
+    # orders/trades (su detalle vive en paper_orders.json y paper_trades.json). Es solo un
+    # cambio de serialización: no toca la lógica de riesgo ni los conteos
+    # (status.orders_total / status.trades_closed se calculan antes y se conservan).
+    state_light = dict(state)
+    state_light["orders"] = {
+        "updated": state["orders"]["updated"],
+        "mode": state["orders"]["mode"],
+        "count": len(state["orders"]["orders"]),
+        "detail_file": "paper/paper_orders.json",
+        "orders": []
+    }
+    state_light["trades"] = {
+        "updated": state["trades"]["updated"],
+        "mode": state["trades"]["mode"],
+        "count": len(state["trades"]["trades"]),
+        "detail_file": "paper/paper_trades.json",
+        "trades": []
+    }
+    _write_json(PAPER_DIR / "paper_state.json", state_light)
 
     return state
