@@ -1,85 +1,84 @@
 {
-  "updated": "22-06-2026 02:58 PM Colombia",
+  "updated": "23-06-2026 08:33 AM Colombia",
   "version": "V4.4",
   "engine": "PAPER_TRADING_ENGINE",
   "mode": "PAPER_ONLY_NO_REAL_ORDERS",
   "health": "WARNING",
-  "warnings_count": 4,
+  "warnings_count": 3,
   "warnings": [
     "Exposición estimada supera el límite configurado.",
-    "Riesgo abierto total elevado.",
     "Diagnóstico general marca riesgo ALTO.",
     "Reglas operativas V4.4 en estado BLOQUEADO."
   ],
   "market": {
-    "estado": "ALCISTA",
-    "score": 8,
-    "spy20": 0.51,
-    "qqq20": 3.25,
+    "estado": "DÉBIL",
+    "score": -8,
+    "spy20": -1.51,
+    "qqq20": -0.29,
     "drivers": {
       "ARKK": {
         "ticker": "ARKK",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 2.44,
-        "mom5": 3.75
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": 0.02,
+        "mom5": -4.04
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -3.44,
-        "mom5": -0.01
+        "mom20": -3.22,
+        "mom5": -1.5
       },
       "CL=F": {
         "ticker": "CL=F",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -22.94,
-        "mom5": -12.52
+        "mom20": -24.02,
+        "mom5": -9.1
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -6.74,
-        "mom5": -0.88
+        "mom20": -9.15,
+        "mom5": -3.72
       },
       "QQQ": {
         "ticker": "QQQ",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 3.25,
-        "mom5": 2.27
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -0.29,
+        "mom5": -3.84
       },
       "SOXX": {
         "ticker": "SOXX",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 24.59,
-        "mom5": 9.64
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": 13.05,
+        "mom5": -3.39
       },
       "SPY": {
         "ticker": "SPY",
-        "estado": "POSITIVO",
-        "score": 3,
-        "mom20": 0.51,
-        "mom5": 0.64
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -1.51,
+        "mom5": -2.71
       },
       "XLE": {
         "ticker": "XLE",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -8.59,
-        "mom5": -6.08
+        "mom20": -8.62,
+        "mom5": -2.14
       }
     },
     "sectores": {
       "chips": {
-        "estado": "ACOMPAÑA",
-        "score": 7,
-        "mom20_prom": 13.92,
-        "detalle": "SOXX 24.59% · QQQ 3.25%",
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20_prom": 6.38,
+        "detalle": "SOXX 13.05% · QQQ -0.29%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -88,8 +87,8 @@
       "energia": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -15.77,
-        "detalle": "XLE -8.59% · CL=F -22.94%",
+        "mom20_prom": -16.32,
+        "detalle": "XLE -8.62% · CL=F -24.02%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -98,18 +97,18 @@
       "cripto": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -5.09,
-        "detalle": "BTC-USD -3.44% · ETH-USD -6.74%",
+        "mom20_prom": -6.19,
+        "detalle": "BTC-USD -3.22% · ETH-USD -9.15%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
         ]
       },
       "tech_ia": {
-        "estado": "ACOMPAÑA",
-        "score": 7,
-        "mom20_prom": 2.07,
-        "detalle": "QQQ 3.25% · ARKK 2.44% · SPY 0.51%",
+        "estado": "NO ACOMPAÑA",
+        "score": -8,
+        "mom20_prom": -0.59,
+        "detalle": "QQQ -0.29% · ARKK 0.02% · SPY -1.51%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -118,9 +117,9 @@
       }
     }
   },
-  "positions_open": 18,
-  "orders_total": 582,
-  "trades_closed": 282,
+  "positions_open": 10,
+  "orders_total": 590,
+  "trades_closed": 290,
   "signals_available": 275,
   "broker_real_enabled": false,
   "operational_mode": "BLOQUEADO",
