@@ -1,6 +1,6 @@
 {
-  "version": "4.4.5",
-  "name": "BOT-ARQ V4.4.5 - Dashboard Profesional",
+  "version": "4.5.0",
+  "name": "BOT-ARQ V4.5 - Position Sizing Pro (caja real)",
   "mode": "PAPER_TRADING_SIMULATED",
   "data_source": "yfinance",
   "dashboard": {
@@ -53,10 +53,11 @@
     "force_manual_supported": true
   },
   "notes": [
-    "Hotfix visual: corrige bloqueo de script.js que dejaba la página en Cargando.",
-    "V4.4 convierte métricas existentes en reglas operativas configurables.",
-    "No crea otro motor de riesgo paralelo; usa la simulación y métricas existentes.",
-    "Puede bloquear nuevas entradas por exposición, riesgo abierto o drawdown.",
-    "No ejecuta dinero real. Broker real permanece deshabilitado."
+    "V4.5 implementa contabilidad de caja real: cada posición abierta descuenta cash antes de dimensionar la siguiente.",
+    "Nuevo: cash_available_usd, cash_committed_usd, cash_available_pct, max_nueva_posicion_usd en portfolio.",
+    "Fix core: antes todas las posiciones abiertas se dimensionaban sobre el capital completo → exposición >100% posible.",
+    "V4.4 herencia: reglas operativas configurables (exposición, riesgo abierto, drawdown).",
+    "No ejecuta dinero real. Broker real permanece deshabilitado.",
+    "Prerequisito cumplido para backtesting profesional (V4.7+)."
   ]
 }

@@ -1219,11 +1219,14 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
             "drawdown_pct": round(dd_pct, 2),
         })
 
+    # V4.5 Position Sizing Pro: cada posición abierta descuenta caja antes de dimensionar la siguiente.
+    # Sin esto, todas las posiciones se dimensionan sobre el capital completo → exposición >100% posible.
     exposicion_usd = 0.0
     riesgo_abierto_usd = 0.0
     ganancia_abierta_neta_usd = 0.0
+    caja_disponible = capital  # se reduce conforme se compromete cash en cada posición
     for op in abiertas:
-        pos = calcular_posicion(capital, op.get("precio_entrada"), op.get("stop"))
+        pos = calcular_posicion(caja_disponible, op.get("precio_entrada"), op.get("stop"))
         bruto_abierto = float(op.get("ganancia_pct") or 0)
         neto_abierto = bruto_abierto - costo_pct
         pnl_abierto = pos["posicion_usd"] * (neto_abierto / 100)
@@ -1231,6 +1234,7 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         exposicion_usd += pos["posicion_usd"]
         riesgo_abierto_usd += pos["riesgo_usd"]
         ganancia_abierta_neta_usd += pnl_abierto
+        caja_disponible = max(caja_disponible - pos["posicion_usd"], 0)
         op["ganancia_pct_neta_estimada"] = round(neto_abierto, 2)
         op["pnl_usd_estimado"] = round(pnl_abierto, 2)
         op["ganancia_abierta_usd_estimada"] = round(pnl_abierto, 2)
@@ -1243,6 +1247,15 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         op["distancia_stop_pct"] = pos["distancia_stop_pct"]
         op["distancia_stop_actual_pct"] = distancia_stop_actual_pct(op.get("precio_actual"), op.get("stop"))
         op["distancia_objetivo_pct"] = distancia_objetivo_pct(op.get("precio_actual"), op.get("objetivo"))
+
+    # Métricas de caja real V4.5
+    caja_comprometida_usd = round(exposicion_usd, 2)
+    caja_disponible_usd = round(max(capital - caja_comprometida_usd, 0), 2)
+    caja_disponible_pct = round((caja_disponible_usd / capital_inicial * 100), 2) if capital_inicial else 0
+    max_nueva_posicion_usd = round(min(
+        caja_disponible_usd,
+        capital_inicial * (CONFIG_SIMULACION.get("max_posicion_pct", 20) / 100)
+    ), 2)
 
     rachas = calcular_rachas(cerradas_ordenadas)
     profit_factor = round(ganancias_usd / perdidas_usd, 2) if perdidas_usd else None
@@ -1306,6 +1319,10 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         "costo_total_estimado_pct_por_operacion": costo_pct,
         "ganancia_abierta_neta_usd": round(ganancia_abierta_neta_usd, 2),
         "valor_total_en_cartera_usd": round(exposicion_usd + ganancia_abierta_neta_usd, 2),
+        "caja_comprometida_usd": caja_comprometida_usd,
+        "caja_disponible_usd": caja_disponible_usd,
+        "caja_disponible_pct": caja_disponible_pct,
+        "max_nueva_posicion_usd": max_nueva_posicion_usd,
         "modo": "SIMULACIÓN",
     }
 
@@ -1880,7 +1897,7 @@ def main():
 
     salida = {
         "actualizado": fecha_visible(),
-        "version_bot": "V4.4.5",
+        "version_bot": "V4.5 POSITION SIZING PRO",
         "contexto_mercado": mercado,
         "config_operativa": resumen_config_operativa(CONFIG_SISTEMA, CONFIG_SIMULACION) if resumen_config_operativa else {"simulation_config": CONFIG_SIMULACION},
         "resultados": resultados,

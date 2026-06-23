@@ -233,7 +233,7 @@ def _audit_from_historial(historial, resultados, positions, warnings, config):
 
     return {
         "updated": _now_visible(),
-        "version": "V4.4",
+        "version": "V4.5",
         "mode": "AUDITORIA_BLOQUEOS_EXISTENTES",
         "summary": {
             "blocked_count": len(blocked),
@@ -278,13 +278,21 @@ def build_paper_state(historial, resultados, mercado, config):
     open_pnl_usd = sum(_num(p.get("open_pnl_usd")) for p in positions)
     closed_pnl_usd = sum(_num(t.get("pnl_usd_estimated")) for t in trades)
 
+    # V4.5 Position Sizing Pro: contabilidad de caja real
+    cash_committed_usd = _round(sum(_num(p.get("invested_usd")) for p in positions))
+    cash_equity_usd = _round(capital_inicial + closed_pnl_usd)
+    cash_available_usd = _round(max(cash_equity_usd - cash_committed_usd, 0))
+    cash_available_pct = _round((cash_available_usd / capital_inicial * 100) if capital_inicial else 0)
+    max_posicion_pct = _num(config.get("max_posicion_pct"), 20)
+    max_nueva_posicion_usd = _round(min(cash_available_usd, capital_inicial * max_posicion_pct / 100))
+
     max_positions = int(_num(config.get("max_operaciones_abiertas"), 20))
     exposure_pct = (exposure_usd / capital_inicial * 100) if capital_inicial else 0
     risk_pct = (open_risk_usd / capital_inicial * 100) if capital_inicial else 0
 
     if not operational_rules:
         operational_rules = {
-            "version": "V4.4",
+            "version": "V4.5",
             "estado": "DEFENSIVO" if exposure_pct >= _num(config.get("max_exposicion_total_pct"), 80) or risk_pct >= _num(config.get("max_riesgo_total_abierto_pct"), 10) else "NORMAL",
             "exposicion_abierta_pct": _round(exposure_pct),
             "riesgo_abierto_pct": _round(risk_pct),
@@ -303,16 +311,18 @@ def build_paper_state(historial, resultados, mercado, config):
         warnings.append("Exposición estimada supera el límite configurado.")
     if risk_pct > 10:
         warnings.append("Riesgo abierto total elevado.")
+    if cash_available_usd <= 0 and len(positions) > 0:
+        warnings.append("Caja disponible agotada: no hay capital libre para nuevas posiciones.")
     if diagnostico.get("riesgo") == "ALTO" or diagnostico.get("riesgo_sistema") == "ALTO":
         warnings.append("Diagnóstico general marca riesgo ALTO.")
     if operational_rules.get("estado") == "BLOQUEADO":
-        warnings.append("Reglas operativas V4.4 en estado BLOQUEADO.")
+        warnings.append("Reglas operativas V4.5 en estado BLOQUEADO.")
     elif operational_rules.get("estado") == "DEFENSIVO":
-        warnings.append("Reglas operativas V4.4 en modo DEFENSIVO.")
+        warnings.append("Reglas operativas V4.5 en modo DEFENSIVO.")
 
     portfolio = {
         "updated": _now_visible(),
-        "version": "V4.4",
+        "version": "V4.5",
         "mode": "PAPER_TRADING_SIMULATED",
         "capital_initial_usd": _round(capital_inicial),
         "cash_model_note": "Cash derivado de simulación histórica; no representa cuenta broker real.",
@@ -323,6 +333,11 @@ def build_paper_state(historial, resultados, mercado, config):
         "exposure_pct": _round(exposure_pct),
         "open_risk_usd": _round(open_risk_usd),
         "open_risk_pct": _round(risk_pct),
+        "cash_equity_usd": cash_equity_usd,
+        "cash_committed_usd": cash_committed_usd,
+        "cash_available_usd": cash_available_usd,
+        "cash_available_pct": cash_available_pct,
+        "max_nueva_posicion_usd": max_nueva_posicion_usd,
         "open_positions": len(positions),
         "closed_trades": len(trades),
         "positions": positions
@@ -330,7 +345,7 @@ def build_paper_state(historial, resultados, mercado, config):
 
     risk_state = {
         "updated": _now_visible(),
-        "version": "V4.4",
+        "version": "V4.5",
         "mode": "PAPER_TRADING_SIMULATED",
         "market_state": mercado,
         "risk_config": config,
@@ -347,7 +362,7 @@ def build_paper_state(historial, resultados, mercado, config):
 
     status = {
         "updated": _now_visible(),
-        "version": "V4.4",
+        "version": "V4.5",
         "engine": "PAPER_TRADING_ENGINE",
         "mode": "PAPER_ONLY_NO_REAL_ORDERS",
         "health": "OK" if not warnings else "WARNING",
@@ -376,7 +391,7 @@ def build_paper_state(historial, resultados, mercado, config):
 
     state = {
         "updated": _now_visible(),
-        "version": "V4.4",
+        "version": "V4.5",
         "status": status,
         "portfolio": portfolio,
         "orders": {
