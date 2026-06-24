@@ -548,13 +548,20 @@ function pintarPanelProfesional() {
 
   const resumen = $("simulacionResumen");
   if (resumen) {
+    const sharpe = met.sharpe_ratio ?? null;
+    const sortino = met.sortino_ratio ?? null;
+    const calmar = met.calmar_ratio ?? null;
+    const claseRatio = v => v === null ? "" : (v >= 1 ? "valor-pos" : (v >= 0 ? "" : "valor-neg"));
+    const fmtRatio = v => v === null ? "N/D" : numero(v, 2);
     resumen.innerHTML = `
       <div class="metric-box"><strong>${dinero(sim.capital_inicial ?? 0)}</strong><span>capital inicial</span></div>
       <div class="metric-box"><strong>${numero(met.profit_factor ?? 0)}</strong><span>profit factor</span></div>
-      <div class="metric-box"><strong>${numero(hr.win_rate ?? 0)}%</strong><span>win rate (cerradas)</span></div>
-      <div class="metric-box"><strong>${hr.cerradas ?? 0}</strong><span>operaciones cerradas</span></div>
+      <div class="metric-box"><strong>${numero(met.win_rate_pct ?? hr.win_rate ?? 0)}%</strong><span>win rate (cerradas)</span></div>
+      <div class="metric-box" title="Retorno ajustado por volatilidad. >1 bueno, >2 excelente."><strong class="${claseRatio(sharpe)}">${fmtRatio(sharpe)}</strong><span>Sharpe ratio</span></div>
+      <div class="metric-box" title="Como Sharpe, pero solo penaliza la volatilidad negativa."><strong class="${claseRatio(sortino)}">${fmtRatio(sortino)}</strong><span>Sortino ratio</span></div>
+      <div class="metric-box" title="CAGR dividido por el máximo drawdown. Requiere 90+ días de historial; antes muestra N/D."><strong class="${claseRatio(calmar)}">${fmtRatio(calmar)}</strong><span>Calmar ratio</span></div>
       <div class="metric-box"><strong class="valor-neg">-${numero(riesgo.max_drawdown_pct ?? 0)}%</strong><span>máx. drawdown</span></div>
-      <div class="metric-box"><strong>${numero(met.expectativa_pct_por_operacion ?? 0)}%</strong><span>expectativa / operación</span></div>`;
+      <div class="metric-box"><strong class="${claseValor(met.expectancy_usd)}">${dinero(met.expectancy_usd ?? 0)}</strong><span>expectancy / op</span></div>`;
   }
 
   const riesgoCaja = $("riesgoResumen");
@@ -608,14 +615,17 @@ function pintarPaperTradingV4() {
     health.className = "mode-badge v4-badge " + ((status.health || "OK") === "OK" ? "ok" : "warning");
   }
 
+  const cajaPct = portfolio.cash_available_pct ?? null;
+  const cajaClase = cajaPct === null ? "" : (cajaPct <= 0 ? "valor-neg" : (cajaPct <= 20 ? "" : "valor-pos"));
+
   box.innerHTML = `
     <div class="metric-box"><strong>${safe(status.positions_open ?? 0)}</strong><span>posiciones paper abiertas</span></div>
-    <div class="metric-box"><strong>${safe(status.orders_total ?? 0)}</strong><span>órdenes simuladas</span></div>
     <div class="metric-box"><strong>${safe(status.trades_closed ?? 0)}</strong><span>trades cerrados</span></div>
+    <div class="metric-box"><strong class="${claseValor(portfolio.total_pnl_usd_estimated)}">${dinero(portfolio.total_pnl_usd_estimated ?? 0)}</strong><span>G/P total estimada</span></div>
     <div class="metric-box"><strong>${dinero(portfolio.exposure_usd ?? 0)}</strong><span>exposición paper</span></div>
     <div class="metric-box"><strong>${dinero(portfolio.open_risk_usd ?? 0)}</strong><span>riesgo abierto paper</span></div>
-    <div class="metric-box"><strong class="${claseValor(portfolio.total_pnl_usd_estimated)}">${dinero(portfolio.total_pnl_usd_estimated ?? 0)}</strong><span>G/P total estimada</span></div>
-    <div class="metric-box"><strong>${numero(risk.remaining_position_slots ?? 0, 0)}</strong><span>cupos disponibles</span></div>
+    <div class="metric-box"><strong class="${cajaClase}">${dinero(portfolio.cash_available_usd ?? 0)}</strong><span>caja disponible${cajaPct !== null ? ` (${numero(cajaPct)}%)` : ""}</span></div>
+    <div class="metric-box"><strong>${dinero(portfolio.max_nueva_posicion_usd ?? 0)}</strong><span>máx. nueva posición</span></div>
     <div class="metric-box"><strong>${safe(status.broker_real_enabled ? "ON" : "OFF")}</strong><span>broker real</span></div>`;
 
   if (warnings) {
@@ -729,7 +739,27 @@ function llenarTablaSimple(id, filas, tipo) {
   }).join("");
 }
 
+function renderWinratePorSector() {
+  const box = $("winratePorSector");
+  if (!box) return;
+  const sectores = (metricasPro && metricasPro.winrate_por_sector) || [];
+  if (!sectores.length) {
+    box.innerHTML = `<span class="mini-copy">Sin datos de sector disponibles todavía.</span>`;
+    return;
+  }
+  box.innerHTML = `<table>
+    <thead><tr><th>Sector</th><th class="num">Trades</th><th class="num">Win%</th><th class="num">P&amp;L USD</th></tr></thead>
+    <tbody>${sectores.map(s => `<tr>
+      <td>${safe(s.sector)}</td>
+      <td class="num">${s.trades}</td>
+      <td class="num ${s.win_rate_pct >= 50 ? "valor-pos" : "valor-neg"}">${numero(s.win_rate_pct)}%</td>
+      <td class="num ${claseValor(s.pnl_usd)}">${dinero(s.pnl_usd)}</td>
+    </tr>`).join("")}</tbody>
+  </table>`;
+}
+
 function renderTablasAvanzadas() {
+  renderWinratePorSector();
   llenarTablaSimple("tablaSectores", rendimientoSectores, "grupo");
   llenarTablaSimple("tablaMercados", rendimientoMercados, "grupo");
   llenarTablaSimple("tablaMejores", mejoresOperaciones, "ops");

@@ -1149,6 +1149,98 @@ def resumen_grupo_operaciones(ops, campo):
     return sorted(salida, key=lambda x: x["rentabilidad_neta_pct"], reverse=True)
 
 
+def _calcular_ratios_pro(cerradas, max_dd_pct, rentabilidad_neta_pct, capital_inicial):
+    """V4.6: Sharpe, Sortino, Calmar, win rate, expectancy y winrate por sector."""
+    if not cerradas:
+        return {}
+
+    retornos = [float(op.get("ganancia_pct_neta_estimada") or 0) for op in cerradas]
+    pnls_usd = [float(op.get("pnl_usd_estimado") or 0) for op in cerradas]
+    dias_list = [float(op.get("dias_abierta") or 1) for op in cerradas]
+    n = len(retornos)
+
+    mu = sum(retornos) / n
+    varianza = sum((r - mu) ** 2 for r in retornos) / max(n - 1, 1)
+    sigma = varianza ** 0.5
+    avg_dias = sum(dias_list) / n if n else 1
+
+    # Factor de anualización según el periodo medio de tenencia
+    factor = (252 / max(avg_dias, 1)) ** 0.5
+
+    sharpe = round((mu / sigma) * factor, 3) if sigma > 0 else None
+
+    negativos = [r for r in retornos if r < 0]
+    if len(negativos) > 1:
+        mu_neg = sum(negativos) / len(negativos)
+        var_neg = sum((r - mu_neg) ** 2 for r in negativos) / max(len(negativos) - 1, 1)
+        downside = var_neg ** 0.5
+        sortino = round((mu / downside) * factor, 3) if downside > 0 else None
+    else:
+        sortino = None
+
+    # CAGR usando fecha primera / última operación cerrada.
+    # Solo se anualiza con >= 90 días de historial; con menos, anualizar infla el dato
+    # de forma engañosa (p. ej. 30 días daría CAGR de cientos de %).
+    fechas = sorted([op.get("fecha_cierre") or op.get("fecha_entrada") or "" for op in cerradas])
+    cagr = None
+    periodo_dias = None
+    try:
+        d0 = datetime.strptime(fechas[0], "%Y-%m-%d")
+        d1 = datetime.strptime(fechas[-1], "%Y-%m-%d")
+        periodo_dias = max((d1 - d0).days, 1)
+        if periodo_dias >= 90:
+            cagr = round(((1 + rentabilidad_neta_pct / 100) ** (365 / periodo_dias) - 1) * 100, 2)
+    except Exception:
+        pass
+
+    calmar = round(cagr / max_dd_pct, 3) if (cagr is not None and max_dd_pct and max_dd_pct > 0) else None
+
+    # Win rate y expectancy en USD
+    wins_usd = [p for p in pnls_usd if p > 0]
+    loss_usd = [p for p in pnls_usd if p <= 0]
+    win_rate = round(len(wins_usd) / n * 100, 2) if n else 0
+    avg_win_usd = round(sum(wins_usd) / len(wins_usd), 2) if wins_usd else 0
+    avg_loss_usd = round(abs(sum(loss_usd) / len(loss_usd)), 2) if loss_usd else 0
+    expectancy_usd = round((win_rate / 100) * avg_win_usd - (1 - win_rate / 100) * avg_loss_usd, 2)
+    payoff = round(avg_win_usd / avg_loss_usd, 2) if avg_loss_usd else None
+
+    # Win rate por sector (mínimo 2 trades)
+    sector_map = {}
+    for op in cerradas:
+        s = str(op.get("sector") or "Sin sector").strip() or "Sin sector"
+        pnl = float(op.get("pnl_usd_estimado") or 0)
+        if s not in sector_map:
+            sector_map[s] = {"wins": 0, "total": 0, "pnl_usd": 0.0}
+        sector_map[s]["total"] += 1
+        sector_map[s]["pnl_usd"] = round(sector_map[s]["pnl_usd"] + pnl, 2)
+        if pnl > 0:
+            sector_map[s]["wins"] += 1
+
+    winrate_por_sector = sorted(
+        [{"sector": s,
+          "trades": v["total"],
+          "win_rate_pct": round(v["wins"] / v["total"] * 100, 1),
+          "pnl_usd": v["pnl_usd"]}
+         for s, v in sector_map.items() if v["total"] >= 2],
+        key=lambda x: x["pnl_usd"], reverse=True
+    )
+
+    return {
+        "sharpe_ratio": sharpe,
+        "sortino_ratio": sortino,
+        "calmar_ratio": calmar,
+        "cagr_estimado_pct": cagr,
+        "periodo_dias": periodo_dias,
+        "win_rate_pct": win_rate,
+        "avg_win_usd": avg_win_usd,
+        "avg_loss_usd": avg_loss_usd,
+        "expectancy_usd": expectancy_usd,
+        "payoff_ratio": payoff,
+        "avg_holding_dias": round(avg_dias, 1),
+        "winrate_por_sector": winrate_por_sector,
+    }
+
+
 def calcular_metricas_avanzadas(operaciones, mercado=None):
     """Genera curva de capital, drawdown, costos, profit factor, exposición y diagnóstico."""
     capital_inicial = float(CONFIG_SIMULACION["capital_inicial"])
@@ -1348,6 +1440,11 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         "max_operaciones_abiertas": CONFIG_SIMULACION["max_operaciones_abiertas"],
     }
 
+    ratios_pro = _calcular_ratios_pro(
+        cerradas_ordenadas, max_dd_pct,
+        simulacion.get("rentabilidad_neta_pct", 0), capital_inicial
+    )
+
     metricas = {
         "profit_factor": profit_factor,
         "ganancia_promedio_pct": gan_prom,
@@ -1356,6 +1453,7 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         "expectativa_pct_por_operacion": expectativa_pct,
         "total_ganado_usd": round(ganancias_usd, 2),
         "total_perdido_usd": round(perdidas_usd, 2),
+        **ratios_pro,
     }
 
     return {
@@ -1897,7 +1995,7 @@ def main():
 
     salida = {
         "actualizado": fecha_visible(),
-        "version_bot": "V4.5 POSITION SIZING PRO",
+        "version_bot": "V4.6 METRICAS PRO",
         "contexto_mercado": mercado,
         "config_operativa": resumen_config_operativa(CONFIG_SISTEMA, CONFIG_SIMULACION) if resumen_config_operativa else {"simulation_config": CONFIG_SIMULACION},
         "resultados": resultados,
