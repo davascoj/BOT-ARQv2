@@ -11,6 +11,10 @@ ZONA_HORARIA = ZoneInfo("America/Bogota")
 HISTORIAL_FILE = "historial_senales.json"
 HISTORIAL_XLSX = "historial_senales.xlsx"
 
+# Reportes Excel: OFF por defecto para no versionar binarios pesados en CI/GitHub.
+# Los datos viven en los JSON. Para generarlos localmente: BOT_ARQ_EXPORT_XLSX=1
+EXPORT_XLSX = os.getenv("BOT_ARQ_EXPORT_XLSX", "0").strip().lower() in ("1", "true", "yes", "on")
+
 # ============================================================
 # BOT-ARQ V4 - PAPER TRADING ENGINE
 # Exporta el estado del paper trading a archivos JSON separados,
@@ -1145,6 +1149,98 @@ def resumen_grupo_operaciones(ops, campo):
     return sorted(salida, key=lambda x: x["rentabilidad_neta_pct"], reverse=True)
 
 
+def _calcular_ratios_pro(cerradas, max_dd_pct, rentabilidad_neta_pct, capital_inicial):
+    """V4.6: Sharpe, Sortino, Calmar, win rate, expectancy y winrate por sector."""
+    if not cerradas:
+        return {}
+
+    retornos = [float(op.get("ganancia_pct_neta_estimada") or 0) for op in cerradas]
+    pnls_usd = [float(op.get("pnl_usd_estimado") or 0) for op in cerradas]
+    dias_list = [float(op.get("dias_abierta") or 1) for op in cerradas]
+    n = len(retornos)
+
+    mu = sum(retornos) / n
+    varianza = sum((r - mu) ** 2 for r in retornos) / max(n - 1, 1)
+    sigma = varianza ** 0.5
+    avg_dias = sum(dias_list) / n if n else 1
+
+    # Factor de anualización según el periodo medio de tenencia
+    factor = (252 / max(avg_dias, 1)) ** 0.5
+
+    sharpe = round((mu / sigma) * factor, 3) if sigma > 0 else None
+
+    negativos = [r for r in retornos if r < 0]
+    if len(negativos) > 1:
+        mu_neg = sum(negativos) / len(negativos)
+        var_neg = sum((r - mu_neg) ** 2 for r in negativos) / max(len(negativos) - 1, 1)
+        downside = var_neg ** 0.5
+        sortino = round((mu / downside) * factor, 3) if downside > 0 else None
+    else:
+        sortino = None
+
+    # CAGR usando fecha primera / última operación cerrada.
+    # Solo se anualiza con >= 90 días de historial; con menos, anualizar infla el dato
+    # de forma engañosa (p. ej. 30 días daría CAGR de cientos de %).
+    fechas = sorted([op.get("fecha_cierre") or op.get("fecha_entrada") or "" for op in cerradas])
+    cagr = None
+    periodo_dias = None
+    try:
+        d0 = datetime.strptime(fechas[0], "%Y-%m-%d")
+        d1 = datetime.strptime(fechas[-1], "%Y-%m-%d")
+        periodo_dias = max((d1 - d0).days, 1)
+        if periodo_dias >= 90:
+            cagr = round(((1 + rentabilidad_neta_pct / 100) ** (365 / periodo_dias) - 1) * 100, 2)
+    except Exception:
+        pass
+
+    calmar = round(cagr / max_dd_pct, 3) if (cagr is not None and max_dd_pct and max_dd_pct > 0) else None
+
+    # Win rate y expectancy en USD
+    wins_usd = [p for p in pnls_usd if p > 0]
+    loss_usd = [p for p in pnls_usd if p <= 0]
+    win_rate = round(len(wins_usd) / n * 100, 2) if n else 0
+    avg_win_usd = round(sum(wins_usd) / len(wins_usd), 2) if wins_usd else 0
+    avg_loss_usd = round(abs(sum(loss_usd) / len(loss_usd)), 2) if loss_usd else 0
+    expectancy_usd = round((win_rate / 100) * avg_win_usd - (1 - win_rate / 100) * avg_loss_usd, 2)
+    payoff = round(avg_win_usd / avg_loss_usd, 2) if avg_loss_usd else None
+
+    # Win rate por sector (mínimo 2 trades)
+    sector_map = {}
+    for op in cerradas:
+        s = str(op.get("sector") or "Sin sector").strip() or "Sin sector"
+        pnl = float(op.get("pnl_usd_estimado") or 0)
+        if s not in sector_map:
+            sector_map[s] = {"wins": 0, "total": 0, "pnl_usd": 0.0}
+        sector_map[s]["total"] += 1
+        sector_map[s]["pnl_usd"] = round(sector_map[s]["pnl_usd"] + pnl, 2)
+        if pnl > 0:
+            sector_map[s]["wins"] += 1
+
+    winrate_por_sector = sorted(
+        [{"sector": s,
+          "trades": v["total"],
+          "win_rate_pct": round(v["wins"] / v["total"] * 100, 1),
+          "pnl_usd": v["pnl_usd"]}
+         for s, v in sector_map.items() if v["total"] >= 2],
+        key=lambda x: x["pnl_usd"], reverse=True
+    )
+
+    return {
+        "sharpe_ratio": sharpe,
+        "sortino_ratio": sortino,
+        "calmar_ratio": calmar,
+        "cagr_estimado_pct": cagr,
+        "periodo_dias": periodo_dias,
+        "win_rate_pct": win_rate,
+        "avg_win_usd": avg_win_usd,
+        "avg_loss_usd": avg_loss_usd,
+        "expectancy_usd": expectancy_usd,
+        "payoff_ratio": payoff,
+        "avg_holding_dias": round(avg_dias, 1),
+        "winrate_por_sector": winrate_por_sector,
+    }
+
+
 def calcular_metricas_avanzadas(operaciones, mercado=None):
     """Genera curva de capital, drawdown, costos, profit factor, exposición y diagnóstico."""
     capital_inicial = float(CONFIG_SIMULACION["capital_inicial"])
@@ -1215,11 +1311,14 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
             "drawdown_pct": round(dd_pct, 2),
         })
 
+    # V4.5 Position Sizing Pro: cada posición abierta descuenta caja antes de dimensionar la siguiente.
+    # Sin esto, todas las posiciones se dimensionan sobre el capital completo → exposición >100% posible.
     exposicion_usd = 0.0
     riesgo_abierto_usd = 0.0
     ganancia_abierta_neta_usd = 0.0
+    caja_disponible = capital  # se reduce conforme se compromete cash en cada posición
     for op in abiertas:
-        pos = calcular_posicion(capital, op.get("precio_entrada"), op.get("stop"))
+        pos = calcular_posicion(caja_disponible, op.get("precio_entrada"), op.get("stop"))
         bruto_abierto = float(op.get("ganancia_pct") or 0)
         neto_abierto = bruto_abierto - costo_pct
         pnl_abierto = pos["posicion_usd"] * (neto_abierto / 100)
@@ -1227,6 +1326,7 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         exposicion_usd += pos["posicion_usd"]
         riesgo_abierto_usd += pos["riesgo_usd"]
         ganancia_abierta_neta_usd += pnl_abierto
+        caja_disponible = max(caja_disponible - pos["posicion_usd"], 0)
         op["ganancia_pct_neta_estimada"] = round(neto_abierto, 2)
         op["pnl_usd_estimado"] = round(pnl_abierto, 2)
         op["ganancia_abierta_usd_estimada"] = round(pnl_abierto, 2)
@@ -1239,6 +1339,15 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         op["distancia_stop_pct"] = pos["distancia_stop_pct"]
         op["distancia_stop_actual_pct"] = distancia_stop_actual_pct(op.get("precio_actual"), op.get("stop"))
         op["distancia_objetivo_pct"] = distancia_objetivo_pct(op.get("precio_actual"), op.get("objetivo"))
+
+    # Métricas de caja real V4.5
+    caja_comprometida_usd = round(exposicion_usd, 2)
+    caja_disponible_usd = round(max(capital - caja_comprometida_usd, 0), 2)
+    caja_disponible_pct = round((caja_disponible_usd / capital_inicial * 100), 2) if capital_inicial else 0
+    max_nueva_posicion_usd = round(min(
+        caja_disponible_usd,
+        capital_inicial * (CONFIG_SIMULACION.get("max_posicion_pct", 20) / 100)
+    ), 2)
 
     rachas = calcular_rachas(cerradas_ordenadas)
     profit_factor = round(ganancias_usd / perdidas_usd, 2) if perdidas_usd else None
@@ -1302,6 +1411,10 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         "costo_total_estimado_pct_por_operacion": costo_pct,
         "ganancia_abierta_neta_usd": round(ganancia_abierta_neta_usd, 2),
         "valor_total_en_cartera_usd": round(exposicion_usd + ganancia_abierta_neta_usd, 2),
+        "caja_comprometida_usd": caja_comprometida_usd,
+        "caja_disponible_usd": caja_disponible_usd,
+        "caja_disponible_pct": caja_disponible_pct,
+        "max_nueva_posicion_usd": max_nueva_posicion_usd,
         "modo": "SIMULACIÓN",
     }
 
@@ -1327,6 +1440,11 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         "max_operaciones_abiertas": CONFIG_SIMULACION["max_operaciones_abiertas"],
     }
 
+    ratios_pro = _calcular_ratios_pro(
+        cerradas_ordenadas, max_dd_pct,
+        simulacion.get("rentabilidad_neta_pct", 0), capital_inicial
+    )
+
     metricas = {
         "profit_factor": profit_factor,
         "ganancia_promedio_pct": gan_prom,
@@ -1335,6 +1453,7 @@ def calcular_metricas_avanzadas(operaciones, mercado=None):
         "expectativa_pct_por_operacion": expectativa_pct,
         "total_ganado_usd": round(ganancias_usd, 2),
         "total_perdido_usd": round(perdidas_usd, 2),
+        **ratios_pro,
     }
 
     return {
@@ -1795,6 +1914,8 @@ def guardar_historial(historial):
         "max_exposicion_total_pct": CONFIG_SIMULACION.get("max_exposicion_total_pct"),
     }]
 
+    if not EXPORT_XLSX:
+        return
     with pd.ExcelWriter(HISTORIAL_XLSX, engine="openpyxl") as writer:
         df_ops.to_excel(writer, sheet_name="Historial completo", index=False)
         _df_limpio(resumen.get("resumen_diario", [])).to_excel(writer, sheet_name="Resumen diario", index=False)
@@ -1866,7 +1987,7 @@ def main():
     if export_paper_state:
         try:
             paper_state = export_paper_state(historial, resultados, mercado, CONFIG_SIMULACION)
-            print("PAPER TRADING V4.3 EXPORTADO")
+            print("PAPER TRADING V4.4.5 EXPORTADO")
         except Exception as e:
             print("ADVERTENCIA: no se pudo exportar paper trading V4:", e)
     else:
@@ -1874,7 +1995,7 @@ def main():
 
     salida = {
         "actualizado": fecha_visible(),
-        "version_bot": "V4.3 AUDITORIA BLOQUEOS",
+        "version_bot": "V4.6 METRICAS PRO",
         "contexto_mercado": mercado,
         "config_operativa": resumen_config_operativa(CONFIG_SISTEMA, CONFIG_SIMULACION) if resumen_config_operativa else {"simulation_config": CONFIG_SIMULACION},
         "resultados": resultados,
@@ -1893,7 +2014,8 @@ def main():
     with open("datos_acciones.json", "w", encoding="utf-8") as f:
         json.dump(salida, f, ensure_ascii=False, indent=2)
 
-    pd.DataFrame(resultados).to_excel("analisis_acciones.xlsx", index=False)
+    if EXPORT_XLSX:
+        pd.DataFrame(resultados).to_excel("analisis_acciones.xlsx", index=False)
 
     print("ARCHIVOS GENERADOS")
 

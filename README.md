@@ -1,99 +1,82 @@
-# BOT-ARQ v4.4.1 - Hotfix Dashboard Cargando
+# BOT-ARQ · V4.4.5
 
-Incluye V4.2.1 y V4.2.2. Agrega auditoría visual de señales bloqueadas usando lógica existente del bot.
+Sistema gratuito de análisis técnico de acciones con **señales BUY / HOLD / SELL**, **paper trading simulado**, **reglas operativas de riesgo** y un **dashboard web**. Funciona con GitHub Pages + GitHub Actions + Python + JSON + JavaScript. **No ejecuta dinero real.**
 
----
-
-
-Mejora de rendimiento visual. Incluye V4.2.1. No cambia el motor de trading.
+> ⚠️ Esta herramienta no garantiza ganancias. Las señales son simuladas y no ejecutan órdenes reales. Confirma siempre precio, volumen y noticias antes de operar, y usa stop loss.
 
 ---
 
+## ¿Cómo funciona?
 
-Corrección visual del dashboard. No cambia el motor Python; corrige cómo se muestran los datos en Top oportunidades.
+```
+GitHub Actions (cada 5 min, mercado abierto)
+        │
+        ▼
+analizador_acciones.py  ──carga──►  config/system_config.json
+        │
+        ├─ analiza el mercado y las acciones (yfinance)
+        ├─ actualiza el historial persistente (historial_senales.json)
+        ├─ exporta el paper trading (engine/paper_trading_engine.py → paper/*.json)
+        └─ escribe datos_acciones.json
+        │
+        ▼
+GitHub Pages sirve index.html + script.js + style.css
+        │
+        ▼
+El dashboard lee datos_acciones.json y paper/paper_state.json
+```
+
+El **dashboard solo consume dos archivos**: `datos_acciones.json` y `paper/paper_state.json`. El resto de `paper/*.json` son derivados para auditoría/trazabilidad.
 
 ---
 
+## Estructura del dashboard (layout A–H)
 
-Sistema automatizado de análisis técnico, señales simuladas, paper trading y dashboard web.
+| Bloque | Contenido |
+|--------|-----------|
+| A. Barra superior | nombre, versión, modo paper, broker OFF, estado de carga, reloj de mercado |
+| B. Panel ejecutivo | capital total, G/P total, operaciones abiertas, exposición, riesgo, estado operativo |
+| C. Estado del mercado | SPY, QQQ, tendencia, score |
+| D. Reglas operativas V4.4 | exposición / riesgo / drawdown actual vs límite (con barras) + motivo |
+| Alertas | alertas críticas y warnings |
+| E. Top oportunidades | mejores BUY/BUY STRONG con riesgo bajo/medio (incluye R/R) |
+| F. Cartera abierta | posiciones paper: entrada, precio, G/P, stop, objetivo, riesgo |
+| G. Auditoría de bloqueos | señales BUY que el bot no abrió y por qué |
+| Riesgo y desempeño | profit factor, win rate, drawdown, diagnóstico |
+| H. Vistas avanzadas | Paper Trading Engine, curva de capital, métricas, ranking, historial, configuración técnica |
 
-## Estado actual
+---
 
-✅ GitHub Pages  
-✅ GitHub Actions cada 5 minutos  
-✅ Señales BUY / HOLD / SELL  
-✅ Compra y venta simulada  
-✅ Cierre por stop / objetivo / señal  
-✅ Paper Trading Engine  
-✅ Dashboard V4.1 limpio  
-✅ Configuración real desde `config/system_config.json`  
+## Archivos clave
 
-## Cambio principal de V4.2
+| Archivo | Rol |
+|---------|-----|
+| `analizador_acciones.py` | Motor principal de análisis y señales |
+| `engine/config_loader.py` | Carga la configuración real del motor |
+| `engine/paper_trading_engine.py` | Exporta el paper trading a `paper/*.json` |
+| `config/system_config.json` | Configuración operativa (capital, riesgo, límites) |
+| `config/VERSION_ACTUAL.json` | Versión y cambios de la versión vigente |
+| `index.html`, `script.js`, `style.css` | Dashboard web |
+| `.github/workflows/analizar.yml` | Automatización (cron + manual) |
 
-Antes, las reglas del bot estaban principalmente dentro de `analizador_acciones.py`.
+### Datos generados
 
-Ahora la configuración operativa está en:
+- **Se versionan:** `datos_acciones.json`, `historial_senales.json` (estado persistente del motor) y `paper/*.json`.
+- **`*.xlsx`:** ya **no se generan ni se versionan** en CI (la web usa los JSON). Para generarlos localmente: `BOT_ARQ_EXPORT_XLSX=1 python analizador_acciones.py`.
+- **No editar a mano** ningún archivo generado: los reescribe GitHub Actions.
 
-`config/system_config.json`
+---
 
-El código mantiene valores por defecto seguros si el archivo falta o tiene error.
+## Uso
 
-## Archivos importantes
+El sistema es automático: GitHub Actions corre cada 5 minutos en horario de mercado (NYSE) y publica los datos. Para forzar una actualización manual: pestaña **Actions → "BOT-ARQ" → Run workflow** con `force=true`.
 
-- `analizador_acciones.py`: motor principal.
-- `engine/config_loader.py`: carga configuración real.
-- `engine/paper_trading_engine.py`: exporta paper trading.
-- `config/system_config.json`: configuración operativa.
-- `paper/*.json`: datos paper derivados.
-- `index.html`, `script.js`, `style.css`: dashboard.
-- `.github/workflows/analizar.yml`: automatización.
-
-## Documentación
-
-- `docs/V4_2_CONFIGURACION_REAL_MOTOR.md`
-- `docs/PASO_A_PASO_V4_2.md`
-- `docs/CURRENT_ARCHITECTURE.md`
-- `docs/ROADMAP.md`
-- `docs/CHANGELOG.md`
+---
 
 ## Seguridad
 
-No ejecuta dinero real.  
-Broker real sigue OFF.  
-Este sistema continúa en paper trading / simulación.
+- No ejecuta dinero real. **Broker real: OFF.**
+- Todo es paper trading / simulación.
+- Las reglas operativas V4.4 usan métricas existentes; no hay un risk engine paralelo.
 
-
----
-
-## V4.4 Reglas Operativas
-
-Esta versión convierte métricas existentes en decisiones operativas configurables:
-
-- Exposición abierta.
-- Riesgo abierto.
-- Drawdown.
-- Modo defensivo.
-- Bloqueo de entradas.
-
-Nuevo archivo:
-
-- `paper/paper_operational_rules.json`
-
-Nueva sección en dashboard:
-
-- `Reglas operativas V4.4`
-
-No ejecuta dinero real.
-
-
----
-
-## V4.4.1 Hotfix Dashboard Cargando
-
-Corrección crítica visual:
-
-- Se corrige un error en `script.js` que podía detener toda la página antes de cargar datos.
-- Se elimina una asignación accidental de `operationalRulesV44` antes de su declaración.
-- Se agrega protección por secciones para que, si una tarjeta falla, el resto del dashboard siga cargando.
-
-No cambia el motor de análisis ni las reglas operativas V4.4.
+Roadmap y detalle de cambios: `docs/ROADMAP.md` y `docs/CHANGELOG.md`.
