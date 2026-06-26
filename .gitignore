@@ -26,3 +26,6 @@ tmp/
 # Reportes Excel (opt-in con BOT_ARQ_EXPORT_XLSX=1).
 # Binarios redundantes con los JSON; no se versionan para evitar conflictos.
 *.xlsx
+
+# Cache de datos del backtest (parquet); se regenera al descargar.
+backtest/_cache/
