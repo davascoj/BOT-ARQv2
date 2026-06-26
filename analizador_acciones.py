@@ -511,9 +511,22 @@ def aplicar_contexto_sector(ticker, sector, mercado, razones, alertas):
 
 
 def analizar(ticker, mercado):
+    """Live: descarga datos y delega el cálculo puro en compute_signal()."""
     try:
         df = descargar(ticker, "1y")
-        if df.empty or len(df) < 220:
+    except Exception as e:
+        print(f"ERROR con {ticker}: {e}")
+        return None
+    return compute_signal(df, ticker, mercado)
+
+
+def compute_signal(df, ticker, mercado):
+    """V4.7: lógica pura de señal sobre un DataFrame OHLCV point-in-time.
+    No descarga datos: la comparten el live (analizar) y el futuro backtest,
+    garantizando EXACTAMENTE la misma lógica de indicadores, scoring y señal.
+    Para backtest: pasar df.loc[:dia_T] (datos del día T hacia atrás, sin look-ahead)."""
+    try:
+        if df is None or df.empty or len(df) < 220:
             return None
 
         close = df["Close"]
