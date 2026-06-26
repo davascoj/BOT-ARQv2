@@ -312,10 +312,21 @@ def unir_unicos(items, limite=5):
 
 
 def evaluar_driver(ticker):
-    """Evalúa un ETF/índice/activo externo como QQQ, SOXX, XLE, BTC-USD, ETH-USD o petróleo."""
+    """Live: descarga datos y delega en compute_driver() (lógica pura compartida con el backtest)."""
     try:
         df = descargar(ticker, "1y")
-        if df.empty or len(df) < 80:
+    except Exception as e:
+        print(f"ERROR driver {ticker}: {e}")
+        return {"ticker": ticker, "estado": "SIN DATOS", "score": 0, "mom20": 0, "mom5": 0}
+    return compute_driver(df, ticker)
+
+
+def compute_driver(df, ticker):
+    """V4.7: evaluación pura de un driver (ETF/índice) sobre un DataFrame point-in-time.
+    La comparten el live (evaluar_driver) y el backtest (reconstrucción del mercado),
+    para que el contexto de mercado del backtest use EXACTAMENTE la misma lógica."""
+    try:
+        if df is None or df.empty or len(df) < 80:
             return {"ticker": ticker, "estado": "SIN DATOS", "score": 0, "mom20": 0, "mom5": 0}
 
         close = df["Close"]
@@ -362,15 +373,23 @@ def evaluar_driver(ticker):
 
 
 def contexto_mercado():
-    """Calcula contexto general y contexto por sectores clave."""
+    """Live: evalúa los drivers (con descarga) y delega el armado en armar_contexto_mercado()."""
+    drivers = {}
     try:
-        drivers = {}
         tickers_unicos = sorted({t for lista in DRIVERS_CONTEXTO.values() for t in lista})
-
         for ticker in tickers_unicos:
             drivers[ticker] = evaluar_driver(ticker)
             time.sleep(0.2)
+    except Exception as e:
+        print(f"ERROR evaluando drivers: {e}")
+    return armar_contexto_mercado(drivers)
 
+
+def armar_contexto_mercado(drivers):
+    """V4.7: arma el contexto de mercado (estado general + sectores) desde un dict de
+    drivers ya evaluados. Pura: la comparten el live (contexto_mercado) y el backtest
+    (reconstrucción point-in-time), garantizando el mismo contexto que ve el live."""
+    try:
         spy = drivers.get("SPY", {"score": 0, "mom20": 0, "estado": "NEUTRO"})
         qqq = drivers.get("QQQ", {"score": 0, "mom20": 0, "estado": "NEUTRO"})
         total_base = spy.get("score", 0) + qqq.get("score", 0)
@@ -511,9 +530,22 @@ def aplicar_contexto_sector(ticker, sector, mercado, razones, alertas):
 
 
 def analizar(ticker, mercado):
+    """Live: descarga datos y delega el cálculo puro en compute_signal()."""
     try:
         df = descargar(ticker, "1y")
-        if df.empty or len(df) < 220:
+    except Exception as e:
+        print(f"ERROR con {ticker}: {e}")
+        return None
+    return compute_signal(df, ticker, mercado)
+
+
+def compute_signal(df, ticker, mercado):
+    """V4.7: lógica pura de señal sobre un DataFrame OHLCV point-in-time.
+    No descarga datos: la comparten el live (analizar) y el futuro backtest,
+    garantizando EXACTAMENTE la misma lógica de indicadores, scoring y señal.
+    Para backtest: pasar df.loc[:dia_T] (datos del día T hacia atrás, sin look-ahead)."""
+    try:
+        if df is None or df.empty or len(df) < 220:
             return None
 
         close = df["Close"]
