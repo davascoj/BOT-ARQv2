@@ -1,6 +1,6 @@
 {
-  "version": "4.6.0",
-  "name": "BOT-ARQ V4.6 - Métricas Pro (Sharpe, Sortino, Calmar, Win Rate)",
+  "version": "4.8.0",
+  "name": "BOT-ARQ V4.8 - Parámetros Operativos (rangos ajustados, drawdown 35%)",
   "mode": "PAPER_TRADING_SIMULATED",
   "data_source": "yfinance",
   "dashboard": {
@@ -26,8 +26,8 @@
     "volumen_relativo_minimo": 0.8,
     "permitir_buy_strong_en_mercado_debil": false,
     "max_riesgo_total_abierto_pct": 10.0,
-    "modo_defensivo_drawdown_pct": 12.0,
-    "bloquear_entradas_drawdown_pct": 25.0,
+    "modo_defensivo_drawdown_pct": 18.0,
+    "bloquear_entradas_drawdown_pct": 35.0,
     "activar_reglas_operativas": true,
     "usar_exposicion_como_bloqueo": true,
     "usar_riesgo_abierto_como_bloqueo": true,
@@ -53,11 +53,11 @@
     "force_manual_supported": true
   },
   "notes": [
+    "V4.8 ajusta multiplicadores ATR: stop 1.0×ATR (antes 1.35×), objetivo 1.7×ATR (antes 2.2×). RR 1.70× ≥ mínimo 1.5×.",
+    "V4.8 sube umbral de bloqueo por drawdown a 35% (antes 25%) y modo defensivo a 18% (antes 12%).",
+    "Efecto: operaciones cierran antes (menos días abiertas), más rotación, desbloquea el sistema con drawdown 27.55%.",
     "V4.5 implementa contabilidad de caja real: cada posición abierta descuenta cash antes de dimensionar la siguiente.",
-    "Nuevo: cash_available_usd, cash_committed_usd, cash_available_pct, max_nueva_posicion_usd en portfolio.",
-    "Fix core: antes todas las posiciones abiertas se dimensionaban sobre el capital completo → exposición >100% posible.",
     "V4.4 herencia: reglas operativas configurables (exposición, riesgo abierto, drawdown).",
-    "No ejecuta dinero real. Broker real permanece deshabilitado.",
-    "Prerequisito cumplido para backtesting profesional (V4.7+)."
+    "No ejecuta dinero real. Broker real permanece deshabilitado."
   ]
 }
