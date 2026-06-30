@@ -766,8 +766,8 @@ def compute_signal(df, ticker, mercado):
 
         entrada_min = round(precio - (atr * 0.35), 2)
         entrada_max = round(precio + (atr * 0.15), 2)
-        stop = round(precio - (atr * 1.35), 2)
-        objetivo = round(precio + (atr * 2.2), 2)
+        stop = round(precio - (atr * 1.0), 2)
+        objetivo = round(precio + (atr * 1.7), 2)
         relacion_rr = round((objetivo - precio) / max(precio - stop, 0.01), 2)
 
         if (
@@ -2027,7 +2027,7 @@ def main():
 
     salida = {
         "actualizado": fecha_visible(),
-        "version_bot": "V4.6 METRICAS PRO",
+        "version_bot": "V4.8 PARAMETROS PRO",
         "contexto_mercado": mercado,
         "config_operativa": resumen_config_operativa(CONFIG_SISTEMA, CONFIG_SIMULACION) if resumen_config_operativa else {"simulation_config": CONFIG_SIMULACION},
         "resultados": resultados,
