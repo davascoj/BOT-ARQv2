@@ -1715,10 +1715,11 @@ def actualizar_historial(historial, resultados, mercado):
                 cerrar = True
                 resultado = "GANADA POR SEÑAL" if ganancia_pct >= 0 else "PERDIDA POR SEÑAL"
                 tipo_cierre = "SEÑAL SELL"
-            # V4.9: forzar salida al alcanzar max_dias_holding
-            if not cerrar and dias_abierta >= max_dias:
+            # V4.9: forzar salida solo si está en ganancia (≥0) — nunca forzar pérdida por tiempo.
+            # Si está en pérdida, seguir aguantando: stop sigue activo como protección.
+            if not cerrar and dias_abierta >= max_dias and ganancia_pct >= 0:
                 cerrar = True
-                resultado = "GANADA POR TIEMPO" if ganancia_pct >= 0 else "PERDIDA POR TIEMPO"
+                resultado = "GANADA POR TIEMPO"
                 tipo_cierre = "TIEMPO MAXIMO"
 
         if cerrar:
