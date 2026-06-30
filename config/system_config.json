@@ -1,6 +1,6 @@
 {
-  "version": "4.8.0",
-  "name": "BOT-ARQ V4.8 - Parámetros Operativos (rangos ajustados, drawdown 35%)",
+  "version": "4.9.0",
+  "name": "BOT-ARQ V4.9 - Trading Corto Plazo (hold 1-2 días, overnight)",
   "mode": "PAPER_TRADING_SIMULATED",
   "data_source": "yfinance",
   "dashboard": {
@@ -23,7 +23,8 @@
     "pausar_si_perdidas_seguidas": 8,
     "bloquear_si_perdidas_seguidas": 12,
     "rr_minimo": 1.5,
-    "volumen_relativo_minimo": 0.8,
+    "volumen_relativo_minimo": 0.6,
+    "max_dias_holding": 2,
     "permitir_buy_strong_en_mercado_debil": false,
     "max_riesgo_total_abierto_pct": 10.0,
     "modo_defensivo_drawdown_pct": 18.0,
@@ -53,11 +54,11 @@
     "force_manual_supported": true
   },
   "notes": [
-    "V4.8 ajusta multiplicadores ATR: stop 1.0×ATR (antes 1.35×), objetivo 1.7×ATR (antes 2.2×). RR 1.70× ≥ mínimo 1.5×.",
-    "V4.8 sube umbral de bloqueo por drawdown a 35% (antes 25%) y modo defensivo a 18% (antes 12%).",
-    "Efecto: operaciones cierran antes (menos días abiertas), más rotación, desbloquea el sistema con drawdown 27.55%.",
-    "V4.5 implementa contabilidad de caja real: cada posición abierta descuenta cash antes de dimensionar la siguiente.",
-    "V4.4 herencia: reglas operativas configurables (exposición, riesgo abierto, drawdown).",
+    "V4.9 estrategia de corto plazo (overnight): no se vende el mismo día de compra; fuerza salida a los 2 días.",
+    "V4.9 ATR: stop 0.5×ATR, objetivo 0.85×ATR. RR=1.70×. Alcanzable en 1 día (stop≈1-2.5%, obj≈1.7-4.5%).",
+    "V4.9 cooldown: si un ticker se cerró hoy, no puede recomprarse hasta mañana.",
+    "V4.9 volumen mínimo: 0.8 → 0.6 (permite más señales con volumen moderado).",
+    "V4.8 herencia: drawdown bloqueo 35%, modo defensivo 18%, caja real V4.5.",
     "No ejecuta dinero real. Broker real permanece deshabilitado."
   ]
 }
