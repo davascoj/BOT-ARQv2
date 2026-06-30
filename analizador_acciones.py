@@ -766,8 +766,8 @@ def compute_signal(df, ticker, mercado):
 
         entrada_min = round(precio - (atr * 0.35), 2)
         entrada_max = round(precio + (atr * 0.15), 2)
-        stop = round(precio - (atr * 1.0), 2)
-        objetivo = round(precio + (atr * 1.7), 2)
+        stop = round(precio - (atr * 0.5), 2)
+        objetivo = round(precio + (atr * 0.85), 2)
         relacion_rr = round((objetivo - precio) / max(precio - stop, 0.01), 2)
 
         if (
@@ -1698,19 +1698,29 @@ def actualizar_historial(historial, resultados, mercado):
         cerrar = False
         resultado = "EN SEGUIMIENTO"
         tipo_cierre = ""
+        dias_abierta = op.get("dias_abierta", 0)
+        max_dias = CONFIG_SIMULACION.get("max_dias_holding", 99)
 
-        if stop > 0 and precio_actual <= stop:
-            cerrar = True
-            resultado = "PERDIDA STOP"
-            tipo_cierre = "STOP"
-        elif objetivo > 0 and precio_actual >= objetivo:
-            cerrar = True
-            resultado = "GANADA OBJETIVO"
-            tipo_cierre = "OBJETIVO"
-        elif senal_bot_actual == "SELL / EVITAR" and op.get("dias_abierta", 0) >= 1:
-            cerrar = True
-            resultado = "GANADA POR SEÑAL" if ganancia_pct >= 0 else "PERDIDA POR SEÑAL"
-            tipo_cierre = "SEÑAL SELL"
+        # V4.9: no cerrar el mismo día de compra (capturar volatilidad overnight)
+        if dias_abierta >= 1:
+            if stop > 0 and precio_actual <= stop:
+                cerrar = True
+                resultado = "PERDIDA STOP"
+                tipo_cierre = "STOP"
+            elif objetivo > 0 and precio_actual >= objetivo:
+                cerrar = True
+                resultado = "GANADA OBJETIVO"
+                tipo_cierre = "OBJETIVO"
+            elif senal_bot_actual == "SELL / EVITAR":
+                cerrar = True
+                resultado = "GANADA POR SEÑAL" if ganancia_pct >= 0 else "PERDIDA POR SEÑAL"
+                tipo_cierre = "SEÑAL SELL"
+            # V4.9: forzar salida solo si está en ganancia (≥0) — nunca forzar pérdida por tiempo.
+            # Si está en pérdida, seguir aguantando: stop sigue activo como protección.
+            if not cerrar and dias_abierta >= max_dias and ganancia_pct >= 0:
+                cerrar = True
+                resultado = "GANADA POR TIEMPO"
+                tipo_cierre = "TIEMPO MAXIMO"
 
         if cerrar:
             op["estado"] = "CERRADA"
@@ -1726,6 +1736,11 @@ def actualizar_historial(historial, resultados, mercado):
 
     abiertas = {op.get("accion") for op in operaciones if op.get("estado") == "ABIERTA"}
     creadas_hoy = {(op.get("accion"), op.get("fecha_entrada")) for op in operaciones}
+    # V4.9: tickers cerrados hoy — cooldown, no recomprar hasta mañana
+    cerradas_hoy_tickers = {
+        op.get("accion") for op in operaciones
+        if op.get("estado") == "CERRADA" and op.get("fecha_cierre") == hoy
+    }
     cerradas_previas = [op for op in operaciones if op.get("estado") == "CERRADA"]
     rachas_previas = calcular_rachas(cerradas_previas)
     nuevas_bloqueadas = []
@@ -1745,6 +1760,16 @@ def actualizar_historial(historial, resultados, mercado):
         if ticker in abiertas:
             continue
         elif (ticker, hoy) in creadas_hoy:
+            continue
+        elif ticker in cerradas_hoy_tickers:
+            # V4.9: cooldown — si se cerró hoy, no recomprar hasta mañana
+            nuevas_bloqueadas.append({
+                "fecha": hoy, "accion": ticker, "senal_bot": senal_bot,
+                "motivo": "Cerrada hoy — cooldown hasta mañana",
+                "rr": rr, "riesgo": riesgo, "score": r.get("Score calidad", 0),
+                "precio": float(r.get("Precio actual") or 0),
+                "regla_operativa": True,
+            })
             continue
 
         precio = float(r.get("Precio actual") or 0)
@@ -2027,7 +2052,7 @@ def main():
 
     salida = {
         "actualizado": fecha_visible(),
-        "version_bot": "V4.8 PARAMETROS PRO",
+        "version_bot": "V4.9 TRADING CORTO PLAZO",
         "contexto_mercado": mercado,
         "config_operativa": resumen_config_operativa(CONFIG_SISTEMA, CONFIG_SIMULACION) if resumen_config_operativa else {"simulation_config": CONFIG_SIMULACION},
         "resultados": resultados,
