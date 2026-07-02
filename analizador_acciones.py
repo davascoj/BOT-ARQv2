@@ -207,6 +207,7 @@ DEFAULT_CONFIG_SIMULACION = {
     "permitir_buy_strong_en_modo_defensivo_drawdown": True,
     "permitir_buy_strong_sobre_exposicion": False,
     "permitir_buy_strong_sobre_riesgo": False,
+    "max_dias_holding": 99,  # V4.9: forzar cierre en N días si hay ganancia; 99 = desactivado
 }
 
 # CONFIG_SIMULACION real usada por el motor.
