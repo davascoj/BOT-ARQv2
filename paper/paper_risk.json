@@ -1,76 +1,76 @@
 {
-  "updated": "02-07-2026 09:28 AM Colombia",
+  "updated": "02-07-2026 09:32 AM Colombia",
   "version": "V4.5",
   "mode": "PAPER_TRADING_SIMULATED",
   "market_state": {
     "estado": "NEUTRO +",
     "score": 4,
-    "spy20": -0.36,
-    "qqq20": -2.43,
+    "spy20": -0.56,
+    "qqq20": -2.83,
     "drivers": {
       "ARKK": {
         "ticker": "ARKK",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 5.72,
-        "mom5": 7.96
+        "mom20": 5.34,
+        "mom5": 7.57
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -3.03,
-        "mom5": 2.8
+        "mom20": -3.02,
+        "mom5": 2.81
       },
       "CL=F": {
         "ticker": "CL=F",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -29.54,
-        "mom5": -5.92
+        "mom20": -29.5,
+        "mom5": -5.88
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 2.19,
-        "mom5": 8.27
+        "mom20": 2.16,
+        "mom5": 8.25
       },
       "QQQ": {
         "ticker": "QQQ",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": -2.43,
-        "mom5": 1.25
+        "mom20": -2.83,
+        "mom5": 0.84
       },
       "SOXX": {
         "ticker": "SOXX",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -3.49,
-        "mom5": -5.01
+        "mom20": -4.48,
+        "mom5": -5.98
       },
       "SPY": {
         "ticker": "SPY",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": -0.36,
-        "mom5": 2.09
+        "mom20": -0.56,
+        "mom5": 1.88
       },
       "XLE": {
         "ticker": "XLE",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -8.48,
-        "mom5": -1.38
+        "mom20": -8.39,
+        "mom5": -1.28
       }
     },
     "sectores": {
       "chips": {
         "estado": "NEUTRO",
         "score": 0,
-        "mom20_prom": -2.96,
-        "detalle": "SOXX -3.49% · QQQ -2.43%",
+        "mom20_prom": -3.66,
+        "detalle": "SOXX -4.48% · QQQ -2.83%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -79,8 +79,8 @@
       "energia": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -19.01,
-        "detalle": "XLE -8.48% · CL=F -29.54%",
+        "mom20_prom": -18.95,
+        "detalle": "XLE -8.39% · CL=F -29.5%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -89,8 +89,8 @@
       "cripto": {
         "estado": "NEUTRO",
         "score": 0,
-        "mom20_prom": -0.42,
-        "detalle": "BTC-USD -3.03% · ETH-USD 2.19%",
+        "mom20_prom": -0.43,
+        "detalle": "BTC-USD -3.02% · ETH-USD 2.16%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -99,8 +99,8 @@
       "tech_ia": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": 0.98,
-        "detalle": "QQQ -2.43% · ARKK 5.72% · SPY -0.36%",
+        "mom20_prom": 0.65,
+        "detalle": "QQQ -2.83% · ARKK 5.34% · SPY -0.56%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -132,7 +132,8 @@
     "usar_drawdown_como_bloqueo": true,
     "permitir_buy_strong_en_modo_defensivo_drawdown": true,
     "permitir_buy_strong_sobre_exposicion": false,
-    "permitir_buy_strong_sobre_riesgo": false
+    "permitir_buy_strong_sobre_riesgo": false,
+    "max_dias_holding": 2.0
   },
   "summary_from_bot": {
     "max_drawdown_pct": 27.55,
@@ -140,33 +141,33 @@
     "racha_max_perdidas": 14,
     "racha_max_ganadas": 5,
     "racha_actual_tipo": "GANADAS",
-    "racha_actual": 1,
-    "exposicion_abierta_usd": 2072.3,
-    "exposicion_abierta_pct": 36.0,
-    "riesgo_total_abierto_usd": 48.71,
-    "riesgo_total_abierto_pct": 0.85,
-    "operaciones_abiertas": 2,
+    "racha_actual": 3,
+    "exposicion_abierta_usd": 0.0,
+    "exposicion_abierta_pct": 0.0,
+    "riesgo_total_abierto_usd": 0.0,
+    "riesgo_total_abierto_pct": 0.0,
+    "operaciones_abiertas": 0,
     "max_operaciones_abiertas": 20
   },
   "metrics_from_bot": {
-    "profit_factor": 1.13,
-    "ganancia_promedio_pct": 7.24,
+    "profit_factor": 1.14,
+    "ganancia_promedio_pct": 7.14,
     "perdida_promedio_pct": -2.89,
-    "ratio_ganancia_perdida": 2.51,
+    "ratio_ganancia_perdida": 2.47,
     "expectativa_pct_por_operacion": 0.48,
-    "total_ganado_usd": 6640.88,
+    "total_ganado_usd": 6683.79,
     "total_perdido_usd": 5884.49,
-    "sharpe_ratio": 0.604,
-    "sortino_ratio": 1.511,
+    "sharpe_ratio": 0.61,
+    "sortino_ratio": 1.521,
     "calmar_ratio": null,
     "cagr_estimado_pct": null,
-    "periodo_dias": 37,
-    "win_rate_pct": 33.22,
-    "avg_win_usd": 67.08,
+    "periodo_dias": 44,
+    "win_rate_pct": 33.67,
+    "avg_win_usd": 66.18,
     "avg_loss_usd": 29.57,
-    "expectancy_usd": 2.54,
-    "payoff_ratio": 2.27,
-    "avg_holding_dias": 4.2,
+    "expectancy_usd": 2.67,
+    "payoff_ratio": 2.24,
+    "avg_holding_dias": 4.3,
     "winrate_por_sector": [
       {
         "sector": "Equipos chips",
@@ -271,6 +272,12 @@
         "pnl_usd": 33.04
       },
       {
+        "sector": "ETF Dow",
+        "trades": 4,
+        "win_rate_pct": 50.0,
+        "pnl_usd": 31.59
+      },
+      {
         "sector": "ETF Industrial",
         "trades": 2,
         "win_rate_pct": 50.0,
@@ -283,28 +290,22 @@
         "pnl_usd": 19.35
       },
       {
+        "sector": "ETF Russell",
+        "trades": 4,
+        "win_rate_pct": 50.0,
+        "pnl_usd": 17.56
+      },
+      {
         "sector": "ETF Finanzas",
         "trades": 3,
         "win_rate_pct": 33.3,
         "pnl_usd": 14.33
       },
       {
-        "sector": "ETF Dow",
-        "trades": 3,
-        "win_rate_pct": 33.3,
-        "pnl_usd": 8.83
-      },
-      {
         "sector": "ETF Salud",
         "trades": 4,
         "win_rate_pct": 25.0,
         "pnl_usd": 6.7
-      },
-      {
-        "sector": "ETF Russell",
-        "trades": 3,
-        "win_rate_pct": 33.3,
-        "pnl_usd": -2.59
       },
       {
         "sector": "Materiales",
@@ -446,20 +447,20 @@
     "Reglas operativas V4.5 en modo DEFENSIVO."
   ],
   "can_open_more_positions": true,
-  "remaining_position_slots": 18,
-  "exposure_pct": 42.25,
-  "open_risk_pct": 0.97,
+  "remaining_position_slots": 20,
+  "exposure_pct": 0.0,
+  "open_risk_pct": 0.0,
   "operational_rules": {
     "version": "V4.4",
     "estado": "DEFENSIVO",
-    "exposicion_abierta_pct": 36.0,
-    "riesgo_abierto_pct": 0.85,
+    "exposicion_abierta_pct": 0.0,
+    "riesgo_abierto_pct": 0.0,
     "drawdown_pct": 27.55,
     "max_exposicion_total_pct": 80.0,
     "max_riesgo_total_abierto_pct": 10.0,
     "modo_defensivo_drawdown_pct": 18.0,
     "bloquear_entradas_drawdown_pct": 35.0,
-    "bloqueos_generados": 85,
+    "bloqueos_generados": 86,
     "motivo_principal": "Volumen relativo bajo",
     "reglas_activas": {
       "exposicion": true,
