@@ -23,11 +23,11 @@
     "pausar_si_perdidas_seguidas": 8,
     "bloquear_si_perdidas_seguidas": 12,
     "rr_minimo": 1.5,
-    "volumen_relativo_minimo": 0.6,
+    "volumen_relativo_minimo": 0.2,
     "max_dias_holding": 2,
     "permitir_buy_strong_en_mercado_debil": false,
     "max_riesgo_total_abierto_pct": 10.0,
-    "modo_defensivo_drawdown_pct": 18.0,
+    "modo_defensivo_drawdown_pct": 30.0,
     "bloquear_entradas_drawdown_pct": 35.0,
     "activar_reglas_operativas": true,
     "usar_exposicion_como_bloqueo": true,
@@ -57,8 +57,8 @@
     "V4.9 estrategia de corto plazo (overnight): no se vende el mismo día de compra; fuerza salida a los 2 días.",
     "V4.9 ATR: stop 0.5×ATR, objetivo 0.85×ATR. RR=1.70×. Alcanzable en 1 día (stop≈1-2.5%, obj≈1.7-4.5%).",
     "V4.9 cooldown: si un ticker se cerró hoy, no puede recomprarse hasta mañana.",
-    "V4.9 volumen mínimo: 0.8 → 0.6 (permite más señales con volumen moderado).",
-    "V4.8 herencia: drawdown bloqueo 35%, modo defensivo 18%, caja real V4.5.",
+    "V4.9 volumen mínimo: 0.2 — el bot mide volumen parcial del día (bar intraday vs promedio diario completo). A las 10AM solo hay 20-25% acumulado, umbral 0.6 era imposible.",
+    "V4.9 modo defensivo: 30% (antes 18%) — con drawdown 27.55% el sistema estaba atrapado: solo acepta BUY STRONG pero nunca hay BUY STRONG. Deadlock roto.",
     "No ejecuta dinero real. Broker real permanece deshabilitado."
   ]
 }
