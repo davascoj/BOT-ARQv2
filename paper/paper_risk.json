@@ -1,76 +1,76 @@
 {
-  "updated": "06-07-2026 02:58 PM Colombia",
+  "updated": "07-07-2026 08:34 AM Colombia",
   "version": "V4.5",
   "mode": "PAPER_TRADING_SIMULATED",
   "market_state": {
     "estado": "NEUTRO +",
     "score": 4,
-    "spy20": -0.55,
-    "qqq20": -2.3,
+    "spy20": 2.02,
+    "qqq20": 1.53,
     "drivers": {
       "ARKK": {
         "ticker": "ARKK",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 4.23,
-        "mom5": 6.82
+        "mom20": 11.79,
+        "mom5": 3.27
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": -2.77,
-        "mom5": 6.3
+        "mom20": -2.0,
+        "mom5": 2.68
       },
       "CL=F": {
         "ticker": "CL=F",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -26.14,
-        "mom5": -0.74
+        "mom20": -23.51,
+        "mom5": -2.12
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 0.22,
-        "mom5": 11.52
+        "mom20": 1.33,
+        "mom5": 4.29
       },
       "QQQ": {
         "ticker": "QQQ",
-        "estado": "POSITIVO",
-        "score": 3,
-        "mom20": -2.3,
-        "mom5": 2.3
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": 1.53,
+        "mom5": -1.25
       },
       "SOXX": {
         "ticker": "SOXX",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -3.41,
-        "mom5": -1.36
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": 3.19,
+        "mom5": -9.38
       },
       "SPY": {
         "ticker": "SPY",
-        "estado": "POSITIVO",
-        "score": 3,
-        "mom20": -0.55,
-        "mom5": 3.02
+        "estado": "FUERTE",
+        "score": 6,
+        "mom20": 2.02,
+        "mom5": 1.28
       },
       "XLE": {
         "ticker": "XLE",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -8.84,
-        "mom5": -1.24
+        "mom20": -5.93,
+        "mom5": 0.52
       }
     },
     "sectores": {
       "chips": {
         "estado": "NEUTRO",
         "score": 0,
-        "mom20_prom": -2.85,
-        "detalle": "SOXX -3.41% · QQQ -2.3%",
+        "mom20_prom": 2.36,
+        "detalle": "SOXX 3.19% · QQQ 1.53%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -79,8 +79,8 @@
       "energia": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -17.49,
-        "detalle": "XLE -8.84% · CL=F -26.14%",
+        "mom20_prom": -14.72,
+        "detalle": "XLE -5.93% · CL=F -23.51%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -89,8 +89,8 @@
       "cripto": {
         "estado": "NEUTRO +",
         "score": 3,
-        "mom20_prom": -1.27,
-        "detalle": "BTC-USD -2.77% · ETH-USD 0.22%",
+        "mom20_prom": -0.33,
+        "detalle": "BTC-USD -2.0% · ETH-USD 1.33%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -99,8 +99,8 @@
       "tech_ia": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": 0.46,
-        "detalle": "QQQ -2.3% · ARKK 4.23% · SPY -0.55%",
+        "mom20_prom": 5.11,
+        "detalle": "QQQ 1.53% · ARKK 11.79% · SPY 2.02%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -141,32 +141,32 @@
     "racha_max_perdidas": 14,
     "racha_max_ganadas": 5,
     "racha_actual_tipo": "GANADAS",
-    "racha_actual": 2,
-    "exposicion_abierta_usd": 1149.02,
-    "exposicion_abierta_pct": 20.0,
-    "riesgo_total_abierto_usd": 9.85,
-    "riesgo_total_abierto_pct": 0.17,
-    "operaciones_abiertas": 1,
+    "racha_actual": 3,
+    "exposicion_abierta_usd": 0.0,
+    "exposicion_abierta_pct": 0.0,
+    "riesgo_total_abierto_usd": 0.0,
+    "riesgo_total_abierto_pct": 0.0,
+    "operaciones_abiertas": 0,
     "max_operaciones_abiertas": 20
   },
   "metrics_from_bot": {
     "profit_factor": 1.13,
-    "ganancia_promedio_pct": 7.04,
+    "ganancia_promedio_pct": 6.98,
     "perdida_promedio_pct": -2.9,
-    "ratio_ganancia_perdida": 2.43,
+    "ratio_ganancia_perdida": 2.41,
     "expectativa_pct_por_operacion": 0.46,
-    "total_ganado_usd": 6549.63,
+    "total_ganado_usd": 6568.12,
     "total_perdido_usd": 5804.51,
-    "sharpe_ratio": 0.577,
-    "sortino_ratio": 1.432,
+    "sharpe_ratio": 0.583,
+    "sortino_ratio": 1.446,
     "calmar_ratio": null,
     "cagr_estimado_pct": null,
-    "periodo_dias": 48,
-    "win_rate_pct": 33.78,
-    "avg_win_usd": 64.85,
+    "periodo_dias": 49,
+    "win_rate_pct": 34.0,
+    "avg_win_usd": 64.39,
     "avg_loss_usd": 29.32,
-    "expectancy_usd": 2.49,
-    "payoff_ratio": 2.21,
+    "expectancy_usd": 2.54,
+    "payoff_ratio": 2.2,
     "avg_holding_dias": 4.3,
     "winrate_por_sector": [
       {
@@ -278,6 +278,12 @@
         "pnl_usd": 29.12
       },
       {
+        "sector": "ETF Salud",
+        "trades": 5,
+        "win_rate_pct": 40.0,
+        "pnl_usd": 24.84
+      },
+      {
         "sector": "ETF Nasdaq",
         "trades": 5,
         "win_rate_pct": 60.0,
@@ -294,12 +300,6 @@
         "trades": 3,
         "win_rate_pct": 33.3,
         "pnl_usd": 14.11
-      },
-      {
-        "sector": "ETF Salud",
-        "trades": 4,
-        "win_rate_pct": 25.0,
-        "pnl_usd": 6.34
       },
       {
         "sector": "Materiales",
@@ -447,20 +447,20 @@
     "Reglas operativas V4.5 en modo DEFENSIVO."
   ],
   "can_open_more_positions": true,
-  "remaining_position_slots": 19,
-  "exposure_pct": 22.93,
-  "open_risk_pct": 0.2,
+  "remaining_position_slots": 20,
+  "exposure_pct": 0.0,
+  "open_risk_pct": 0.0,
   "operational_rules": {
     "version": "V4.4",
     "estado": "DEFENSIVO",
-    "exposicion_abierta_pct": 17.42,
-    "riesgo_abierto_pct": 0.15,
+    "exposicion_abierta_pct": 0.0,
+    "riesgo_abierto_pct": 0.0,
     "drawdown_pct": 27.55,
     "max_exposicion_total_pct": 80.0,
     "max_riesgo_total_abierto_pct": 10.0,
     "modo_defensivo_drawdown_pct": 18.0,
     "bloquear_entradas_drawdown_pct": 35.0,
-    "bloqueos_generados": 100,
+    "bloqueos_generados": 87,
     "motivo_principal": "Volumen relativo bajo",
     "reglas_activas": {
       "exposicion": true,
