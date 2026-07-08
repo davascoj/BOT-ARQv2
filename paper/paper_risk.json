@@ -1,86 +1,86 @@
 {
-  "updated": "08-07-2026 10:43 AM Colombia",
+  "updated": "08-07-2026 10:48 AM Colombia",
   "version": "V4.5",
   "mode": "PAPER_TRADING_SIMULATED",
   "market_state": {
-    "estado": "NEUTRO",
-    "score": 0,
-    "spy20": 0.5,
-    "qqq20": -1.66,
+    "estado": "DÉBIL",
+    "score": -8,
+    "spy20": 0.42,
+    "qqq20": -1.83,
     "drivers": {
       "ARKK": {
         "ticker": "ARKK",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 4.12,
-        "mom5": -2.24
+        "mom20": 3.76,
+        "mom5": -2.59
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -2.01,
-        "mom5": -1.45
+        "mom20": -2.18,
+        "mom5": -1.63
       },
       "CL=F": {
         "ticker": "CL=F",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -17.33,
-        "mom5": 8.6
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": -17.05,
+        "mom5": 8.96
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": 0.64,
-        "mom5": -2.05
+        "mom20": 0.4,
+        "mom5": -2.29
       },
       "QQQ": {
         "ticker": "QQQ",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -1.66,
-        "mom5": -4.48
+        "mom20": -1.83,
+        "mom5": -4.65
       },
       "SOXX": {
         "ticker": "SOXX",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -3.62,
-        "mom5": -14.08
+        "mom20": -3.92,
+        "mom5": -14.36
       },
       "SPY": {
         "ticker": "SPY",
-        "estado": "POSITIVO",
-        "score": 3,
-        "mom20": 0.5,
-        "mom5": -0.77
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": 0.42,
+        "mom5": -0.85
       },
       "XLE": {
         "ticker": "XLE",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": -3.48,
-        "mom5": 5.24
+        "mom20": -3.42,
+        "mom5": 5.31
       }
     },
     "sectores": {
       "chips": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -2.64,
-        "detalle": "SOXX -3.62% · QQQ -1.66%",
+        "mom20_prom": -2.88,
+        "detalle": "SOXX -3.92% · QQQ -1.83%",
         "drivers": [
           "SOXX",
           "QQQ"
         ]
       },
       "energia": {
-        "estado": "NO ACOMPAÑA",
-        "score": -8,
-        "mom20_prom": -10.4,
-        "detalle": "XLE -3.48% · CL=F -17.33%",
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20_prom": -10.23,
+        "detalle": "XLE -3.42% · CL=F -17.05%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -89,8 +89,8 @@
       "cripto": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -0.68,
-        "detalle": "BTC-USD -2.01% · ETH-USD 0.64%",
+        "mom20_prom": -0.89,
+        "detalle": "BTC-USD -2.18% · ETH-USD 0.4%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -99,8 +99,8 @@
       "tech_ia": {
         "estado": "NEUTRO",
         "score": 0,
-        "mom20_prom": 0.99,
-        "detalle": "QQQ -1.66% · ARKK 4.12% · SPY 0.5%",
+        "mom20_prom": 0.78,
+        "detalle": "QQQ -1.83% · ARKK 3.76% · SPY 0.42%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -448,18 +448,20 @@
     ]
   },
   "diagnostic_from_bot": {
-    "modo": "ACTIVO",
+    "modo": "DEFENSIVO",
     "riesgo_sistema": "ALTO",
-    "mercado": "NEUTRO",
+    "mercado": "DÉBIL",
     "mensaje": "Sistema en simulación con control de riesgo; validar varios meses antes de dinero real.",
-    "alertas": []
+    "alertas": [
+      "Mercado general débil por SPY/QQQ"
+    ]
   },
   "warnings": [
     "Diagnóstico general marca riesgo ALTO."
   ],
   "can_open_more_positions": true,
   "remaining_position_slots": 15,
-  "exposure_pct": 72.48,
+  "exposure_pct": 72.14,
   "open_risk_pct": 1.7,
   "operational_rules": {
     "version": "V4.4",
@@ -471,8 +473,8 @@
     "max_riesgo_total_abierto_pct": 10.0,
     "modo_defensivo_drawdown_pct": 30.0,
     "bloquear_entradas_drawdown_pct": 35.0,
-    "bloqueos_generados": 71,
-    "motivo_principal": "Exposición resultante superaría límite: 85.66%",
+    "bloqueos_generados": 0,
+    "motivo_principal": "SIN BLOQUEOS",
     "reglas_activas": {
       "exposicion": true,
       "riesgo_abierto": true,
