@@ -1,76 +1,76 @@
 {
-  "updated": "15-07-2026 11:48 AM Colombia",
+  "updated": "15-07-2026 11:53 AM Colombia",
   "version": "V4.5",
   "mode": "PAPER_TRADING_SIMULATED",
   "market_state": {
-    "estado": "NEUTRO",
-    "score": 0,
-    "spy20": -0.26,
-    "qqq20": -4.27,
+    "estado": "NEUTRO +",
+    "score": 4,
+    "spy20": -0.16,
+    "qqq20": -4.09,
     "drivers": {
       "ARKK": {
         "ticker": "ARKK",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -1.21,
-        "mom5": -1.86
+        "mom20": -0.9,
+        "mom5": -1.55
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 8.65,
-        "mom5": 1.18
+        "mom20": 8.78,
+        "mom5": 1.31
       },
       "CL=F": {
         "ticker": "CL=F",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": -1.75,
-        "mom5": 7.92
+        "mom20": -1.7,
+        "mom5": 7.97
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 22.07,
-        "mom5": 6.37
+        "mom20": 22.31,
+        "mom5": 6.58
       },
       "QQQ": {
         "ticker": "QQQ",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -4.27,
-        "mom5": -0.0
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": -4.09,
+        "mom5": 0.19
       },
       "SOXX": {
         "ticker": "SOXX",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -13.87,
-        "mom5": -3.69
+        "mom20": -13.47,
+        "mom5": -3.24
       },
       "SPY": {
         "ticker": "SPY",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": -0.26,
-        "mom5": 0.74
+        "mom20": -0.16,
+        "mom5": 0.85
       },
       "XLE": {
         "ticker": "XLE",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 1.87,
-        "mom5": 1.05
+        "mom20": 1.75,
+        "mom5": 0.93
       }
     },
     "sectores": {
       "chips": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -9.07,
-        "detalle": "SOXX -13.87% · QQQ -4.27%",
+        "mom20_prom": -8.78,
+        "detalle": "SOXX -13.47% · QQQ -4.09%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -79,8 +79,8 @@
       "energia": {
         "estado": "NEUTRO +",
         "score": 3,
-        "mom20_prom": 0.06,
-        "detalle": "XLE 1.87% · CL=F -1.75%",
+        "mom20_prom": 0.03,
+        "detalle": "XLE 1.75% · CL=F -1.7%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -89,18 +89,18 @@
       "cripto": {
         "estado": "NEUTRO +",
         "score": 3,
-        "mom20_prom": 15.36,
-        "detalle": "BTC-USD 8.65% · ETH-USD 22.07%",
+        "mom20_prom": 15.54,
+        "detalle": "BTC-USD 8.78% · ETH-USD 22.31%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
         ]
       },
       "tech_ia": {
-        "estado": "NO ACOMPAÑA",
-        "score": -8,
-        "mom20_prom": -1.91,
-        "detalle": "QQQ -4.27% · ARKK -1.21% · SPY -0.26%",
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20_prom": -1.72,
+        "detalle": "QQQ -4.09% · ARKK -0.9% · SPY -0.16%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -450,7 +450,7 @@
   "diagnostic_from_bot": {
     "modo": "ACTIVO",
     "riesgo_sistema": "ALTO",
-    "mercado": "NEUTRO",
+    "mercado": "NEUTRO +",
     "mensaje": "Sistema en simulación con control de riesgo; validar varios meses antes de dinero real.",
     "alertas": []
   },
@@ -459,7 +459,7 @@
   ],
   "can_open_more_positions": true,
   "remaining_position_slots": 15,
-  "exposure_pct": 74.72,
+  "exposure_pct": 74.85,
   "open_risk_pct": 1.29,
   "operational_rules": {
     "version": "V4.4",
@@ -471,7 +471,7 @@
     "max_riesgo_total_abierto_pct": 10.0,
     "modo_defensivo_drawdown_pct": 30.0,
     "bloquear_entradas_drawdown_pct": 35.0,
-    "bloqueos_generados": 59,
+    "bloqueos_generados": 84,
     "motivo_principal": "Exposición resultante superaría límite: 85.55%",
     "reglas_activas": {
       "exposicion": true,
