@@ -1,76 +1,76 @@
 {
-  "updated": "20-07-2026 08:54 AM Colombia",
+  "updated": "20-07-2026 08:58 AM Colombia",
   "version": "V4.5",
   "mode": "PAPER_TRADING_SIMULATED",
   "market_state": {
-    "estado": "NEUTRO",
-    "score": 0,
-    "spy20": 0.12,
-    "qqq20": -4.9,
+    "estado": "DÉBIL",
+    "score": -8,
+    "spy20": -0.05,
+    "qqq20": -5.05,
     "drivers": {
       "ARKK": {
         "ticker": "ARKK",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -5.69,
-        "mom5": -3.34
+        "mom20": -5.94,
+        "mom5": -3.59
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 10.31,
-        "mom5": -0.18
+        "mom20": 9.88,
+        "mom5": -0.57
       },
       "CL=F": {
         "ticker": "CL=F",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 6.1,
-        "mom5": 4.01
+        "mom20": 6.23,
+        "mom5": 4.13
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 19.28,
-        "mom5": -2.33
+        "mom20": 18.78,
+        "mom5": -2.75
       },
       "QQQ": {
         "ticker": "QQQ",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -4.9,
-        "mom5": -1.15
+        "mom20": -5.05,
+        "mom5": -1.31
       },
       "SOXX": {
         "ticker": "SOXX",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -16.04,
-        "mom5": -3.02
+        "mom20": -16.32,
+        "mom5": -3.35
       },
       "SPY": {
         "ticker": "SPY",
-        "estado": "POSITIVO",
-        "score": 3,
-        "mom20": 0.12,
-        "mom5": -0.21
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": -0.05,
+        "mom5": -0.38
       },
       "XLE": {
         "ticker": "XLE",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 8.33,
-        "mom5": 1.92
+        "mom20": 8.47,
+        "mom5": 2.05
       }
     },
     "sectores": {
       "chips": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -10.47,
-        "detalle": "SOXX -16.04% · QQQ -4.9%",
+        "mom20_prom": -10.69,
+        "detalle": "SOXX -16.32% · QQQ -5.05%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -79,8 +79,8 @@
       "energia": {
         "estado": "NEUTRO +",
         "score": 3,
-        "mom20_prom": 7.21,
-        "detalle": "XLE 8.33% · CL=F 6.1%",
+        "mom20_prom": 7.35,
+        "detalle": "XLE 8.47% · CL=F 6.23%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -89,8 +89,8 @@
       "cripto": {
         "estado": "NEUTRO +",
         "score": 3,
-        "mom20_prom": 14.8,
-        "detalle": "BTC-USD 10.31% · ETH-USD 19.28%",
+        "mom20_prom": 14.33,
+        "detalle": "BTC-USD 9.88% · ETH-USD 18.78%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -99,8 +99,8 @@
       "tech_ia": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -3.49,
-        "detalle": "QQQ -4.9% · ARKK -5.69% · SPY 0.12%",
+        "mom20_prom": -3.68,
+        "detalle": "QQQ -5.05% · ARKK -5.94% · SPY -0.05%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -454,11 +454,13 @@
     ]
   },
   "diagnostic_from_bot": {
-    "modo": "ACTIVO",
+    "modo": "DEFENSIVO",
     "riesgo_sistema": "ALTO",
-    "mercado": "NEUTRO",
+    "mercado": "DÉBIL",
     "mensaje": "Sistema en simulación con control de riesgo; validar varios meses antes de dinero real.",
-    "alertas": []
+    "alertas": [
+      "Mercado general débil por SPY/QQQ"
+    ]
   },
   "warnings": [
     "Diagnóstico general marca riesgo ALTO."
@@ -477,8 +479,8 @@
     "max_riesgo_total_abierto_pct": 10.0,
     "modo_defensivo_drawdown_pct": 30.0,
     "bloquear_entradas_drawdown_pct": 35.0,
-    "bloqueos_generados": 63,
-    "motivo_principal": "Volumen relativo bajo",
+    "bloqueos_generados": 0,
+    "motivo_principal": "SIN BLOQUEOS",
     "reglas_activas": {
       "exposicion": true,
       "riesgo_abierto": true,
