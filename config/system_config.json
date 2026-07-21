@@ -1,6 +1,6 @@
 {
-  "version": "4.9.0",
-  "name": "BOT-ARQ V4.9 - Trading Corto Plazo (hold 1-2 días, overnight)",
+  "version": "4.9.1",
+  "name": "BOT-ARQ V4.9.1 - Corto Plazo (stop siempre activo, ATR 0.8/1.2)",
   "mode": "PAPER_TRADING_SIMULATED",
   "data_source": "yfinance",
   "dashboard": {
@@ -54,8 +54,9 @@
     "force_manual_supported": true
   },
   "notes": [
-    "V4.9 estrategia de corto plazo (overnight): no se vende el mismo día de compra; fuerza salida a los 2 días.",
-    "V4.9 ATR: stop 0.5×ATR, objetivo 0.85×ATR. RR=1.70×. Alcanzable en 1 día (stop≈1-2.5%, obj≈1.7-4.5%).",
+    "V4.9.1 STOP SIEMPRE ACTIVO: el stop ejecuta incluso el día de compra. Bloquearlo el día 0 dejó correr pérdidas (HAL -6.68% con stop planeado -1.35%).",
+    "V4.9.1 ATR: stop 0.8×ATR, objetivo 1.2×ATR. RR=1.5×. El stop 0.5×ATR se activaba por ruido normal de 1 día (win rate cayó a 25%).",
+    "V4.9 tomas de ganancia (objetivo/señal/tiempo) solo desde día 1: no se vende en ganancia el mismo día; fuerza salida a los 2 días solo si hay ganancia.",
     "V4.9 cooldown: si un ticker se cerró hoy, no puede recomprarse hasta mañana.",
     "V4.9 volumen mínimo: 0.2 — el bot mide volumen parcial del día (bar intraday vs promedio diario completo). A las 10AM solo hay 20-25% acumulado, umbral 0.6 era imposible.",
     "V4.9 modo defensivo: 30% (antes 18%) — con drawdown 27.55% el sistema estaba atrapado: solo acepta BUY STRONG pero nunca hay BUY STRONG. Deadlock roto.",

@@ -767,8 +767,8 @@ def compute_signal(df, ticker, mercado):
 
         entrada_min = round(precio - (atr * 0.35), 2)
         entrada_max = round(precio + (atr * 0.15), 2)
-        stop = round(precio - (atr * 0.5), 2)
-        objetivo = round(precio + (atr * 0.85), 2)
+        stop = round(precio - (atr * 0.8), 2)      # V4.9.1: 0.8×ATR — sobrevive ruido normal de 1 día (0.5 era demasiado ajustado)
+        objetivo = round(precio + (atr * 1.2), 2)  # V4.9.1: 1.2×ATR — RR=1.5, alcanzable en 1-2 días
         relacion_rr = round((objetivo - precio) / max(precio - stop, 0.01), 2)
 
         if (
@@ -1702,13 +1702,18 @@ def actualizar_historial(historial, resultados, mercado):
         dias_abierta = op.get("dias_abierta", 0)
         max_dias = CONFIG_SIMULACION.get("max_dias_holding", 99)
 
-        # V4.9: no cerrar el mismo día de compra (capturar volatilidad overnight)
-        if dias_abierta >= 1:
-            if stop > 0 and precio_actual <= stop:
-                cerrar = True
-                resultado = "PERDIDA STOP"
-                tipo_cierre = "STOP"
-            elif objetivo > 0 and precio_actual >= objetivo:
+        # V4.9.1: el STOP está SIEMPRE activo, incluso el día de compra.
+        # Bloquearlo el día 0 dejaba correr la pérdida overnight: stops planeados
+        # de -1.3% terminaban ejecutando a -5% o -6% (HAL, UNH, AFRM).
+        if stop > 0 and precio_actual <= stop:
+            cerrar = True
+            resultado = "PERDIDA STOP"
+            tipo_cierre = "STOP"
+
+        # V4.9: tomas de ganancia (objetivo/señal/tiempo) solo desde el día 1
+        # (capturar volatilidad overnight — no vender en ganancia el mismo día).
+        if not cerrar and dias_abierta >= 1:
+            if objetivo > 0 and precio_actual >= objetivo:
                 cerrar = True
                 resultado = "GANADA OBJETIVO"
                 tipo_cierre = "OBJETIVO"
@@ -2053,7 +2058,7 @@ def main():
 
     salida = {
         "actualizado": fecha_visible(),
-        "version_bot": "V4.9 TRADING CORTO PLAZO",
+        "version_bot": "V4.9.1 STOP SIEMPRE ACTIVO",
         "contexto_mercado": mercado,
         "config_operativa": resumen_config_operativa(CONFIG_SISTEMA, CONFIG_SIMULACION) if resumen_config_operativa else {"simulation_config": CONFIG_SIMULACION},
         "resultados": resultados,
