@@ -1,86 +1,86 @@
 {
-  "updated": "28-07-2026 08:43 AM Colombia",
+  "updated": "28-07-2026 08:48 AM Colombia",
   "version": "V4.5",
   "mode": "PAPER_TRADING_SIMULATED",
   "market_state": {
     "estado": "DÉBIL",
     "score": -8,
-    "spy20": -0.37,
-    "qqq20": -7.01,
+    "spy20": -0.56,
+    "qqq20": -7.4,
     "drivers": {
       "ARKK": {
         "ticker": "ARKK",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -12.09,
-        "mom5": -8.77
+        "mom20": -12.56,
+        "mom5": -9.26
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": 1.03,
-        "mom5": -3.3
+        "mom20": 0.96,
+        "mom5": -3.36
       },
       "CL=F": {
         "ticker": "CL=F",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": 14.47,
-        "mom5": -4.62
+        "mom20": 14.32,
+        "mom5": -4.75
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 6.93,
-        "mom5": -0.73
+        "mom20": 6.96,
+        "mom5": -0.7
       },
       "QQQ": {
         "ticker": "QQQ",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -7.01,
-        "mom5": -5.03
+        "mom20": -7.4,
+        "mom5": -5.42
       },
       "SOXX": {
         "ticker": "SOXX",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -20.4,
-        "mom5": -11.52
+        "mom20": -20.93,
+        "mom5": -12.1
       },
       "SPY": {
         "ticker": "SPY",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -0.37,
-        "mom5": -1.34
+        "mom20": -0.56,
+        "mom5": -1.53
       },
       "XLE": {
         "ticker": "XLE",
-        "estado": "NEUTRO",
-        "score": 0,
-        "mom20": 9.03,
-        "mom5": -0.14
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": 9.23,
+        "mom5": 0.04
       }
     },
     "sectores": {
       "chips": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -13.7,
-        "detalle": "SOXX -20.4% · QQQ -7.01%",
+        "mom20_prom": -14.16,
+        "detalle": "SOXX -20.93% · QQQ -7.4%",
         "drivers": [
           "SOXX",
           "QQQ"
         ]
       },
       "energia": {
-        "estado": "NEUTRO",
-        "score": 0,
-        "mom20_prom": 11.75,
-        "detalle": "XLE 9.03% · CL=F 14.47%",
+        "estado": "NEUTRO +",
+        "score": 3,
+        "mom20_prom": 11.78,
+        "detalle": "XLE 9.23% · CL=F 14.32%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -89,8 +89,8 @@
       "cripto": {
         "estado": "NEUTRO +",
         "score": 3,
-        "mom20_prom": 3.98,
-        "detalle": "BTC-USD 1.03% · ETH-USD 6.93%",
+        "mom20_prom": 3.96,
+        "detalle": "BTC-USD 0.96% · ETH-USD 6.96%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -99,8 +99,8 @@
       "tech_ia": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -6.49,
-        "detalle": "QQQ -7.01% · ARKK -12.09% · SPY -0.37%",
+        "mom20_prom": -6.84,
+        "detalle": "QQQ -7.4% · ARKK -12.56% · SPY -0.56%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -141,32 +141,32 @@
     "racha_max_perdidas": 14,
     "racha_max_ganadas": 6,
     "racha_actual_tipo": "GANADAS",
-    "racha_actual": 3,
-    "exposicion_abierta_usd": 1765.29,
-    "exposicion_abierta_pct": 36.0,
-    "riesgo_total_abierto_usd": 23.72,
-    "riesgo_total_abierto_pct": 0.48,
-    "operaciones_abiertas": 2,
+    "racha_actual": 4,
+    "exposicion_abierta_usd": 985.74,
+    "exposicion_abierta_pct": 20.0,
+    "riesgo_total_abierto_usd": 9.66,
+    "riesgo_total_abierto_pct": 0.2,
+    "operaciones_abiertas": 1,
     "max_operaciones_abiertas": 20
   },
   "metrics_from_bot": {
-    "profit_factor": 0.98,
-    "ganancia_promedio_pct": 6.09,
+    "profit_factor": 0.99,
+    "ganancia_promedio_pct": 6.05,
     "perdida_promedio_pct": -2.82,
-    "ratio_ganancia_perdida": 2.16,
-    "expectativa_pct_por_operacion": 0.05,
-    "total_ganado_usd": 5080.98,
+    "ratio_ganancia_perdida": 2.15,
+    "expectativa_pct_por_operacion": 0.06,
+    "total_ganado_usd": 5106.08,
     "total_perdido_usd": 5177.39,
-    "sharpe_ratio": 0.07,
-    "sortino_ratio": 0.159,
+    "sharpe_ratio": 0.082,
+    "sortino_ratio": 0.187,
     "calmar_ratio": null,
     "cagr_estimado_pct": null,
-    "periodo_dias": 66,
-    "win_rate_pct": 32.21,
-    "avg_win_usd": 52.93,
+    "periodo_dias": 67,
+    "win_rate_pct": 32.44,
+    "avg_win_usd": 52.64,
     "avg_loss_usd": 25.63,
-    "expectancy_usd": -0.33,
-    "payoff_ratio": 2.07,
+    "expectancy_usd": -0.24,
+    "payoff_ratio": 2.05,
     "avg_holding_dias": 3.8,
     "winrate_por_sector": [
       {
@@ -320,6 +320,12 @@
         "pnl_usd": -14.44
       },
       {
+        "sector": "Autos eléctricos",
+        "trades": 5,
+        "win_rate_pct": 40.0,
+        "pnl_usd": -18.11
+      },
+      {
         "sector": "ETF Dividendos",
         "trades": 2,
         "win_rate_pct": 0.0,
@@ -360,12 +366,6 @@
         "trades": 3,
         "win_rate_pct": 33.3,
         "pnl_usd": -41.42
-      },
-      {
-        "sector": "Autos eléctricos",
-        "trades": 4,
-        "win_rate_pct": 25.0,
-        "pnl_usd": -43.22
       },
       {
         "sector": "Fintech",
@@ -472,14 +472,14 @@
     "Diagnóstico general marca riesgo ALTO."
   ],
   "can_open_more_positions": true,
-  "remaining_position_slots": 18,
-  "exposure_pct": 35.65,
-  "open_risk_pct": 0.47,
+  "remaining_position_slots": 19,
+  "exposure_pct": 19.84,
+  "open_risk_pct": 0.19,
   "operational_rules": {
     "version": "V4.4",
     "estado": "NORMAL",
-    "exposicion_abierta_pct": 36.0,
-    "riesgo_abierto_pct": 0.48,
+    "exposicion_abierta_pct": 20.0,
+    "riesgo_abierto_pct": 0.2,
     "drawdown_pct": 27.55,
     "max_exposicion_total_pct": 80.0,
     "max_riesgo_total_abierto_pct": 10.0,
