@@ -1,86 +1,86 @@
 {
-  "updated": "06-08-2026 01:25 PM Colombia",
+  "updated": "06-08-2026 02:44 PM Colombia",
   "version": "V4.5",
   "mode": "PAPER_TRADING_SIMULATED",
   "market_state": {
     "estado": "NEUTRO +",
     "score": 4,
-    "spy20": 2.36,
-    "qqq20": -0.94,
+    "spy20": 2.23,
+    "qqq20": -1.16,
     "drivers": {
       "ARKK": {
         "ticker": "ARKK",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": -6.75,
-        "mom5": 4.29
+        "mom20": -7.19,
+        "mom5": 3.8
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 0.97,
-        "mom5": 2.79
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": 0.74,
+        "mom5": 2.57
       },
       "CL=F": {
         "ticker": "CL=F",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": 7.26,
-        "mom5": -7.51
+        "mom20": 8.53,
+        "mom5": -6.41
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 3.85,
-        "mom5": 3.71
+        "mom20": 3.58,
+        "mom5": 3.45
       },
       "QQQ": {
         "ticker": "QQQ",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": -0.94,
-        "mom5": 4.82
+        "mom20": -1.16,
+        "mom5": 4.58
       },
       "SOXX": {
         "ticker": "SOXX",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": -7.34,
-        "mom5": 6.83
+        "mom20": -7.98,
+        "mom5": 6.09
       },
       "SPY": {
         "ticker": "SPY",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 2.36,
-        "mom5": 3.75
+        "mom20": 2.23,
+        "mom5": 3.62
       },
       "XLE": {
         "ticker": "XLE",
-        "estado": "NEUTRO",
-        "score": 0,
-        "mom20": 5.52,
-        "mom5": -1.89
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": 6.16,
+        "mom5": -1.3
       }
     },
     "sectores": {
       "chips": {
         "estado": "NEUTRO",
         "score": 0,
-        "mom20_prom": -4.14,
-        "detalle": "SOXX -7.34% · QQQ -0.94%",
+        "mom20_prom": -4.57,
+        "detalle": "SOXX -7.98% · QQQ -1.16%",
         "drivers": [
           "SOXX",
           "QQQ"
         ]
       },
       "energia": {
-        "estado": "NEUTRO",
-        "score": 0,
-        "mom20_prom": 6.39,
-        "detalle": "XLE 5.52% · CL=F 7.26%",
+        "estado": "NEUTRO +",
+        "score": 3,
+        "mom20_prom": 7.34,
+        "detalle": "XLE 6.16% · CL=F 8.53%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -89,8 +89,8 @@
       "cripto": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": 2.41,
-        "detalle": "BTC-USD 0.97% · ETH-USD 3.85%",
+        "mom20_prom": 2.16,
+        "detalle": "BTC-USD 0.74% · ETH-USD 3.58%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -99,8 +99,8 @@
       "tech_ia": {
         "estado": "NEUTRO +",
         "score": 3,
-        "mom20_prom": -1.78,
-        "detalle": "QQQ -0.94% · ARKK -6.75% · SPY 2.36%",
+        "mom20_prom": -2.04,
+        "detalle": "QQQ -1.16% · ARKK -7.19% · SPY 2.23%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -483,20 +483,20 @@
   ],
   "can_open_more_positions": true,
   "remaining_position_slots": 15,
-  "exposure_pct": 65.68,
+  "exposure_pct": 65.63,
   "open_risk_pct": 1.44,
   "operational_rules": {
     "version": "V4.4",
     "estado": "NORMAL",
-    "exposicion_abierta_pct": 79.36,
-    "riesgo_abierto_pct": 1.75,
-    "drawdown_pct": 27.47,
+    "exposicion_abierta_pct": 67.23,
+    "riesgo_abierto_pct": 1.48,
+    "drawdown_pct": 27.58,
     "max_exposicion_total_pct": 80.0,
     "max_riesgo_total_abierto_pct": 10.0,
     "modo_defensivo_drawdown_pct": 30.0,
     "bloquear_entradas_drawdown_pct": 35.0,
-    "bloqueos_generados": 119,
-    "motivo_principal": "Exposición resultante superaría límite: 99.68%",
+    "bloqueos_generados": 120,
+    "motivo_principal": "Exposición resultante superaría límite: 87.88%",
     "reglas_activas": {
       "exposicion": true,
       "riesgo_abierto": true,
