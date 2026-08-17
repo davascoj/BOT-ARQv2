@@ -1,76 +1,76 @@
 {
-  "updated": "17-08-2026 02:32 PM Colombia",
+  "updated": "17-08-2026 02:36 PM Colombia",
   "version": "V4.5",
   "mode": "PAPER_TRADING_SIMULATED",
   "market_state": {
-    "estado": "ALCISTA",
-    "score": 8,
-    "spy20": 4.19,
-    "qqq20": 4.87,
+    "estado": "NEUTRO +",
+    "score": 4,
+    "spy20": 4.15,
+    "qqq20": 4.88,
     "drivers": {
       "ARKK": {
         "ticker": "ARKK",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 9.34,
-        "mom5": 1.88
+        "mom20": 9.2,
+        "mom5": 1.75
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 0.76,
-        "mom5": 1.51
+        "mom20": 0.67,
+        "mom5": 1.41
       },
       "CL=F": {
         "ticker": "CL=F",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 1.39,
-        "mom5": 2.75
+        "mom20": 1.41,
+        "mom5": 2.76
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": -0.59,
-        "mom5": 1.62
+        "mom20": -0.71,
+        "mom5": 1.5
       },
       "QQQ": {
         "ticker": "QQQ",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 4.87,
-        "mom5": 1.26
+        "mom20": 4.88,
+        "mom5": 1.27
       },
       "SOXX": {
         "ticker": "SOXX",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 6.57,
-        "mom5": 5.52
+        "mom20": 6.77,
+        "mom5": 5.71
       },
       "SPY": {
         "ticker": "SPY",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 4.19,
-        "mom5": 0.02
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": 4.15,
+        "mom5": -0.02
       },
       "XLE": {
         "ticker": "XLE",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 7.84,
-        "mom5": 3.83
+        "mom20": 7.88,
+        "mom5": 3.86
       }
     },
     "sectores": {
       "chips": {
         "estado": "NEUTRO +",
         "score": 3,
-        "mom20_prom": 5.72,
-        "detalle": "SOXX 6.57% · QQQ 4.87%",
+        "mom20_prom": 5.82,
+        "detalle": "SOXX 6.77% · QQQ 4.88%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -79,8 +79,8 @@
       "energia": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": 4.62,
-        "detalle": "XLE 7.84% · CL=F 1.39%",
+        "mom20_prom": 4.64,
+        "detalle": "XLE 7.88% · CL=F 1.41%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -89,18 +89,18 @@
       "cripto": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": 0.09,
-        "detalle": "BTC-USD 0.76% · ETH-USD -0.59%",
+        "mom20_prom": -0.02,
+        "detalle": "BTC-USD 0.67% · ETH-USD -0.71%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
         ]
       },
       "tech_ia": {
-        "estado": "ACOMPAÑA",
-        "score": 7,
-        "mom20_prom": 6.13,
-        "detalle": "QQQ 4.87% · ARKK 9.34% · SPY 4.19%",
+        "estado": "NEUTRO +",
+        "score": 3,
+        "mom20_prom": 6.08,
+        "detalle": "QQQ 4.88% · ARKK 9.2% · SPY 4.15%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -480,7 +480,7 @@
   "diagnostic_from_bot": {
     "modo": "ACTIVO",
     "riesgo_sistema": "ALTO",
-    "mercado": "ALCISTA",
+    "mercado": "NEUTRO +",
     "mensaje": "Sistema en simulación con control de riesgo; validar varios meses antes de dinero real.",
     "alertas": []
   },
@@ -489,7 +489,7 @@
   ],
   "can_open_more_positions": true,
   "remaining_position_slots": 15,
-  "exposure_pct": 68.42,
+  "exposure_pct": 68.35,
   "open_risk_pct": 1.73,
   "operational_rules": {
     "version": "V4.4",
@@ -501,7 +501,7 @@
     "max_riesgo_total_abierto_pct": 10.0,
     "modo_defensivo_drawdown_pct": 30.0,
     "bloquear_entradas_drawdown_pct": 35.0,
-    "bloqueos_generados": 123,
+    "bloqueos_generados": 113,
     "motivo_principal": "Exposición resultante superaría límite: 86.71%",
     "reglas_activas": {
       "exposicion": true,
