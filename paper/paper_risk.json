@@ -1,61 +1,61 @@
 {
-  "updated": "24-08-2026 01:06 PM Colombia",
+  "updated": "24-08-2026 01:11 PM Colombia",
   "version": "V4.5",
   "mode": "PAPER_TRADING_SIMULATED",
   "market_state": {
-    "estado": "DÉBIL",
-    "score": -8,
-    "spy20": 3.31,
-    "qqq20": 3.72,
+    "estado": "NEUTRO",
+    "score": 0,
+    "spy20": 3.34,
+    "qqq20": 3.81,
     "drivers": {
       "ARKK": {
         "ticker": "ARKK",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 16.21,
-        "mom5": 3.11
+        "mom20": 16.27,
+        "mom5": 3.16
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 23.13,
-        "mom5": 13.87
+        "mom20": 23.09,
+        "mom5": 13.83
       },
       "CL=F": {
         "ticker": "CL=F",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 2.58,
-        "mom5": 0.28
+        "mom20": 2.57,
+        "mom5": 0.27
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 32.35,
-        "mom5": 9.83
+        "mom20": 32.49,
+        "mom5": 9.95
       },
       "QQQ": {
         "ticker": "QQQ",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": 3.72,
-        "mom5": -3.06
+        "mom20": 3.81,
+        "mom5": -2.98
       },
       "SOXX": {
         "ticker": "SOXX",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -1.89,
-        "mom5": -9.42
+        "mom20": -1.7,
+        "mom5": -9.24
       },
       "SPY": {
         "ticker": "SPY",
-        "estado": "NEUTRO",
-        "score": 0,
-        "mom20": 3.31,
-        "mom5": -1.18
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": 3.34,
+        "mom5": -1.15
       },
       "XLE": {
         "ticker": "XLE",
@@ -69,8 +69,8 @@
       "chips": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": 0.92,
-        "detalle": "SOXX -1.89% · QQQ 3.72%",
+        "mom20_prom": 1.06,
+        "detalle": "SOXX -1.7% · QQQ 3.81%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -79,8 +79,8 @@
       "energia": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": 5.27,
-        "detalle": "XLE 7.96% · CL=F 2.58%",
+        "mom20_prom": 5.26,
+        "detalle": "XLE 7.96% · CL=F 2.57%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -89,18 +89,18 @@
       "cripto": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": 27.74,
-        "detalle": "BTC-USD 23.13% · ETH-USD 32.35%",
+        "mom20_prom": 27.79,
+        "detalle": "BTC-USD 23.09% · ETH-USD 32.49%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
         ]
       },
       "tech_ia": {
-        "estado": "NEUTRO",
-        "score": 0,
-        "mom20_prom": 7.75,
-        "detalle": "QQQ 3.72% · ARKK 16.21% · SPY 3.31%",
+        "estado": "NEUTRO +",
+        "score": 3,
+        "mom20_prom": 7.81,
+        "detalle": "QQQ 3.81% · ARKK 16.27% · SPY 3.34%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -137,35 +137,35 @@
   },
   "summary_from_bot": {
     "max_drawdown_pct": 29.13,
-    "max_drawdown_usd": 1682.52,
+    "max_drawdown_usd": 1685.56,
     "racha_max_perdidas": 14,
     "racha_max_ganadas": 12,
     "racha_actual_tipo": "PERDIDAS",
     "racha_actual": 1,
-    "exposicion_abierta_usd": 2756.68,
-    "exposicion_abierta_pct": 58.32,
-    "riesgo_total_abierto_usd": 85.01,
-    "riesgo_total_abierto_pct": 1.8,
-    "operaciones_abiertas": 4,
+    "exposicion_abierta_usd": 3156.45,
+    "exposicion_abierta_pct": 66.65,
+    "riesgo_total_abierto_usd": 88.85,
+    "riesgo_total_abierto_pct": 1.88,
+    "operaciones_abiertas": 5,
     "max_operaciones_abiertas": 20
   },
   "metrics_from_bot": {
     "profit_factor": 0.94,
     "ganancia_promedio_pct": 4.66,
-    "perdida_promedio_pct": -2.89,
+    "perdida_promedio_pct": -2.9,
     "ratio_ganancia_perdida": 1.61,
     "expectativa_pct_por_operacion": -0.19,
-    "total_ganado_usd": 4125.24,
-    "total_perdido_usd": 4398.25,
-    "sharpe_ratio": -0.345,
-    "sortino_ratio": -0.704,
+    "total_ganado_usd": 4132.7,
+    "total_perdido_usd": 4397.16,
+    "sharpe_ratio": -0.339,
+    "sortino_ratio": -0.694,
     "calmar_ratio": null,
     "cagr_estimado_pct": null,
-    "periodo_dias": 88,
-    "win_rate_pct": 35.81,
-    "avg_win_usd": 38.92,
-    "avg_loss_usd": 23.15,
-    "expectancy_usd": -0.92,
+    "periodo_dias": 87,
+    "win_rate_pct": 35.93,
+    "avg_win_usd": 38.99,
+    "avg_loss_usd": 23.27,
+    "expectancy_usd": -0.9,
     "payoff_ratio": 1.68,
     "avg_holding_dias": 3.0,
     "winrate_por_sector": [
@@ -173,103 +173,103 @@
         "sector": "Tecnología",
         "trades": 36,
         "win_rate_pct": 44.4,
-        "pnl_usd": 387.3
+        "pnl_usd": 387.99
       },
       {
         "sector": "Cripto / Trading",
         "trades": 6,
         "win_rate_pct": 66.7,
-        "pnl_usd": 205.61
+        "pnl_usd": 205.97
       },
       {
         "sector": "Trading",
         "trades": 5,
         "win_rate_pct": 60.0,
-        "pnl_usd": 156.97
+        "pnl_usd": 157.27
       },
       {
         "sector": "Salud",
         "trades": 28,
         "win_rate_pct": 42.9,
-        "pnl_usd": 146.1
+        "pnl_usd": 146.35
       },
       {
         "sector": "Entretenimiento",
         "trades": 3,
         "win_rate_pct": 66.7,
-        "pnl_usd": 108.26
+        "pnl_usd": 108.46
       },
       {
         "sector": "Finanzas",
         "trades": 14,
         "win_rate_pct": 50.0,
-        "pnl_usd": 107.86
+        "pnl_usd": 108.05
       },
       {
         "sector": "ETF Biotech",
         "trades": 4,
         "win_rate_pct": 75.0,
-        "pnl_usd": 90.25
+        "pnl_usd": 90.4
       },
       {
         "sector": "Viajes",
         "trades": 2,
         "win_rate_pct": 50.0,
-        "pnl_usd": 58.62
+        "pnl_usd": 58.73
       },
       {
         "sector": "Seguros",
         "trades": 3,
         "win_rate_pct": 66.7,
-        "pnl_usd": 47.3
+        "pnl_usd": 47.39
       },
       {
         "sector": "ETF Salud",
         "trades": 2,
         "win_rate_pct": 100.0,
-        "pnl_usd": 46.6
+        "pnl_usd": 46.68
       },
       {
         "sector": "Minería",
         "trades": 2,
         "win_rate_pct": 50.0,
-        "pnl_usd": 32.96
+        "pnl_usd": 33.02
       },
       {
         "sector": "ETF Chips",
         "trades": 3,
         "win_rate_pct": 33.3,
-        "pnl_usd": 31.25
+        "pnl_usd": 31.31
       },
       {
         "sector": "IA / Software",
         "trades": 4,
         "win_rate_pct": 50.0,
-        "pnl_usd": 22.18
+        "pnl_usd": 22.23
       },
       {
         "sector": "ETF Industrial",
         "trades": 2,
         "win_rate_pct": 50.0,
-        "pnl_usd": 21.72
+        "pnl_usd": 21.76
       },
       {
         "sector": "ETF Oro",
         "trades": 2,
         "win_rate_pct": 50.0,
-        "pnl_usd": 20.9
+        "pnl_usd": 20.94
       },
       {
         "sector": "IA",
         "trades": 5,
         "win_rate_pct": 40.0,
-        "pnl_usd": 14.77
+        "pnl_usd": 14.8
       },
       {
         "sector": "Redes / IA",
         "trades": 4,
         "win_rate_pct": 50.0,
-        "pnl_usd": 9.61
+        "pnl_usd": 9.62
       },
       {
         "sector": "ETF Dow",
@@ -281,218 +281,216 @@
         "sector": "Software",
         "trades": 3,
         "win_rate_pct": 33.3,
-        "pnl_usd": -6.29
+        "pnl_usd": -6.3
+      },
+      {
+        "sector": "Pagos",
+        "trades": 6,
+        "win_rate_pct": 50.0,
+        "pnl_usd": -8.78
       },
       {
         "sector": "Materiales",
         "trades": 2,
         "win_rate_pct": 0.0,
-        "pnl_usd": -12.63
-      },
-      {
-        "sector": "Pagos",
-        "trades": 7,
-        "win_rate_pct": 42.9,
-        "pnl_usd": -17.78
+        "pnl_usd": -12.65
       },
       {
         "sector": "ETF Dividendos",
         "trades": 2,
         "win_rate_pct": 0.0,
-        "pnl_usd": -18.01
+        "pnl_usd": -18.04
       },
       {
         "sector": "Aerolíneas",
         "trades": 4,
         "win_rate_pct": 50.0,
-        "pnl_usd": -18.79
+        "pnl_usd": -18.83
       },
       {
         "sector": "ETF Real Estate",
         "trades": 4,
         "win_rate_pct": 25.0,
-        "pnl_usd": -21.75
+        "pnl_usd": -21.79
       },
       {
         "sector": "ETF Nasdaq",
         "trades": 3,
         "win_rate_pct": 33.3,
-        "pnl_usd": -28.36
+        "pnl_usd": -28.42
       },
       {
         "sector": "ETF Consumo defensivo",
         "trades": 2,
         "win_rate_pct": 0.0,
-        "pnl_usd": -30.05
+        "pnl_usd": -30.11
       },
       {
         "sector": "ETF Robótica",
         "trades": 4,
         "win_rate_pct": 25.0,
-        "pnl_usd": -30.9
+        "pnl_usd": -30.96
       },
       {
         "sector": "Equipos chips",
         "trades": 6,
         "win_rate_pct": 33.3,
-        "pnl_usd": -34.7
+        "pnl_usd": -34.76
       },
       {
         "sector": "Defensa",
         "trades": 3,
         "win_rate_pct": 33.3,
-        "pnl_usd": -36.28
+        "pnl_usd": -36.35
       },
       {
         "sector": "Consumo",
         "trades": 6,
         "win_rate_pct": 16.7,
-        "pnl_usd": -36.88
+        "pnl_usd": -36.94
       },
       {
         "sector": "ETF Tecnología",
         "trades": 3,
         "win_rate_pct": 0.0,
-        "pnl_usd": -38.64
+        "pnl_usd": -38.71
       },
       {
         "sector": "Autos / Tech",
         "trades": 2,
         "win_rate_pct": 0.0,
-        "pnl_usd": -39.33
+        "pnl_usd": -39.4
       },
       {
         "sector": "ETF Materiales",
         "trades": 2,
         "win_rate_pct": 0.0,
-        "pnl_usd": -42.38
+        "pnl_usd": -42.45
       },
       {
         "sector": "Fintech IA",
         "trades": 2,
         "win_rate_pct": 0.0,
-        "pnl_usd": -43.76
+        "pnl_usd": -43.84
       },
       {
         "sector": "ETF Mercado",
         "trades": 8,
         "win_rate_pct": 37.5,
-        "pnl_usd": -43.9
+        "pnl_usd": -43.98
       },
       {
         "sector": "ETF Innovación",
         "trades": 4,
         "win_rate_pct": 25.0,
-        "pnl_usd": -44.65
+        "pnl_usd": -44.74
       },
       {
         "sector": "Movilidad aérea",
         "trades": 2,
         "win_rate_pct": 0.0,
-        "pnl_usd": -48.04
+        "pnl_usd": -48.12
       },
       {
         "sector": "Energía",
         "trades": 10,
         "win_rate_pct": 40.0,
-        "pnl_usd": -58.74
+        "pnl_usd": -58.83
       },
       {
         "sector": "Autos eléctricos",
         "trades": 8,
         "win_rate_pct": 25.0,
-        "pnl_usd": -59.22
+        "pnl_usd": -59.33
       },
       {
         "sector": "Autos",
         "trades": 5,
         "win_rate_pct": 40.0,
-        "pnl_usd": -59.46
+        "pnl_usd": -59.56
       },
       {
         "sector": "ETF Ciberseguridad",
         "trades": 5,
         "win_rate_pct": 20.0,
-        "pnl_usd": -64.27
+        "pnl_usd": -64.37
       },
       {
         "sector": "Ciberseguridad",
         "trades": 4,
         "win_rate_pct": 25.0,
-        "pnl_usd": -90.71
+        "pnl_usd": -90.87
       },
       {
         "sector": "Cruceros",
         "trades": 4,
         "win_rate_pct": 25.0,
-        "pnl_usd": -96.16
+        "pnl_usd": -96.33
       },
       {
         "sector": "Fotónica / IA",
         "trades": 2,
         "win_rate_pct": 0.0,
-        "pnl_usd": -100.39
+        "pnl_usd": -100.58
       },
       {
         "sector": "IA / Chips",
         "trades": 5,
         "win_rate_pct": 0.0,
-        "pnl_usd": -101.75
+        "pnl_usd": -101.93
       },
       {
         "sector": "Chips",
         "trades": 15,
         "win_rate_pct": 20.0,
-        "pnl_usd": -109.21
+        "pnl_usd": -109.42
       },
       {
         "sector": "Fintech",
         "trades": 4,
         "win_rate_pct": 0.0,
-        "pnl_usd": -113.33
+        "pnl_usd": -113.55
       },
       {
         "sector": "Industrial",
         "trades": 9,
         "win_rate_pct": 11.1,
-        "pnl_usd": -118.19
+        "pnl_usd": -118.41
       },
       {
         "sector": "Automatización",
         "trades": 11,
         "win_rate_pct": 27.3,
-        "pnl_usd": -133.57
+        "pnl_usd": -133.79
       }
     ]
   },
   "diagnostic_from_bot": {
-    "modo": "DEFENSIVO",
+    "modo": "ACTIVO",
     "riesgo_sistema": "ALTO",
-    "mercado": "DÉBIL",
+    "mercado": "NEUTRO",
     "mensaje": "Sistema en simulación con control de riesgo; validar varios meses antes de dinero real.",
-    "alertas": [
-      "Mercado general débil por SPY/QQQ"
-    ]
+    "alertas": []
   },
   "warnings": [
     "Diagnóstico general marca riesgo ALTO."
   ],
   "can_open_more_positions": true,
-  "remaining_position_slots": 16,
-  "exposure_pct": 54.86,
-  "open_risk_pct": 1.7,
+  "remaining_position_slots": 15,
+  "exposure_pct": 62.88,
+  "open_risk_pct": 1.78,
   "operational_rules": {
     "version": "V4.4",
     "estado": "NORMAL",
-    "exposicion_abierta_pct": 58.32,
-    "riesgo_abierto_pct": 1.8,
+    "exposicion_abierta_pct": 79.47,
+    "riesgo_abierto_pct": 2.23,
     "drawdown_pct": 29.13,
     "max_exposicion_total_pct": 80.0,
     "max_riesgo_total_abierto_pct": 10.0,
     "modo_defensivo_drawdown_pct": 30.0,
     "bloquear_entradas_drawdown_pct": 35.0,
-    "bloqueos_generados": 0,
-    "motivo_principal": "SIN BLOQUEOS",
+    "bloqueos_generados": 69,
+    "motivo_principal": "Exposición resultante superaría límite: 100.63%",
     "reglas_activas": {
       "exposicion": true,
       "riesgo_abierto": true,
