@@ -1,10 +1,10 @@
 {
-  "updated": "08-09-2026 12:54 PM Colombia",
+  "updated": "08-09-2026 12:58 PM Colombia",
   "version": "V4.5",
   "mode": "AUDITORIA_BLOQUEOS_EXISTENTES",
   "summary": {
     "blocked_count": 50,
-    "buy_candidates_count": 88,
+    "buy_candidates_count": 85,
     "open_positions_count": 2,
     "warnings_count": 2,
     "main_block_reason": "Modo defensivo por drawdown: 32.49%"
@@ -16,15 +16,15 @@
   "block_reasons": [
     {
       "reason": "Modo defensivo por drawdown: 32.49%",
-      "count": 39
+      "count": 37
     },
     {
       "reason": "R/R menor a 1.5",
-      "count": 10
+      "count": 11
     },
     {
       "reason": "Confirmación baja",
-      "count": 1
+      "count": 2
     }
   ],
   "blocked_signals": [
@@ -36,8 +36,8 @@
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 85.6,
-      "price": 210.32,
+      "score": 85.5,
+      "price": 210.06,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -47,13 +47,13 @@
     {
       "id": "BLOCK-2",
       "date": "2026-09-08",
-      "ticker": "XLE",
+      "ticker": "COP",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 85.1,
-      "price": 64.64,
+      "score": 85.0,
+      "price": 134.54,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -63,34 +63,34 @@
     {
       "id": "BLOCK-3",
       "date": "2026-09-08",
-      "ticker": "COP",
+      "ticker": "XLE",
       "signal": "BUY",
-      "reason": "Modo defensivo por drawdown: 32.49%",
+      "reason": "R/R menor a 1.5",
       "risk": "BAJO",
-      "rr": 1.5,
+      "rr": 1.49,
       "score": 85.0,
-      "price": 134.62,
+      "price": 64.6,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
-      "operational_rule": true,
-      "decision": "BLOCKED_BY_OPERATIONAL_RULE"
+      "operational_rule": false,
+      "decision": "BLOCKED_BY_EXISTING_RULE"
     },
     {
       "id": "BLOCK-4",
       "date": "2026-09-08",
       "ticker": "HAL",
       "signal": "BUY",
-      "reason": "R/R menor a 1.5",
+      "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
-      "rr": 1.49,
-      "score": 83.7,
-      "price": 36.76,
+      "rr": 1.5,
+      "score": 83.9,
+      "price": 36.79,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
-      "operational_rule": false,
-      "decision": "BLOCKED_BY_EXISTING_RULE"
+      "operational_rule": true,
+      "decision": "BLOCKED_BY_OPERATIONAL_RULE"
     },
     {
       "id": "BLOCK-5",
@@ -101,7 +101,7 @@
       "risk": "BAJO",
       "rr": 1.5,
       "score": 83.5,
-      "price": 97.02,
+      "price": 97.0,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -116,8 +116,8 @@
       "reason": "R/R menor a 1.5",
       "risk": "BAJO",
       "rr": 1.49,
-      "score": 82.3,
-      "price": 48.33,
+      "score": 82.2,
+      "price": 48.28,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -129,16 +129,16 @@
       "date": "2026-09-08",
       "ticker": "OXY",
       "signal": "BUY",
-      "reason": "Modo defensivo por drawdown: 32.49%",
+      "reason": "R/R menor a 1.5",
       "risk": "BAJO",
-      "rr": 1.5,
-      "score": 82.1,
-      "price": 60.63,
+      "rr": 1.49,
+      "score": 81.9,
+      "price": 60.58,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
-      "operational_rule": true,
-      "decision": "BLOCKED_BY_OPERATIONAL_RULE"
+      "operational_rule": false,
+      "decision": "BLOCKED_BY_EXISTING_RULE"
     },
     {
       "id": "BLOCK-8",
@@ -161,16 +161,16 @@
       "date": "2026-09-08",
       "ticker": "WMB",
       "signal": "BUY",
-      "reason": "R/R menor a 1.5",
+      "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
-      "rr": 1.49,
-      "score": 81.7,
-      "price": 75.2,
+      "rr": 1.5,
+      "score": 81.8,
+      "price": 75.19,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
-      "operational_rule": false,
-      "decision": "BLOCKED_BY_EXISTING_RULE"
+      "operational_rule": true,
+      "decision": "BLOCKED_BY_OPERATIONAL_RULE"
     },
     {
       "id": "BLOCK-10",
@@ -196,8 +196,8 @@
       "reason": "Confirmación baja",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 71.7,
-      "price": 276.58,
+      "score": 71.5,
+      "price": 276.16,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -207,29 +207,29 @@
     {
       "id": "BLOCK-12",
       "date": "2026-09-08",
+      "ticker": "RIG",
+      "signal": "BUY",
+      "reason": "Confirmación baja",
+      "risk": "BAJO",
+      "rr": 1.5,
+      "score": 69.4,
+      "price": 5.84,
+      "exposure_pct": 35.76,
+      "open_risk_pct": 1.38,
+      "drawdown_pct": 32.49,
+      "operational_rule": false,
+      "decision": "BLOCKED_BY_EXISTING_RULE"
+    },
+    {
+      "id": "BLOCK-13",
+      "date": "2026-09-08",
       "ticker": "BKR",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 73.0,
-      "price": 63.91,
-      "exposure_pct": 35.76,
-      "open_risk_pct": 1.38,
-      "drawdown_pct": 32.49,
-      "operational_rule": true,
-      "decision": "BLOCKED_BY_OPERATIONAL_RULE"
-    },
-    {
-      "id": "BLOCK-13",
-      "date": "2026-09-08",
-      "ticker": "ASML",
-      "signal": "BUY",
-      "reason": "Modo defensivo por drawdown: 32.49%",
-      "risk": "BAJO",
-      "rr": 1.5,
-      "score": 81.0,
-      "price": 1766.1,
+      "score": 73.1,
+      "price": 63.97,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -244,8 +244,8 @@
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 80.5,
-      "price": 55.19,
+      "score": 80.3,
+      "price": 55.1,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -257,16 +257,16 @@
       "date": "2026-09-08",
       "ticker": "HPQ",
       "signal": "BUY",
-      "reason": "Modo defensivo por drawdown: 32.49%",
+      "reason": "R/R menor a 1.5",
       "risk": "BAJO",
-      "rr": 1.5,
+      "rr": 1.49,
       "score": 80.1,
-      "price": 31.06,
+      "price": 31.08,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
-      "operational_rule": true,
-      "decision": "BLOCKED_BY_OPERATIONAL_RULE"
+      "operational_rule": false,
+      "decision": "BLOCKED_BY_EXISTING_RULE"
     },
     {
       "id": "BLOCK-16",
@@ -276,8 +276,8 @@
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 79.7,
-      "price": 225.96,
+      "score": 79.8,
+      "price": 226.06,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -287,13 +287,13 @@
     {
       "id": "BLOCK-17",
       "date": "2026-09-08",
-      "ticker": "SOXX",
+      "ticker": "DOCU",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
       "score": 79.7,
-      "price": 530.66,
+      "price": 64.81,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -303,13 +303,13 @@
     {
       "id": "BLOCK-18",
       "date": "2026-09-08",
-      "ticker": "DOCU",
+      "ticker": "SOXX",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 79.5,
-      "price": 64.79,
+      "score": 79.7,
+      "price": 530.59,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -325,7 +325,7 @@
       "risk": "BAJO",
       "rr": 1.5,
       "score": 79.3,
-      "price": 575.35,
+      "price": 575.24,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -335,13 +335,13 @@
     {
       "id": "BLOCK-20",
       "date": "2026-09-08",
-      "ticker": "TSLA",
+      "ticker": "ASML",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 79.2,
-      "price": 366.47,
+      "score": 79.3,
+      "price": 1765.86,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -351,13 +351,13 @@
     {
       "id": "BLOCK-21",
       "date": "2026-09-08",
-      "ticker": "XLK",
+      "ticker": "TSLA",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 78.8,
-      "price": 188.32,
+      "score": 79.2,
+      "price": 366.13,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -367,13 +367,13 @@
     {
       "id": "BLOCK-22",
       "date": "2026-09-08",
-      "ticker": "SNOW",
+      "ticker": "XLK",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 78.4,
-      "price": 339.17,
+      "score": 78.8,
+      "price": 188.28,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -383,13 +383,13 @@
     {
       "id": "BLOCK-23",
       "date": "2026-09-08",
-      "ticker": "ANET",
+      "ticker": "SNOW",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 78.2,
-      "price": 198.76,
+      "score": 78.4,
+      "price": 339.23,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -399,29 +399,29 @@
     {
       "id": "BLOCK-24",
       "date": "2026-09-08",
+      "ticker": "ANET",
+      "signal": "BUY",
+      "reason": "Modo defensivo por drawdown: 32.49%",
+      "risk": "BAJO",
+      "rr": 1.5,
+      "score": 78.1,
+      "price": 198.55,
+      "exposure_pct": 35.76,
+      "open_risk_pct": 1.38,
+      "drawdown_pct": 32.49,
+      "operational_rule": true,
+      "decision": "BLOCKED_BY_OPERATIONAL_RULE"
+    },
+    {
+      "id": "BLOCK-25",
+      "date": "2026-09-08",
       "ticker": "TTD",
       "signal": "BUY",
       "reason": "R/R menor a 1.5",
       "risk": "BAJO",
       "rr": 1.49,
-      "score": 77.8,
-      "price": 14.11,
-      "exposure_pct": 35.76,
-      "open_risk_pct": 1.38,
-      "drawdown_pct": 32.49,
-      "operational_rule": false,
-      "decision": "BLOCKED_BY_EXISTING_RULE"
-    },
-    {
-      "id": "BLOCK-25",
-      "date": "2026-09-08",
-      "ticker": "VGT",
-      "signal": "BUY",
-      "reason": "R/R menor a 1.5",
-      "risk": "BAJO",
-      "rr": 1.49,
-      "score": 76.9,
-      "price": 121.32,
+      "score": 77.6,
+      "price": 14.09,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -431,29 +431,29 @@
     {
       "id": "BLOCK-26",
       "date": "2026-09-08",
+      "ticker": "VGT",
+      "signal": "BUY",
+      "reason": "R/R menor a 1.5",
+      "risk": "BAJO",
+      "rr": 1.49,
+      "score": 76.9,
+      "price": 121.29,
+      "exposure_pct": 35.76,
+      "open_risk_pct": 1.38,
+      "drawdown_pct": 32.49,
+      "operational_rule": false,
+      "decision": "BLOCKED_BY_EXISTING_RULE"
+    },
+    {
+      "id": "BLOCK-27",
+      "date": "2026-09-08",
       "ticker": "AAPL",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
       "score": 76.7,
-      "price": 316.08,
-      "exposure_pct": 35.76,
-      "open_risk_pct": 1.38,
-      "drawdown_pct": 32.49,
-      "operational_rule": true,
-      "decision": "BLOCKED_BY_OPERATIONAL_RULE"
-    },
-    {
-      "id": "BLOCK-27",
-      "date": "2026-09-08",
-      "ticker": "VEEV",
-      "signal": "BUY",
-      "reason": "Modo defensivo por drawdown: 32.49%",
-      "risk": "BAJO",
-      "rr": 1.5,
-      "score": 72.6,
-      "price": 265.11,
+      "price": 316.06,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -463,13 +463,13 @@
     {
       "id": "BLOCK-28",
       "date": "2026-09-08",
-      "ticker": "TEAM",
+      "ticker": "VEEV",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 71.2,
-      "price": 177.15,
+      "score": 72.5,
+      "price": 264.76,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -479,13 +479,13 @@
     {
       "id": "BLOCK-29",
       "date": "2026-09-08",
-      "ticker": "GEN",
+      "ticker": "TEAM",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 70.5,
-      "price": 29.73,
+      "score": 71.2,
+      "price": 176.93,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -515,9 +515,9 @@
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
-      "rr": 1.5,
-      "score": 67.8,
-      "price": 10.41,
+      "rr": 1.51,
+      "score": 68.4,
+      "price": 10.45,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -527,13 +527,13 @@
     {
       "id": "BLOCK-32",
       "date": "2026-09-08",
-      "ticker": "DT",
+      "ticker": "GEN",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 65.4,
-      "price": 50.82,
+      "score": 68.0,
+      "price": 29.68,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -548,8 +548,8 @@
       "reason": "R/R menor a 1.5",
       "risk": "BAJO",
       "rr": 1.49,
-      "score": 86.0,
-      "price": 48.13,
+      "score": 85.9,
+      "price": 48.07,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -564,8 +564,8 @@
       "reason": "R/R menor a 1.5",
       "risk": "BAJO",
       "rr": 1.49,
-      "score": 84.5,
-      "price": 15.4,
+      "score": 84.6,
+      "price": 15.41,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -580,8 +580,8 @@
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 79.7,
-      "price": 163.51,
+      "score": 79.6,
+      "price": 163.36,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -597,7 +597,7 @@
       "risk": "BAJO",
       "rr": 1.5,
       "score": 79.1,
-      "price": 269.8,
+      "price": 269.94,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -612,8 +612,8 @@
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 78.9,
-      "price": 137.85,
+      "score": 79.0,
+      "price": 137.83,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -625,16 +625,16 @@
       "date": "2026-09-08",
       "ticker": "F",
       "signal": "BUY",
-      "reason": "R/R menor a 1.5",
+      "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
-      "rr": 1.48,
-      "score": 78.1,
+      "rr": 1.51,
+      "score": 78.3,
       "price": 14.15,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
-      "operational_rule": false,
-      "decision": "BLOCKED_BY_EXISTING_RULE"
+      "operational_rule": true,
+      "decision": "BLOCKED_BY_OPERATIONAL_RULE"
     },
     {
       "id": "BLOCK-39",
@@ -644,8 +644,8 @@
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 77.7,
-      "price": 128.6,
+      "score": 77.6,
+      "price": 128.46,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -660,8 +660,8 @@
       "reason": "R/R menor a 1.5",
       "risk": "BAJO",
       "rr": 1.49,
-      "score": 77.3,
-      "price": 88.85,
+      "score": 77.4,
+      "price": 88.83,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -676,8 +676,8 @@
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 77.1,
-      "price": 218.35,
+      "score": 77.0,
+      "price": 218.29,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -693,7 +693,7 @@
       "risk": "BAJO",
       "rr": 1.5,
       "score": 76.2,
-      "price": 1038.95,
+      "price": 1039.22,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -708,8 +708,8 @@
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 75.9,
-      "price": 92.76,
+      "score": 76.0,
+      "price": 92.79,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -741,7 +741,7 @@
       "risk": "BAJO",
       "rr": 1.5,
       "score": 78.5,
-      "price": 146.97,
+      "price": 146.92,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -757,7 +757,7 @@
       "risk": "BAJO",
       "rr": 1.5,
       "score": 78.2,
-      "price": 148.93,
+      "price": 148.82,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -767,13 +767,13 @@
     {
       "id": "BLOCK-47",
       "date": "2026-09-08",
-      "ticker": "XBI",
+      "ticker": "UNH",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 77.4,
-      "price": 163.3,
+      "score": 76.1,
+      "price": 402.85,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -783,13 +783,13 @@
     {
       "id": "BLOCK-48",
       "date": "2026-09-08",
-      "ticker": "QQQ",
+      "ticker": "SPGI",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 76.2,
-      "price": 720.1,
+      "score": 75.3,
+      "price": 429.9,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -799,29 +799,29 @@
     {
       "id": "BLOCK-49",
       "date": "2026-09-08",
-      "ticker": "UNH",
+      "ticker": "PFE",
       "signal": "BUY",
-      "reason": "Modo defensivo por drawdown: 32.49%",
+      "reason": "R/R menor a 1.5",
       "risk": "BAJO",
-      "rr": 1.5,
-      "score": 76.2,
-      "price": 403.1,
+      "rr": 1.49,
+      "score": 74.9,
+      "price": 27.99,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
-      "operational_rule": true,
-      "decision": "BLOCKED_BY_OPERATIONAL_RULE"
+      "operational_rule": false,
+      "decision": "BLOCKED_BY_EXISTING_RULE"
     },
     {
       "id": "BLOCK-50",
       "date": "2026-09-08",
-      "ticker": "SPGI",
+      "ticker": "REGN",
       "signal": "BUY",
       "reason": "Modo defensivo por drawdown: 32.49%",
       "risk": "BAJO",
       "rr": 1.5,
-      "score": 75.4,
-      "price": 430.33,
+      "score": 71.0,
+      "price": 813.84,
       "exposure_pct": 35.76,
       "open_risk_pct": 1.38,
       "drawdown_pct": 32.49,
@@ -833,32 +833,22 @@
     {
       "ticker": "LITE",
       "signal": "BUY STRONG",
-      "score": 94.0,
+      "score": 94.2,
       "risk": "MEDIO",
       "already_open": true,
-      "entry": "963.88 - 995.38",
-      "stop": 935.52,
-      "target": 1061.54
+      "entry": "965.22 - 996.73",
+      "stop": 936.87,
+      "target": 1062.89
     },
     {
       "ticker": "CVX",
       "signal": "BUY",
-      "score": 85.6,
+      "score": 85.5,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "209.0 - 210.88",
-      "stop": 207.31,
-      "target": 214.83
-    },
-    {
-      "ticker": "XLE",
-      "signal": "BUY",
-      "score": 85.1,
-      "risk": "BAJO",
-      "already_open": false,
-      "entry": "64.25 - 64.81",
-      "stop": 63.74,
-      "target": 66.0
+      "entry": "208.74 - 210.62",
+      "stop": 207.05,
+      "target": 214.57
     },
     {
       "ticker": "COP",
@@ -866,19 +856,29 @@
       "score": 85.0,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "133.6 - 135.06",
-      "stop": 132.28,
-      "target": 138.13
+      "entry": "133.51 - 134.97",
+      "stop": 132.2,
+      "target": 138.04
+    },
+    {
+      "ticker": "XLE",
+      "signal": "BUY",
+      "score": 85.0,
+      "risk": "BAJO",
+      "already_open": false,
+      "entry": "64.2 - 64.77",
+      "stop": 63.69,
+      "target": 65.96
     },
     {
       "ticker": "HAL",
       "signal": "BUY",
-      "score": 83.7,
+      "score": 83.9,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "36.38 - 36.93",
-      "stop": 35.89,
-      "target": 38.07
+      "entry": "36.41 - 36.95",
+      "stop": 35.92,
+      "target": 38.09
     },
     {
       "ticker": "OKE",
@@ -886,29 +886,29 @@
       "score": 83.5,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "96.15 - 97.39",
-      "stop": 95.04,
-      "target": 99.99
+      "entry": "96.13 - 97.37",
+      "stop": 95.02,
+      "target": 99.97
     },
     {
       "ticker": "DVN",
       "signal": "BUY",
-      "score": 82.3,
+      "score": 82.2,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "47.93 - 48.51",
-      "stop": 47.4,
-      "target": 49.73
+      "entry": "47.88 - 48.46",
+      "stop": 47.35,
+      "target": 49.68
     },
     {
       "ticker": "OXY",
       "signal": "BUY",
-      "score": 82.1,
+      "score": 81.9,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "60.16 - 60.84",
-      "stop": 59.54,
-      "target": 62.28
+      "entry": "60.1 - 60.79",
+      "stop": 59.48,
+      "target": 62.22
     },
     {
       "ticker": "KMI",
@@ -923,10 +923,10 @@
     {
       "ticker": "WMB",
       "signal": "BUY",
-      "score": 81.7,
+      "score": 81.8,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "74.44 - 75.53",
+      "entry": "74.44 - 75.52",
       "stop": 73.46,
       "target": 77.8
     },
@@ -943,52 +943,52 @@
     {
       "ticker": "LNG",
       "signal": "BUY",
-      "score": 71.7,
+      "score": 71.5,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "273.81 - 277.77",
-      "stop": 270.24,
-      "target": 286.09
+      "entry": "273.39 - 277.35",
+      "stop": 269.82,
+      "target": 285.67
+    },
+    {
+      "ticker": "RIG",
+      "signal": "BUY",
+      "score": 69.4,
+      "risk": "BAJO",
+      "already_open": false,
+      "entry": "5.76 - 5.87",
+      "stop": 5.66,
+      "target": 6.11
     },
     {
       "ticker": "BKR",
       "signal": "BUY",
-      "score": 73.0,
+      "score": 73.1,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "63.37 - 64.14",
-      "stop": 62.66,
-      "target": 65.78
-    },
-    {
-      "ticker": "ASML",
-      "signal": "BUY",
-      "score": 81.0,
-      "risk": "BAJO",
-      "already_open": false,
-      "entry": "1750.25 - 1772.89",
-      "stop": 1729.87,
-      "target": 1820.45
+      "entry": "63.43 - 64.2",
+      "stop": 62.72,
+      "target": 65.84
     },
     {
       "ticker": "HPE",
       "signal": "BUY",
-      "score": 80.5,
+      "score": 80.3,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "54.13 - 55.64",
-      "stop": 52.77,
-      "target": 58.83
+      "entry": "54.04 - 55.56",
+      "stop": 52.68,
+      "target": 58.74
     },
     {
       "ticker": "ARKK",
       "signal": "BUY",
-      "score": 80.3,
+      "score": 80.2,
       "risk": "BAJO",
       "already_open": true,
-      "entry": "85.66 - 86.87",
-      "stop": 84.57,
-      "target": 89.42
+      "entry": "85.57 - 86.78",
+      "stop": 84.48,
+      "target": 89.33
     },
     {
       "ticker": "HPQ",
@@ -996,19 +996,29 @@
       "score": 80.1,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "30.55 - 31.28",
-      "stop": 29.89,
-      "target": 32.82
+      "entry": "30.56 - 31.3",
+      "stop": 29.9,
+      "target": 32.84
     },
     {
       "ticker": "NVDA",
       "signal": "BUY",
+      "score": 79.8,
+      "risk": "BAJO",
+      "already_open": false,
+      "entry": "223.34 - 227.22",
+      "stop": 219.85,
+      "target": 235.37
+    },
+    {
+      "ticker": "DOCU",
+      "signal": "BUY",
       "score": 79.7,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "223.24 - 227.12",
-      "stop": 219.75,
-      "target": 235.26
+      "entry": "63.84 - 65.23",
+      "stop": 62.59,
+      "target": 68.13
     },
     {
       "ticker": "SOXX",
@@ -1016,19 +1026,9 @@
       "score": 79.7,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "525.61 - 532.82",
-      "stop": 519.12,
-      "target": 547.98
-    },
-    {
-      "ticker": "DOCU",
-      "signal": "BUY",
-      "score": 79.5,
-      "risk": "BAJO",
-      "already_open": false,
-      "entry": "63.82 - 65.21",
-      "stop": 62.57,
-      "target": 68.11
+      "entry": "525.54 - 532.75",
+      "stop": 519.05,
+      "target": 547.91
     },
     {
       "ticker": "SMH",
@@ -1036,9 +1036,19 @@
       "score": 79.3,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "570.4 - 577.48",
-      "stop": 564.03,
-      "target": 592.34
+      "entry": "570.29 - 577.36",
+      "stop": 563.92,
+      "target": 592.22
+    },
+    {
+      "ticker": "ASML",
+      "signal": "BUY",
+      "score": 79.3,
+      "risk": "BAJO",
+      "already_open": false,
+      "entry": "1750.01 - 1772.66",
+      "stop": 1729.63,
+      "target": 1820.21
     },
     {
       "ticker": "TSLA",
@@ -1046,9 +1056,9 @@
       "score": 79.2,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "360.94 - 368.84",
-      "stop": 353.83,
-      "target": 385.43
+      "entry": "360.6 - 368.5",
+      "stop": 353.49,
+      "target": 385.09
     },
     {
       "ticker": "XLK",
@@ -1056,9 +1066,9 @@
       "score": 78.8,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "187.24 - 188.78",
-      "stop": 185.85,
-      "target": 192.03
+      "entry": "187.2 - 188.74",
+      "stop": 185.81,
+      "target": 191.99
     },
     {
       "ticker": "SNOW",
@@ -1066,29 +1076,29 @@
       "score": 78.4,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "332.93 - 341.84",
-      "stop": 324.91,
-      "target": 360.55
+      "entry": "332.99 - 341.9",
+      "stop": 324.97,
+      "target": 360.62
     },
     {
       "ticker": "ANET",
       "signal": "BUY",
-      "score": 78.2,
+      "score": 78.1,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "196.27 - 199.83",
-      "stop": 193.08,
-      "target": 207.29
+      "entry": "196.07 - 199.62",
+      "stop": 192.87,
+      "target": 207.08
     },
     {
       "ticker": "TTD",
       "signal": "BUY",
-      "score": 77.8,
+      "score": 77.6,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "13.91 - 14.2",
-      "stop": 13.65,
-      "target": 14.81
+      "entry": "13.89 - 14.18",
+      "stop": 13.62,
+      "target": 14.79
     },
     {
       "ticker": "VGT",
@@ -1096,9 +1106,9 @@
       "score": 76.9,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "120.67 - 121.6",
-      "stop": 119.84,
-      "target": 123.53
+      "entry": "120.64 - 121.57",
+      "stop": 119.81,
+      "target": 123.5
     },
     {
       "ticker": "AAPL",
@@ -1106,19 +1116,19 @@
       "score": 76.7,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "313.49 - 317.19",
-      "stop": 310.16,
-      "target": 324.96
+      "entry": "313.47 - 317.17",
+      "stop": 310.14,
+      "target": 324.94
     },
     {
       "ticker": "VEEV",
       "signal": "BUY",
-      "score": 72.6,
+      "score": 72.5,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "260.93 - 266.91",
-      "stop": 255.55,
-      "target": 279.46
+      "entry": "260.58 - 266.55",
+      "stop": 255.2,
+      "target": 279.11
     },
     {
       "ticker": "TEAM",
@@ -1126,19 +1136,9 @@
       "score": 71.2,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "173.7 - 178.63",
-      "stop": 169.28,
-      "target": 188.96
-    },
-    {
-      "ticker": "GEN",
-      "signal": "BUY",
-      "score": 70.5,
-      "risk": "BAJO",
-      "already_open": false,
-      "entry": "29.4 - 29.87",
-      "stop": 28.97,
-      "target": 30.87
+      "entry": "173.49 - 178.41",
+      "stop": 169.06,
+      "target": 188.75
     },
     {
       "ticker": "CHKP",
@@ -1153,52 +1153,52 @@
     {
       "ticker": "AI",
       "signal": "BUY",
-      "score": 67.8,
+      "score": 68.4,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "10.23 - 10.49",
-      "stop": 9.99,
-      "target": 11.04
+      "entry": "10.27 - 10.53",
+      "stop": 10.04,
+      "target": 11.08
     },
     {
-      "ticker": "DT",
+      "ticker": "GEN",
       "signal": "BUY",
-      "score": 65.4,
+      "score": 68.0,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "50.22 - 51.08",
-      "stop": 49.44,
-      "target": 52.89
+      "entry": "29.35 - 29.83",
+      "stop": 28.93,
+      "target": 30.82
     },
     {
       "ticker": "URA",
       "signal": "BUY",
-      "score": 86.0,
+      "score": 85.9,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "47.52 - 48.39",
-      "stop": 46.73,
-      "target": 50.22
+      "entry": "47.46 - 48.33",
+      "stop": 46.67,
+      "target": 50.16
     },
     {
       "ticker": "NU",
       "signal": "BUY",
-      "score": 84.5,
+      "score": 84.6,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "15.18 - 15.49",
-      "stop": 14.91,
-      "target": 16.12
+      "entry": "15.2 - 15.51",
+      "stop": 14.93,
+      "target": 16.14
     },
     {
       "ticker": "TGT",
       "signal": "BUY",
-      "score": 79.7,
+      "score": 79.6,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "161.63 - 164.31",
-      "stop": 159.22,
-      "target": 169.95
+      "entry": "161.48 - 164.16",
+      "stop": 159.07,
+      "target": 169.8
     },
     {
       "ticker": "JNJ",
@@ -1206,59 +1206,59 @@
       "score": 79.1,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "267.88 - 270.62",
-      "stop": 265.4,
-      "target": 276.4
+      "entry": "268.02 - 270.76",
+      "stop": 265.54,
+      "target": 276.54
     },
     {
       "ticker": "C",
       "signal": "BUY",
-      "score": 78.9,
+      "score": 79.0,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "136.87 - 138.26",
-      "stop": 135.61,
-      "target": 141.2
+      "entry": "136.85 - 138.25",
+      "stop": 135.59,
+      "target": 141.19
     },
     {
       "ticker": "F",
       "signal": "BUY",
-      "score": 78.1,
+      "score": 78.3,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "14.01 - 14.21",
+      "entry": "14.0 - 14.21",
       "stop": 13.82,
       "target": 14.64
     },
     {
       "ticker": "NEM",
       "signal": "BUY",
-      "score": 77.7,
+      "score": 77.6,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "126.87 - 129.34",
-      "stop": 124.65,
-      "target": 134.51
+      "entry": "126.73 - 129.2",
+      "stop": 124.52,
+      "target": 134.38
     },
     {
       "ticker": "WFC",
       "signal": "BUY",
-      "score": 77.3,
+      "score": 77.4,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "88.24 - 89.11",
-      "stop": 87.45,
-      "target": 90.93
+      "entry": "88.23 - 89.1",
+      "stop": 87.44,
+      "target": 90.92
     },
     {
       "ticker": "MS",
       "signal": "BUY",
-      "score": 77.1,
+      "score": 77.0,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "216.69 - 219.05",
-      "stop": 214.57,
-      "target": 224.0
+      "entry": "216.64 - 219.0",
+      "stop": 214.52,
+      "target": 223.95
     },
     {
       "ticker": "GS",
@@ -1266,19 +1266,19 @@
       "score": 76.2,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "1030.52 - 1042.56",
-      "stop": 1019.67,
-      "target": 1067.86
+      "entry": "1030.79 - 1042.83",
+      "stop": 1019.94,
+      "target": 1068.13
     },
     {
       "ticker": "MDT",
       "signal": "BUY",
-      "score": 75.9,
+      "score": 76.0,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "91.95 - 93.11",
-      "stop": 90.9,
-      "target": 95.55
+      "entry": "91.98 - 93.14",
+      "stop": 90.93,
+      "target": 95.58
     },
     {
       "ticker": "XLU",
@@ -1296,9 +1296,9 @@
       "score": 78.5,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "145.66 - 147.53",
-      "stop": 143.98,
-      "target": 151.45
+      "entry": "145.61 - 147.48",
+      "stop": 143.93,
+      "target": 151.4
     },
     {
       "ticker": "MRK",
@@ -1306,69 +1306,39 @@
       "score": 78.2,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "147.2 - 149.67",
-      "stop": 144.97,
-      "target": 154.87
-    },
-    {
-      "ticker": "XBI",
-      "signal": "BUY",
-      "score": 77.4,
-      "risk": "BAJO",
-      "already_open": false,
-      "entry": "161.71 - 163.99",
-      "stop": 159.66,
-      "target": 168.77
-    },
-    {
-      "ticker": "QQQ",
-      "signal": "BUY",
-      "score": 76.2,
-      "risk": "BAJO",
-      "already_open": false,
-      "entry": "717.4 - 721.26",
-      "stop": 713.93,
-      "target": 729.35
+      "entry": "147.09 - 149.56",
+      "stop": 144.86,
+      "target": 154.76
     },
     {
       "ticker": "UNH",
       "signal": "BUY",
-      "score": 76.2,
+      "score": 76.1,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "400.24 - 404.33",
-      "stop": 396.55,
-      "target": 412.92
+      "entry": "399.99 - 404.08",
+      "stop": 396.3,
+      "target": 412.67
     },
     {
       "ticker": "SPGI",
       "signal": "BUY",
-      "score": 75.4,
+      "score": 75.3,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "426.16 - 432.12",
-      "stop": 420.79,
-      "target": 444.65
+      "entry": "425.72 - 431.69",
+      "stop": 420.34,
+      "target": 444.24
     },
     {
       "ticker": "PFE",
       "signal": "BUY",
-      "score": 75.1,
+      "score": 74.9,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "27.77 - 28.09",
-      "stop": 27.48,
-      "target": 28.76
-    },
-    {
-      "ticker": "SERV",
-      "signal": "BUY",
-      "score": 71.0,
-      "risk": "BAJO",
-      "already_open": false,
-      "entry": "4.83 - 4.97",
-      "stop": 4.7,
-      "target": 5.28
+      "entry": "27.76 - 28.08",
+      "stop": 27.47,
+      "target": 28.75
     },
     {
       "ticker": "REGN",
@@ -1376,9 +1346,29 @@
       "score": 71.0,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "806.35 - 816.98",
-      "stop": 796.78,
-      "target": 839.31
+      "entry": "806.39 - 817.02",
+      "stop": 796.82,
+      "target": 839.35
+    },
+    {
+      "ticker": "QQQ",
+      "signal": "BUY",
+      "score": 76.1,
+      "risk": "BAJO",
+      "already_open": false,
+      "entry": "717.14 - 721.0",
+      "stop": 713.67,
+      "target": 729.09
+    },
+    {
+      "ticker": "XBI",
+      "signal": "BUY",
+      "score": 72.9,
+      "risk": "BAJO",
+      "already_open": false,
+      "entry": "161.49 - 163.77",
+      "stop": 159.44,
+      "target": 168.55
     },
     {
       "ticker": "IBB",
@@ -1386,14 +1376,24 @@
       "score": 72.0,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "207.21 - 209.63",
-      "stop": 205.03,
-      "target": 214.71
+      "entry": "207.07 - 209.49",
+      "stop": 204.89,
+      "target": 214.57
+    },
+    {
+      "ticker": "CAT",
+      "signal": "BUY",
+      "score": 71.0,
+      "risk": "BAJO",
+      "already_open": false,
+      "entry": "819.97 - 831.19",
+      "stop": 809.87,
+      "target": 854.75
     },
     {
       "ticker": "LI",
       "signal": "BUY",
-      "score": 71.2,
+      "score": 70.9,
       "risk": "BAJO",
       "already_open": false,
       "entry": "12.37 - 12.55",
@@ -1401,34 +1401,14 @@
       "target": 12.93
     },
     {
-      "ticker": "CAT",
+      "ticker": "SCHD",
       "signal": "BUY",
       "score": 70.9,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "818.99 - 830.21",
-      "stop": 808.89,
-      "target": 853.77
-    },
-    {
-      "ticker": "SCHD",
-      "signal": "BUY",
-      "score": 70.8,
-      "risk": "BAJO",
-      "already_open": false,
       "entry": "34.33 - 34.49",
       "stop": 34.18,
-      "target": 34.84
-    },
-    {
-      "ticker": "GPN",
-      "signal": "BUY",
-      "score": 70.6,
-      "risk": "BAJO",
-      "already_open": false,
-      "entry": "88.87 - 90.17",
-      "stop": 87.7,
-      "target": 92.89
+      "target": 34.83
     },
     {
       "ticker": "ICE",
@@ -1441,14 +1421,14 @@
       "target": 162.91
     },
     {
-      "ticker": "SPOT",
+      "ticker": "HYG",
       "signal": "BUY",
-      "score": 69.8,
+      "score": 69.6,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "523.97 - 533.43",
-      "stop": 515.45,
-      "target": 553.29
+      "entry": "79.14 - 79.23",
+      "stop": 79.06,
+      "target": 79.42
     },
     {
       "ticker": "CME",
@@ -1456,44 +1436,24 @@
       "score": 69.1,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "276.23 - 279.22",
-      "stop": 273.54,
-      "target": 285.5
-    },
-    {
-      "ticker": "HYG",
-      "signal": "BUY",
-      "score": 68.7,
-      "risk": "BAJO",
-      "already_open": false,
-      "entry": "79.13 - 79.22",
-      "stop": 79.05,
-      "target": 79.41
+      "entry": "276.37 - 279.36",
+      "stop": 273.67,
+      "target": 285.64
     },
     {
       "ticker": "PG",
       "signal": "BUY",
-      "score": 67.6,
+      "score": 67.7,
       "risk": "BAJO",
       "already_open": false,
-      "entry": "144.39 - 145.52",
-      "stop": 143.38,
-      "target": 147.88
-    },
-    {
-      "ticker": "PSX",
-      "signal": "BUY",
-      "score": 82.1,
-      "risk": "MEDIO",
-      "already_open": false,
-      "entry": "257.05 - 260.45",
-      "stop": 254.0,
-      "target": 267.58
+      "entry": "144.36 - 145.48",
+      "stop": 143.34,
+      "target": 147.85
     },
     {
       "ticker": "ICLN",
       "signal": "BUY",
-      "score": 80.7,
+      "score": 83.6,
       "risk": "MEDIO",
       "already_open": false,
       "entry": "18.3 - 18.45",
@@ -1501,34 +1461,44 @@
       "target": 18.77
     },
     {
-      "ticker": "SLB",
+      "ticker": "PSX",
       "signal": "BUY",
-      "score": 76.1,
+      "score": 82.1,
       "risk": "MEDIO",
       "already_open": false,
-      "entry": "56.63 - 57.6",
-      "stop": 55.76,
-      "target": 59.63
+      "entry": "256.85 - 260.24",
+      "stop": 253.79,
+      "target": 267.37
+    },
+    {
+      "ticker": "SLB",
+      "signal": "BUY",
+      "score": 76.0,
+      "risk": "MEDIO",
+      "already_open": false,
+      "entry": "56.58 - 57.55",
+      "stop": 55.71,
+      "target": 59.58
     },
     {
       "ticker": "ENPH",
       "signal": "BUY",
-      "score": 71.8,
+      "score": 71.9,
       "risk": "MEDIO",
       "already_open": false,
-      "entry": "38.15 - 39.01",
-      "stop": 37.39,
-      "target": 40.79
+      "entry": "38.19 - 39.04",
+      "stop": 37.42,
+      "target": 40.83
     },
     {
       "ticker": "ORCL",
       "signal": "BUY",
-      "score": 83.3,
+      "score": 83.5,
       "risk": "MEDIO",
       "already_open": false,
-      "entry": "159.96 - 163.35",
-      "stop": 156.92,
-      "target": 170.44
+      "entry": "160.17 - 163.55",
+      "stop": 157.13,
+      "target": 170.65
     },
     {
       "ticker": "AMD",
@@ -1536,29 +1506,29 @@
       "score": 82.8,
       "risk": "MEDIO",
       "already_open": false,
-      "entry": "502.04 - 511.41",
-      "stop": 493.6,
-      "target": 531.1
+      "entry": "501.85 - 511.22",
+      "stop": 493.41,
+      "target": 530.91
     },
     {
       "ticker": "SMCI",
       "signal": "BUY",
-      "score": 81.5,
+      "score": 81.3,
       "risk": "MEDIO",
       "already_open": false,
-      "entry": "39.95 - 41.06",
-      "stop": 38.95,
-      "target": 43.4
+      "entry": "39.81 - 40.92",
+      "stop": 38.81,
+      "target": 43.26
     },
     {
       "ticker": "MU",
       "signal": "BUY",
-      "score": 80.3,
+      "score": 80.5,
       "risk": "MEDIO",
       "already_open": false,
-      "entry": "1001.69 - 1023.13",
-      "stop": 982.39,
-      "target": 1068.15
+      "entry": "1002.87 - 1024.31",
+      "stop": 983.58,
+      "target": 1069.33
     },
     {
       "ticker": "MRVL",
@@ -1566,24 +1536,24 @@
       "score": 80.1,
       "risk": "MEDIO",
       "already_open": false,
-      "entry": "223.3 - 230.83",
-      "stop": 216.52,
-      "target": 246.65
+      "entry": "223.17 - 230.7",
+      "stop": 216.39,
+      "target": 246.52
     },
     {
       "ticker": "TSM",
       "signal": "BUY",
-      "score": 79.4,
+      "score": 79.6,
       "risk": "MEDIO",
       "already_open": false,
-      "entry": "436.54 - 441.68",
-      "stop": 431.92,
-      "target": 452.47
+      "entry": "436.96 - 442.1",
+      "stop": 432.34,
+      "target": 452.89
     },
     {
       "ticker": "MARA",
       "signal": "BUY",
-      "score": 78.3,
+      "score": 78.4,
       "risk": "MEDIO",
       "already_open": false,
       "entry": "11.45 - 11.96",
@@ -1596,9 +1566,9 @@
       "score": 75.9,
       "risk": "MEDIO",
       "already_open": false,
-      "entry": "46.4 - 47.67",
-      "stop": 45.26,
-      "target": 50.34
+      "entry": "46.37 - 47.64",
+      "stop": 45.23,
+      "target": 50.31
     },
     {
       "ticker": "OKTA",
@@ -1606,19 +1576,19 @@
       "score": 73.4,
       "risk": "MEDIO",
       "already_open": false,
-      "entry": "164.61 - 169.54",
-      "stop": 160.18,
-      "target": 179.88
+      "entry": "164.49 - 169.42",
+      "stop": 160.06,
+      "target": 179.76
     },
     {
       "ticker": "ARM",
       "signal": "BUY",
-      "score": 76.8,
+      "score": 76.2,
       "risk": "MEDIO",
       "already_open": false,
-      "entry": "259.25 - 266.04",
-      "stop": 253.13,
-      "target": 280.31
+      "entry": "257.77 - 264.57",
+      "stop": 251.66,
+      "target": 278.84
     },
     {
       "ticker": "KLAC",
@@ -1629,6 +1599,36 @@
       "entry": "185.97 - 189.49",
       "stop": 182.8,
       "target": 196.88
+    },
+    {
+      "ticker": "COIN",
+      "signal": "BUY",
+      "score": 66.2,
+      "risk": "MEDIO",
+      "already_open": false,
+      "entry": "174.94 - 181.62",
+      "stop": 168.93,
+      "target": 195.66
+    },
+    {
+      "ticker": "ESTC",
+      "signal": "BUY",
+      "score": 64.6,
+      "risk": "MEDIO",
+      "already_open": false,
+      "entry": "88.15 - 91.04",
+      "stop": 85.54,
+      "target": 97.11
+    },
+    {
+      "ticker": "FCX",
+      "signal": "BUY",
+      "score": 77.6,
+      "risk": "MEDIO",
+      "already_open": false,
+      "entry": "75.69 - 77.35",
+      "stop": 74.2,
+      "target": 80.82
     }
   ],
   "notes": [
