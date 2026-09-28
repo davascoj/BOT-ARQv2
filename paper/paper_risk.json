@@ -1,76 +1,76 @@
 {
-  "updated": "28-09-2026 09:28 AM Colombia",
+  "updated": "28-09-2026 09:33 AM Colombia",
   "version": "V4.5",
   "mode": "PAPER_TRADING_SIMULATED",
   "market_state": {
     "estado": "NEUTRO +",
     "score": 4,
-    "spy20": 0.03,
-    "qqq20": 2.97,
+    "spy20": -0.01,
+    "qqq20": 2.88,
     "drivers": {
       "ARKK": {
         "ticker": "ARKK",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 5.83,
-        "mom5": -1.32
+        "mom20": 5.64,
+        "mom5": -1.5
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 6.52,
-        "mom5": -0.98
+        "mom20": 6.2,
+        "mom5": -1.28
       },
       "CL=F": {
         "ticker": "CL=F",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": 12.6,
-        "mom5": -1.95
+        "mom20": 12.7,
+        "mom5": -1.87
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 8.08,
-        "mom5": 0.04
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": 7.64,
+        "mom5": -0.37
       },
       "QQQ": {
         "ticker": "QQQ",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 2.97,
-        "mom5": -0.61
+        "mom20": 2.88,
+        "mom5": -0.7
       },
       "SOXX": {
         "ticker": "SOXX",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 10.13,
-        "mom5": 0.08
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": 10.0,
+        "mom5": -0.04
       },
       "SPY": {
         "ticker": "SPY",
-        "estado": "POSITIVO",
-        "score": 3,
-        "mom20": 0.03,
-        "mom5": -0.75
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": -0.01,
+        "mom5": -0.79
       },
       "XLE": {
         "ticker": "XLE",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": 0.09,
-        "mom5": -0.15
+        "mom20": 0.11,
+        "mom5": -0.13
       }
     },
     "sectores": {
       "chips": {
-        "estado": "ACOMPAÑA",
-        "score": 7,
-        "mom20_prom": 6.55,
-        "detalle": "SOXX 10.13% · QQQ 2.97%",
+        "estado": "NEUTRO +",
+        "score": 3,
+        "mom20_prom": 6.44,
+        "detalle": "SOXX 10.0% · QQQ 2.88%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -79,18 +79,18 @@
       "energia": {
         "estado": "NEUTRO",
         "score": 0,
-        "mom20_prom": 6.34,
-        "detalle": "XLE 0.09% · CL=F 12.6%",
+        "mom20_prom": 6.4,
+        "detalle": "XLE 0.11% · CL=F 12.7%",
         "drivers": [
           "XLE",
           "CL=F"
         ]
       },
       "cripto": {
-        "estado": "ACOMPAÑA",
-        "score": 7,
-        "mom20_prom": 7.3,
-        "detalle": "BTC-USD 6.52% · ETH-USD 8.08%",
+        "estado": "NEUTRO +",
+        "score": 3,
+        "mom20_prom": 6.92,
+        "detalle": "BTC-USD 6.2% · ETH-USD 7.64%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -99,8 +99,8 @@
       "tech_ia": {
         "estado": "NEUTRO +",
         "score": 3,
-        "mom20_prom": 2.94,
-        "detalle": "QQQ 2.97% · ARKK 5.83% · SPY 0.03%",
+        "mom20_prom": 2.84,
+        "detalle": "QQQ 2.88% · ARKK 5.64% · SPY -0.01%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -496,7 +496,7 @@
     "max_riesgo_total_abierto_pct": 10.0,
     "modo_defensivo_drawdown_pct": 30.0,
     "bloquear_entradas_drawdown_pct": 35.0,
-    "bloqueos_generados": 83,
+    "bloqueos_generados": 82,
     "motivo_principal": "Volumen relativo bajo",
     "reglas_activas": {
       "exposicion": true,
