@@ -375,6 +375,10 @@ function pintarMercado() {
 
 /* ---------- D. Reglas operativas V4.4 ---------- */
 function barraRegla(label, actual, limite, sufijo = "%") {
+  if (actual === null || actual === undefined || limite === null || limite === undefined ||
+      !Number.isFinite(Number(actual)) || !Number.isFinite(Number(limite))) {
+    return `<div class="metric-box rule-metric"><strong>${numero(actual)}${sufijo}</strong><span>${label} · límite ${numero(limite)}${sufijo}</span></div>`;
+  }
   const a = Number(actual) || 0;
   const lim = Number(limite) || 0;
   const pct = lim > 0 ? Math.max(0, Math.min(100, (a / lim) * 100)) : 0;
@@ -408,7 +412,7 @@ function pintarReglasOperativasV44() {
     `<div class="metric-box"><strong class="estado-pill ${claseEstadoOperativo(estado)}">${safe(estado)}</strong><span>estado operativo</span></div>` +
     barraRegla("exposición abierta", r.exposicion_abierta_pct, r.max_exposicion_total_pct) +
     barraRegla("riesgo abierto", r.riesgo_abierto_pct, r.max_riesgo_total_abierto_pct) +
-    barraRegla("drawdown", r.drawdown_pct, r.bloquear_entradas_drawdown_pct) +
+    barraRegla("drawdown", r.drawdown_pct, r.bloquear_entradas_drawdown_pct ?? configOperativa.simulation_config?.bloquear_entradas_drawdown_pct) +
     `<div class="metric-box"><strong>${safe(r.bloqueos_generados ?? 0)}</strong><span>bloqueos generados</span></div>`;
 
   if (motivoBox) {
@@ -568,9 +572,9 @@ function pintarAuditoriaBloqueos() {
       <td>${safe(b.reason)}</td>
       <td><span class="score-pill ${claseScore(b.score)}">${numero(b.score ?? 0, 1)}</span></td>
       <td>${b.operational_rule ? '<span class="op-rule-dot">OP</span>' : '<span class="mini-copy">—</span>'}</td>
-      <td class="num">${numero(b.exposure_pct ?? 0)}%</td>
-      <td class="num">${numero(b.open_risk_pct ?? 0)}%</td>
-      <td class="num">${numero(b.drawdown_pct ?? 0)}%</td>
+      <td class="num">${numero(b.exposure_pct)}%</td>
+      <td class="num">${numero(b.open_risk_pct)}%</td>
+      <td class="num">${numero(b.drawdown_pct)}%</td>
     </tr>`).join("");
 }
 
@@ -593,9 +597,9 @@ function pintarPanelProfesional() {
       <div class="metric-box"><strong>${dinero(sim.capital_inicial ?? 0)}</strong><span>capital inicial</span></div>
       <div class="metric-box"><strong>${numero(met.profit_factor)}</strong><span>profit factor</span></div>
       <div class="metric-box"><strong>${numero(met.win_rate_pct ?? hr.win_rate ?? 0)}%</strong><span>win rate (cerradas)</span></div>
-      <div class="metric-box" title="Retorno ajustado por volatilidad. >1 bueno, >2 excelente."><strong class="${claseRatio(sharpe)}">${fmtRatio(sharpe)}</strong><span>Sharpe ratio</span></div>
+      <div class="metric-box" title="Retorno ajustado por volatilidad. Mínimo 20 sesiones completas V5; no garantiza rendimiento futuro."><strong class="${claseRatio(sharpe)}">${fmtRatio(sharpe)}</strong><span>Sharpe ratio</span></div>
       <div class="metric-box" title="Como Sharpe, pero solo penaliza la volatilidad negativa."><strong class="${claseRatio(sortino)}">${fmtRatio(sortino)}</strong><span>Sortino ratio</span></div>
-      <div class="metric-box" title="CAGR dividido por el máximo drawdown. Requiere 90+ días de historial; antes muestra N/D."><strong class="${claseRatio(calmar)}">${fmtRatio(calmar)}</strong><span>Calmar ratio</span></div>
+      <div class="metric-box" title="CAGR dividido por el máximo drawdown. Requiere 90 sesiones completas V5; antes muestra N/D."><strong class="${claseRatio(calmar)}">${fmtRatio(calmar)}</strong><span>Calmar ratio</span></div>
       <div class="metric-box"><strong class="valor-neg">-${numero(riesgo.max_drawdown_pct ?? 0)}%</strong><span>máx. drawdown</span></div>
       <div class="metric-box"><strong class="${claseValor(met.expectancy_usd)}">${dinero(met.expectancy_usd ?? 0)}</strong><span>expectancy / op</span></div>`;
   }
@@ -1074,3 +1078,4 @@ cargarDatos();
 setInterval(() => { if (!document.hidden) cargarDatos(); }, AUTO_REFRESH_MS);
 actualizarAvisoSistemaARQ();
 setInterval(() => { actualizarAvisoSistemaARQ(); if (snapshot) actualizarLoadStatus(true); }, 30000);
+

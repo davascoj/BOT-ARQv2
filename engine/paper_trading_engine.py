@@ -49,6 +49,11 @@ def _round(value, digits=2):
     return round(_num(value), digits)
 
 
+def _optional_round(value, digits=2):
+    n = _num(value, default=None)
+    return round(n, digits) if n is not None else None
+
+
 def _safe_text(value):
     return str(value or "").strip()
 
@@ -207,9 +212,9 @@ def _audit_from_historial(historial, resultados, positions, warnings, config):
             "rr": _round(b.get("rr")),
             "score": _round(b.get("score")),
             "price": _round(b.get("precio")),
-            "exposure_pct": _round(b.get("exposicion_abierta_pct")),
-            "open_risk_pct": _round(b.get("riesgo_abierto_pct")),
-            "drawdown_pct": _round(b.get("drawdown_pct")),
+            "exposure_pct": _optional_round(b.get("exposicion_abierta_pct")),
+            "open_risk_pct": _optional_round(b.get("riesgo_abierto_pct")),
+            "drawdown_pct": _optional_round(b.get("drawdown_pct")),
             "operational_rule": bool(b.get("regla_operativa")),
             "decision": "BLOCKED_BY_OPERATIONAL_RULE" if b.get("regla_operativa") else "BLOCKED_BY_EXISTING_RULE"
         })
@@ -447,3 +452,4 @@ def export_paper_state(historial, resultados, mercado, config):
     _write_json(PAPER_DIR / "paper_state.json", state_light)
 
     return state_light
+
