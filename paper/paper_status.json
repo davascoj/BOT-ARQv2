@@ -1,82 +1,83 @@
 {
   "updated": "15-10-2026 11:04 AM Colombia",
-  "version": "V4.5",
+  "version": "5.0.0",
   "engine": "PAPER_TRADING_ENGINE",
   "mode": "PAPER_ONLY_NO_REAL_ORDERS",
   "health": "WARNING",
-  "warnings_count": 1,
+  "warnings_count": 2,
   "warnings": [
-    "Diagnóstico general marca riesgo ALTO."
+    "Historial anterior a V5 no reconciliado; el saldo heredado no está certificado.",
+    "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps."
   ],
   "market": {
     "estado": "NEUTRO",
     "score": 0,
-    "spy20": 1.29,
-    "qqq20": 1.28,
+    "spy20": 1.22,
+    "qqq20": 1.15,
     "drivers": {
-      "ARKK": {
-        "ticker": "ARKK",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -2.74,
-        "mom5": -3.49
-      },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -2.02,
-        "mom5": -0.69
+        "mom20": -2.14,
+        "mom5": -0.81
       },
-      "CL=F": {
-        "ticker": "CL=F",
-        "estado": "POSITIVO",
-        "score": 3,
-        "mom20": -5.67,
-        "mom5": 5.07
-      },
-      "ETH-USD": {
-        "ticker": "ETH-USD",
+      "ARKK": {
+        "ticker": "ARKK",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -9.37,
-        "mom5": -2.62
-      },
-      "QQQ": {
-        "ticker": "QQQ",
-        "estado": "NEUTRO",
-        "score": 0,
-        "mom20": 1.28,
-        "mom5": -2.98
-      },
-      "SOXX": {
-        "ticker": "SOXX",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -1.74,
-        "mom5": -9.44
+        "mom20": -2.86,
+        "mom5": -3.62
       },
       "SPY": {
         "ticker": "SPY",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": 1.29,
-        "mom5": -0.44
+        "mom20": 1.22,
+        "mom5": -0.51
+      },
+      "QQQ": {
+        "ticker": "QQQ",
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": 1.15,
+        "mom5": -3.1
+      },
+      "SOXX": {
+        "ticker": "SOXX",
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -2.01,
+        "mom5": -9.69
       },
       "XLE": {
         "ticker": "XLE",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 4.04,
-        "mom5": 2.22
+        "mom20": 3.97,
+        "mom5": 2.15
+      },
+      "CL=F": {
+        "ticker": "CL=F",
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": -5.63,
+        "mom5": 5.12
+      },
+      "ETH-USD": {
+        "ticker": "ETH-USD",
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -9.46,
+        "mom5": -2.72
       }
     },
     "sectores": {
       "chips": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -0.23,
-        "detalle": "SOXX -1.74% · QQQ 1.28%",
+        "mom20_prom": -0.43,
+        "detalle": "SOXX -2.01% · QQQ 1.15%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -85,8 +86,8 @@
       "energia": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": -0.81,
-        "detalle": "XLE 4.04% · CL=F -5.67%",
+        "mom20_prom": -0.83,
+        "detalle": "XLE 3.97% · CL=F -5.63%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -95,8 +96,8 @@
       "cripto": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -5.69,
-        "detalle": "BTC-USD -2.02% · ETH-USD -9.37%",
+        "mom20_prom": -5.8,
+        "detalle": "BTC-USD -2.14% · ETH-USD -9.46%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -105,8 +106,8 @@
       "tech_ia": {
         "estado": "NEUTRO",
         "score": 0,
-        "mom20_prom": -0.06,
-        "detalle": "QQQ 1.28% · ARKK -2.74% · SPY 1.29%",
+        "mom20_prom": -0.16,
+        "detalle": "QQQ 1.15% · ARKK -2.86% · SPY 1.22%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -115,8 +116,8 @@
       }
     }
   },
-  "positions_open": 4,
-  "orders_total": 596,
+  "positions_open": 6,
+  "orders_total": 598,
   "trades_closed": 296,
   "signals_available": 276,
   "broker_real_enabled": false,
