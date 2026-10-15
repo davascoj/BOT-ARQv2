@@ -1,83 +1,84 @@
 {
-  "updated": "15-10-2026 11:56 AM Colombia",
+  "updated": "15-10-2026 12:01 PM Colombia",
   "version": "5.0.0",
   "engine": "PAPER_TRADING_ENGINE",
   "mode": "PAPER_ONLY_NO_REAL_ORDERS",
   "health": "WARNING",
-  "warnings_count": 2,
+  "warnings_count": 3,
   "warnings": [
     "Historial anterior a V5 no reconciliado; el saldo heredado no está certificado.",
-    "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps."
+    "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps.",
+    "Exposición estimada supera el límite configurado."
   ],
   "market": {
     "estado": "NEUTRO",
     "score": 0,
-    "spy20": 1.14,
-    "qqq20": 0.97,
+    "spy20": 1.2,
+    "qqq20": 1.03,
     "drivers": {
-      "SOXX": {
-        "ticker": "SOXX",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -2.57,
-        "mom5": -10.21
-      },
-      "ARKK": {
-        "ticker": "ARKK",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -2.99,
-        "mom5": -3.74
-      },
-      "ETH-USD": {
-        "ticker": "ETH-USD",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -9.71,
-        "mom5": -2.99
-      },
       "XLE": {
         "ticker": "XLE",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 3.75,
-        "mom5": 1.93
+        "mom20": 3.77,
+        "mom5": 1.95
       },
-      "QQQ": {
-        "ticker": "QQQ",
-        "estado": "NEUTRO",
-        "score": 0,
-        "mom20": 0.97,
-        "mom5": -3.27
-      },
-      "BTC-USD": {
-        "ticker": "BTC-USD",
+      "SOXX": {
+        "ticker": "SOXX",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -2.47,
-        "mom5": -1.15
+        "mom20": -2.6,
+        "mom5": -10.24
       },
       "SPY": {
         "ticker": "SPY",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": 1.14,
-        "mom5": -0.59
+        "mom20": 1.2,
+        "mom5": -0.53
+      },
+      "ETH-USD": {
+        "ticker": "ETH-USD",
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -9.63,
+        "mom5": -2.9
+      },
+      "ARKK": {
+        "ticker": "ARKK",
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -2.82,
+        "mom5": -3.58
+      },
+      "QQQ": {
+        "ticker": "QQQ",
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": 1.03,
+        "mom5": -3.22
+      },
+      "BTC-USD": {
+        "ticker": "BTC-USD",
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -2.4,
+        "mom5": -1.08
       },
       "CL=F": {
         "ticker": "CL=F",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": -5.47,
-        "mom5": 5.3
+        "mom20": -5.39,
+        "mom5": 5.39
       }
     },
     "sectores": {
       "chips": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -0.8,
-        "detalle": "SOXX -2.57% · QQQ 0.97%",
+        "mom20_prom": -0.79,
+        "detalle": "SOXX -2.6% · QQQ 1.03%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -86,8 +87,8 @@
       "energia": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": -0.86,
-        "detalle": "XLE 3.75% · CL=F -5.47%",
+        "mom20_prom": -0.81,
+        "detalle": "XLE 3.77% · CL=F -5.39%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -96,8 +97,8 @@
       "cripto": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -6.09,
-        "detalle": "BTC-USD -2.47% · ETH-USD -9.71%",
+        "mom20_prom": -6.02,
+        "detalle": "BTC-USD -2.4% · ETH-USD -9.63%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -106,8 +107,8 @@
       "tech_ia": {
         "estado": "NEUTRO",
         "score": 0,
-        "mom20_prom": -0.29,
-        "detalle": "QQQ 0.97% · ARKK -2.99% · SPY 1.14%",
+        "mom20_prom": -0.2,
+        "detalle": "QQQ 1.03% · ARKK -2.82% · SPY 1.2%",
         "drivers": [
           "QQQ",
           "ARKK",
