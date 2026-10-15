@@ -258,6 +258,7 @@ def summarize(book, config, now, blocked=None, warnings=None):
                               "exposicion_abierta_pct": exp_pct, "riesgo_abierto_pct": risk_pct,
                               "max_exposicion_total_pct": config["max_exposicion_total_pct"],
                               "max_riesgo_total_abierto_pct": config["max_riesgo_total_abierto_pct"],
+                              "bloquear_entradas_drawdown_pct": config["bloquear_entradas_drawdown_pct"],
                               "bloqueos_generados": len(blocked or []), "motivo_principal": gate or "SIN BLOQUEO GLOBAL"},
         "diagnostico_bot": {"modo": state, "riesgo_sistema": "ALTO" if gate else "MEDIO", "alertas": alerts},
         "nota": "Libro continuo: no recorta ni redimensiona operaciones. P&L neto de costos estimados; no es una cuenta real.",
@@ -342,6 +343,11 @@ def update(book, signals, market, config, now, quotes):
             blocked.append({"fecha": today, "accion": tk, "senal_bot": sig["Senal Bot"], "motivo": reason,
                             "rr": sig.get("R/R"), "riesgo": sig.get("Riesgo"), "score": sig.get("Score calidad"),
                             "precio": price, "regla_operativa": True})
+            blocked[-1].update({
+                "exposicion_abierta_pct": b["exposure"] / b["equity"] * 100 if b["equity"] > 0 else None,
+                "riesgo_abierto_pct": b["risk"] / b["equity"] * 100 if b["equity"] > 0 else None,
+                "drawdown_pct": drawdown(book, b["equity"]),
+            })
             continue
         op = {"id": f"{today}-{tk}", "accion": tk, "sector": sig.get("Sector", "Otro"),
               "fecha_entrada": today, "entry_timestamp": now.isoformat(), "signal_timestamp": sig.get("signal_timestamp"),
@@ -384,3 +390,4 @@ def update(book, signals, market, config, now, quotes):
     book["resumen"] = summarize(book, config, now, blocked, warnings)
     book["market_session"] = session
     return book
+

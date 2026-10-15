@@ -43,6 +43,12 @@ Implementación: 14–15 octubre 2026. Solo simulación. El historial generado p
 5. Comprobar en Pages antigüedad, regla de venta, costes, benchmark, cartera e historial; probar móvil/tablet/escritorio.
 6. Comprobar otra corrida para verificar idempotencia y estabilidad de entradas/cierres existentes. No afirmar rentabilidad por haber pasado pruebas de software.
 
+## Comprobación real del despliegue (15 octubre)
+
+PR #8 fusionado. Primer snapshot V5 `20261015T160452941861Z-dd2bd516`: 300 operaciones heredadas conservadas y 2 nuevas; validación de snapshot correcta. Análisis observado en Actions: 16,369 s, 276/278 símbolos disponibles (CYBR/FI sin datos; no se inventan precios). Segunda ejecución `20261015T160607384962Z-dd2bd516`: 302 operaciones, ninguna eliminación ni cambio en entradas o registros cerrados; migración estable.
+
+La revisión visual detectó un campo ausente en el contrato UI del límite de drawdown. Se completa el campo (35%), se usa la configuración publicada como respaldo y se presenta ausencia como N/D en lugar de cero. Los bloqueos guardan exposición, riesgo y drawdown al momento de la decisión; las ayudas explican que el stop no garantiza pérdida máxima. Regresión ampliada: 59 pruebas Python y 22 comprobaciones JS.
+
 ## Reversión y recuperación
 
 No ejecutar V4 sobre un ledger V5 ni restaurar a ciegas JSON antiguo: provocaría pérdida de eventos o nuevo redimensionamiento. Si falla V5: pausar el workflow y cualquier disparador externo, conservar el último commit y `paper/legacy`, reparar o revertir **código compatible con schema 2**, ejecutar tests/validador, comparar operaciones por ID y reanudar. Para una vuelta completa a V4 se requiere conciliación explícita de todas las operaciones posteriores; no es una reversión segura automática.
@@ -54,3 +60,4 @@ La copia legacy y Git conservan lo recibido al migrar. Las operaciones eliminada
 ML, ajuste de stops para maximizar beneficios, optimización de parámetros sin walk-forward, proveedor de ticks/broker, correlación estadística, calendario de resultados corporativos completo, migración SQL, cambios del PAT/rulesets o del disparador externo. Son ampliaciones con validación/infraestructura propias, no arreglos demostrados por esta auditoría. La arquitectura actual queda apta para recoger evidencia V5 antes de optimizar estrategia.
 
 Referencias de implementación: calendario [pandas-market-calendars](https://pandas-market-calendars.readthedocs.io/en/latest/usage.html); la programación de [GitHub Actions puede retrasarse](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).
+

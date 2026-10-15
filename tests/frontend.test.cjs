@@ -45,4 +45,10 @@ check('overnight lock visible',()=>assert.match(element('tablaCarteraAbierta').i
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 check('heading and live status available',()=>{assert.match(html,/<h1 /);assert.match(html,/aria-live="polite"/)});
 check('no percentage probability label',()=>assert.doesNotMatch(html,/>Prob\.</));
+check('missing rule limit is not zero',()=>assert.match(run("barraRegla('drawdown',22,undefined)"),/límite —%/));
+run("operationalRulesV44={estado:'NORMAL',drawdown_pct:22};configOperativa={simulation_config:{bloquear_entradas_drawdown_pct:35}};pintarReglasOperativasV44()");
+check('drawdown threshold uses published configuration',()=>assert.match(element('operationalRulesResumen').innerHTML,/drawdown · límite 35%/));
+run("paperAuditV43={summary:{},blocked_signals:[{ticker:'AAA',exposure_pct:null,open_risk_pct:null,drawdown_pct:null}]};pintarAuditoriaBloqueos()");
+check('missing audit metrics are unavailable',()=>assert.equal((element('tablaBloqueos').innerHTML.match(/—%/g)||[]).length,3));
 console.log(`${passed} frontend assertions passed`);
+

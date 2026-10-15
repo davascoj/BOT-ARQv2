@@ -148,6 +148,28 @@ def test_open_loss_in_drawdown_and_paper_agrees(cfg):
     assert state["portfolio"]["exposure_pct"] == pytest.approx(round(book["resumen"]["riesgo"]["exposicion_abierta_pct"], 2))
 
 
+def test_block_audit_records_risk_at_decision_and_published_threshold(cfg):
+    book = opened(cfg)
+    result = update(book, [signal()], {}, cfg, when(), {"AAA": quote()})
+    risk = result["resumen"]["riesgo"]
+    blocked = result["resumen"]["nuevas_bloqueadas"][0]
+    assert blocked["exposicion_abierta_pct"] == risk["exposicion_abierta_pct"]
+    assert blocked["riesgo_abierto_pct"] == risk["riesgo_total_abierto_pct"]
+    assert blocked["drawdown_pct"] == risk["drawdown_actual_pct"]
+    assert result["resumen"]["reglas_operativas"]["bloquear_entradas_drawdown_pct"] == 35
+    state = build_paper_state(result, [], {}, cfg)
+    assert state["audit"]["blocked_signals"][0]["exposure_pct"] == round(blocked["exposicion_abierta_pct"], 2)
+
+
+def test_legacy_block_audit_does_not_fabricate_zero_risk(cfg):
+    book = opened(cfg)
+    book["resumen"]["nuevas_bloqueadas"] = [{"accion": "AAA", "motivo": "Sin dato legado"}]
+    audit = build_paper_state(book, [], {}, cfg)["audit"]["blocked_signals"][0]
+    assert audit["exposure_pct"] is None
+    assert audit["open_risk_pct"] is None
+    assert audit["drawdown_pct"] is None
+
+
 def test_no_300_trade_retention(cfg):
     closed = {"id": "1", "accion": "X", "estado": "CERRADA", "fecha_entrada": "2026-01-02", "fecha_cierre": "2026-01-05",
               "precio_entrada": 100, "posicion_usd_estimada": 100, "pnl_usd_estimado": 1, "ganancia_pct_neta_estimada": 1}
@@ -338,3 +360,4 @@ def test_end_to_end_snapshot_without_network(tmp_path, monkeypatch, cfg):
     analyzer.main()
     check_snapshot()
     assert len(list((tmp_path / "paper/legacy").glob("*.json"))) == 1
+
