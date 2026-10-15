@@ -1,5 +1,9 @@
 # Changelog
 
+## V5.0.0 — 2026-10-15
+
+Libro continuo con entradas inmutables, migración legacy explícita y regla obligatoria de venta desde siguiente sesión de bolsa. Correcciones de contabilidad, riesgos, backtest, integridad de datos, rendimiento, CI y dashboard. Detalle y límites: [CAMBIOS_V5.md](CAMBIOS_V5.md). No se certifica el histórico anterior ni se habilita un broker real.
+
 ## V4.4.5 Limpieza de repositorio y documentación
 - Reportes `*.xlsx` ahora **opt-in** (`BOT_ARQ_EXPORT_XLSX=1`): por defecto el motor no los genera, así CI deja de commitear binarios que causaban conflictos en GitHub Desktop. Se quitaron del versionado con `git rm --cached` y se añadió `*.xlsx` a `.gitignore`. No requiere editar el workflow (si el archivo no existe, el paso `git add` simplemente lo omite).
 - `historial_senales.json` se conserva versionado: es el estado persistente que el motor lee entre corridas.

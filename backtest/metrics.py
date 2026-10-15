@@ -37,12 +37,11 @@ def calcular_metricas_backtest(equity_curve, trades, capital_inicial):
     sigma = _stdev(rets)
     sharpe = round(mu / sigma * (252 ** 0.5), 3) if sigma > 0 else None
 
-    negativos = [r for r in rets if r < 0]
-    downside = _stdev(negativos) if len(negativos) > 1 else 0.0
+    downside = (sum(min(r, 0) ** 2 for r in rets) / len(rets)) ** 0.5 if rets else 0.0
     sortino = round(mu / downside * (252 ** 0.5), 3) if downside > 0 else None
 
     # Max drawdown sobre la curva de equity
-    peak = equities[0]
+    peak = max(capital_inicial, equities[0])
     max_dd = 0.0
     for eq in equities:
         peak = max(peak, eq)

@@ -1,6 +1,6 @@
 {
-  "version": "4.9.1",
-  "name": "BOT-ARQ V4.9.1 - Corto Plazo (stop siempre activo, ATR 0.8/1.2)",
+  "version": "5.0.0",
+  "name": "BOT-ARQ V5 — Libro continuo y venta desde siguiente sesión",
   "mode": "PAPER_TRADING_SIMULATED",
   "data_source": "yfinance",
   "dashboard": {
@@ -12,11 +12,11 @@
     "historial": "vista_avanzada"
   },
   "simulation_config": {
-    "capital_inicial": 5000.0,
-    "riesgo_por_operacion_pct": 1.0,
-    "max_posicion_pct": 20.0,
+    "capital_inicial": 5000,
+    "riesgo_por_operacion_pct": 1,
+    "max_posicion_pct": 20,
     "max_operaciones_abiertas": 20,
-    "max_exposicion_total_pct": 80.0,
+    "max_exposicion_total_pct": 80,
     "comision_por_operacion_pct": 0.05,
     "slippage_pct": 0.05,
     "spread_pct": 0.03,
@@ -26,16 +26,20 @@
     "volumen_relativo_minimo": 0.2,
     "max_dias_holding": 2,
     "permitir_buy_strong_en_mercado_debil": false,
-    "max_riesgo_total_abierto_pct": 10.0,
-    "modo_defensivo_drawdown_pct": 30.0,
-    "bloquear_entradas_drawdown_pct": 35.0,
+    "max_riesgo_total_abierto_pct": 10,
+    "modo_defensivo_drawdown_pct": 30,
+    "bloquear_entradas_drawdown_pct": 35,
     "activar_reglas_operativas": true,
     "usar_exposicion_como_bloqueo": true,
     "usar_riesgo_abierto_como_bloqueo": true,
     "usar_drawdown_como_bloqueo": true,
     "permitir_buy_strong_en_modo_defensivo_drawdown": true,
     "permitir_buy_strong_sobre_exposicion": false,
-    "permitir_buy_strong_sobre_riesgo": false
+    "permitir_buy_strong_sobre_riesgo": false,
+    "rr_neto_minimo": 1,
+    "max_exposicion_sector_pct": 35,
+    "min_posicion_usd": 10,
+    "max_quote_age_seconds": 180
   },
   "paper_trading": {
     "enabled": true,
@@ -54,12 +58,12 @@
     "force_manual_supported": true
   },
   "notes": [
-    "V4.9.1 STOP SIEMPRE ACTIVO: el stop ejecuta incluso el día de compra. Bloquearlo el día 0 dejó correr pérdidas (HAL -6.68% con stop planeado -1.35%).",
-    "V4.9.1 ATR: stop 0.8×ATR, objetivo 1.2×ATR. RR=1.5×. El stop 0.5×ATR se activaba por ruido normal de 1 día (win rate cayó a 25%).",
-    "V4.9 tomas de ganancia (objetivo/señal/tiempo) solo desde día 1: no se vende en ganancia el mismo día; fuerza salida a los 2 días solo si hay ganancia.",
-    "V4.9 cooldown: si un ticker se cerró hoy, no puede recomprarse hasta mañana.",
-    "V4.9 volumen mínimo: 0.2 — el bot mide volumen parcial del día (bar intraday vs promedio diario completo). A las 10AM solo hay 20-25% acumulado, umbral 0.6 era imposible.",
-    "V4.9 modo defensivo: 30% (antes 18%) — con drawdown 27.55% el sistema estaba atrapado: solo acepta BUY STRONG pero nunca hay BUY STRONG. Deadlock roto.",
-    "No ejecuta dinero real. Broker real permanece deshabilitado."
+    "Solo simulación, sin órdenes reales.",
+    "Toda venta requiere una sesión posterior a la compra y horario regular NYSE, incluso stop loss.",
+    "Max holding medido en sesiones y aplicado también a pérdidas, nunca el día de compra.",
+    "Costos por lado congelados al entrar; cantidad e importe inmutables.",
+    "El historial heredado queda congelado y no certificado; no se recuperan operaciones previamente eliminadas.",
+    "No se modifican los umbrales de drawdown/racha para forzar operaciones.",
+    "R/R calculado con niveles ejecutables; filtro neto mínimo 1.0 tras costos."
   ]
 }

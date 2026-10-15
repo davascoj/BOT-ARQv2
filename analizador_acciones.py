@@ -1,6 +1,13 @@
 import json
 import os
 import time
+import math
+from pathlib import Path
+from datetime import timezone
+from engine.storage import read_json, atomic_json
+from engine.policy import VERSION, number, position_size
+from engine.ledger import update as update_ledger, validate as validate_ledger, migrate, summarize, config_hash
+from engine.market_data import download_batch, execution_quotes
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -20,31 +27,10 @@ EXPORT_XLSX = os.getenv("BOT_ARQ_EXPORT_XLSX", "0").strip().lower() in ("1", "tr
 # Exporta el estado del paper trading a archivos JSON separados,
 # sin ejecutar órdenes reales ni romper la simulación existente.
 # ============================================================
-try:
-    from engine.paper_trading_engine import export_paper_state
-except Exception as e:
-    export_paper_state = None
-    PAPER_ENGINE_IMPORT_ERROR = str(e)
-else:
-    PAPER_ENGINE_IMPORT_ERROR = ""
+from engine.paper_trading_engine import export_paper_state
+from engine.config_loader import cargar_config_sistema, cargar_config_simulacion, resumen_config_operativa
+DAILY_DATA = {}
 
-# ============================================================
-# BOT-ARQ V4.2 - CONFIGURACIÓN REAL DEL MOTOR
-# Carga config/system_config.json y la aplica al motor actual.
-# ============================================================
-try:
-    from engine.config_loader import (
-        cargar_config_sistema,
-        cargar_config_simulacion,
-        resumen_config_operativa,
-    )
-except Exception as e:
-    cargar_config_sistema = None
-    cargar_config_simulacion = None
-    resumen_config_operativa = None
-    CONFIG_LOADER_IMPORT_ERROR = str(e)
-else:
-    CONFIG_LOADER_IMPORT_ERROR = ""
 
 
 ACCIONES_INFO = {
@@ -210,20 +196,8 @@ DEFAULT_CONFIG_SIMULACION = {
     "max_dias_holding": 99,  # V4.9: forzar cierre en N días si hay ganancia; 99 = desactivado
 }
 
-# CONFIG_SIMULACION real usada por el motor.
-# En V4.2 se carga desde config/system_config.json.
-# Si el archivo falla, usa DEFAULT_CONFIG_SIMULACION.
-if cargar_config_sistema and cargar_config_simulacion:
-    CONFIG_SISTEMA = cargar_config_sistema()
-    CONFIG_SIMULACION = cargar_config_simulacion(DEFAULT_CONFIG_SIMULACION, CONFIG_SISTEMA)
-else:
-    CONFIG_SISTEMA = {}
-    CONFIG_SIMULACION = dict(DEFAULT_CONFIG_SIMULACION)
-
-if CONFIG_LOADER_IMPORT_ERROR:
-    print("ADVERTENCIA: config loader no disponible:", CONFIG_LOADER_IMPORT_ERROR)
-else:
-    print("CONFIG BOT-ARQ cargada:", CONFIG_SISTEMA.get("version", "default"))
+CONFIG_SISTEMA = cargar_config_sistema()
+CONFIG_SIMULACION = cargar_config_simulacion(DEFAULT_CONFIG_SIMULACION, CONFIG_SISTEMA)
 
 
 
@@ -239,12 +213,9 @@ DRIVERS_CONTEXTO = {
 
 def numero(valor):
     try:
-        if hasattr(valor, "iloc"):
-            return float(valor.iloc[0])
-        return float(valor)
-    except Exception:
+        return number(valor.iloc[0] if hasattr(valor, "iloc") else valor)
+    except (ValueError, TypeError, IndexError):
         return None
-
 
 def hoy_ymd():
     return datetime.now(ZONA_HORARIA).strftime("%Y-%m-%d")
@@ -263,24 +234,19 @@ def limpiar_df(df):
 
 
 def descargar(ticker, periodo="1y"):
-    df = yf.download(
-        ticker,
-        period=periodo,
-        interval="1d",
-        auto_adjust=True,
-        progress=False,
-        threads=False,
-    )
+    if ticker in DAILY_DATA and periodo == "1y":
+        return DAILY_DATA[ticker]
+    df = yf.download(ticker, period=periodo, interval="1d", auto_adjust=True,
+                     progress=False, threads=False, timeout=15)
     return limpiar_df(df)
-
 
 def rsi_real(close, periodo=14):
     delta = close.diff()
-    gain = delta.where(delta > 0, 0).rolling(periodo).mean()
-    loss = (-delta.where(delta < 0, 0)).rolling(periodo).mean()
-    rs = gain / loss.replace(0, pd.NA)
-    return 100 - (100 / (1 + rs))
-
+    gain = delta.clip(lower=0).rolling(periodo).mean()
+    loss = (-delta.clip(upper=0)).rolling(periodo).mean()
+    result = 100 - 100 / (1 + gain / loss.replace(0, float("nan")))
+    result = result.mask((loss == 0) & (gain > 0), 100)
+    return result.mask((loss == 0) & (gain == 0), 50)
 
 def calcular_atr(high, low, close, periodo=14):
     cierre_anterior = close.shift(1)
@@ -768,8 +734,8 @@ def compute_signal(df, ticker, mercado):
         entrada_min = round(precio - (atr * 0.35), 2)
         entrada_max = round(precio + (atr * 0.15), 2)
         stop = round(precio - (atr * 0.8), 2)      # V4.9.1: 0.8×ATR — sobrevive ruido normal de 1 día (0.5 era demasiado ajustado)
-        objetivo = round(precio + (atr * 1.2), 2)  # V4.9.1: 1.2×ATR — RR=1.5, alcanzable en 1-2 días
-        relacion_rr = round((objetivo - precio) / max(precio - stop, 0.01), 2)
+        objetivo = math.ceil(max(precio + atr * 1.2, round(precio, 2) + CONFIG_SIMULACION["rr_minimo"] * (round(precio, 2) - stop)) * 100) / 100
+        relacion_rr = (objetivo - round(precio, 2)) / max(round(precio, 2) - stop, 0.0001)
 
         if (
             score >= 84
@@ -861,28 +827,9 @@ def prioridad_contexto(ctx):
 
 
 def cargar_historial():
-    if not os.path.exists(HISTORIAL_FILE):
-        return {"version": 1, "actualizado": "", "operaciones": [], "resumen": {}}
-
-    try:
-        with open(HISTORIAL_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-        if not isinstance(data, dict):
-            data = {}
-
-        if not isinstance(data.get("operaciones"), list):
-            data["operaciones"] = []
-
-        data.setdefault("version", 1)
-        data.setdefault("resumen", {})
-
-        return data
-
-    except Exception as e:
-        print(f"No se pudo leer historial: {e}")
-        return {"version": 1, "actualizado": "", "operaciones": [], "resumen": {}}
-
+    data = read_json(HISTORIAL_FILE)
+    validate_ledger(data)
+    return data
 
 def dias_desde(fecha_entrada):
     try:
@@ -915,38 +862,13 @@ def distancia_stop_pct(precio_entrada, stop):
 
 
 def calcular_posicion(capital, precio_entrada, stop):
-    """Calcula tamaño de posición para no superar el riesgo configurado."""
-    capital = float(capital or CONFIG_SIMULACION["capital_inicial"])
-    d_stop = distancia_stop_pct(precio_entrada, stop)
-    riesgo_usd = capital * (CONFIG_SIMULACION["riesgo_por_operacion_pct"] / 100)
-    max_posicion_usd = capital * (CONFIG_SIMULACION["max_posicion_pct"] / 100)
-
-    if d_stop <= 0:
-        posicion_usd = max_posicion_usd
-        riesgo_real_usd = 0.0
-    else:
-        posicion_usd = riesgo_usd / (d_stop / 100)
-        posicion_usd = min(posicion_usd, max_posicion_usd)
-        riesgo_real_usd = posicion_usd * (d_stop / 100)
-
-    acciones_estimadas = 0.0
-    try:
-        precio = float(precio_entrada or 0)
-        if precio > 0:
-            acciones_estimadas = posicion_usd / precio
-    except Exception:
-        acciones_estimadas = 0.0
-
-    return {
-        "posicion_usd": round(posicion_usd, 2),
-        "posicion_pct_cuenta": round((posicion_usd / capital) * 100, 2) if capital else 0,
-        "riesgo_usd": round(riesgo_real_usd, 2),
-        "riesgo_pct_cuenta": round((riesgo_real_usd / capital) * 100, 2) if capital else 0,
-        "distancia_stop_pct": round(d_stop, 2),
-        "acciones_estimadas": round(acciones_estimadas, 4),
-    }
-
-
+    dim = position_size(capital, capital, precio_entrada, stop, CONFIG_SIMULACION)
+    if not dim:
+        return {"posicion_usd": 0, "acciones_estimadas": 0, "riesgo_usd": 0}
+    return {"posicion_usd": dim["notional"], "acciones_estimadas": dim["quantity"],
+            "riesgo_usd": dim["risk"], "distancia_stop_pct": distancia_stop_pct(precio_entrada, stop),
+            "posicion_pct_cuenta": dim["notional"] / capital * 100,
+            "riesgo_pct_cuenta": dim["risk"] / capital * 100}
 
 def calcular_score_calidad(r):
     """Score 0-100 para medir calidad de cada señal.
@@ -1095,17 +1017,10 @@ def crear_resumen_diario(equity_curve, resumen_base):
     return [dias[k] for k in sorted(dias.keys())]
 
 def fecha_orden_operacion(op):
-    return op.get("fecha_cierre") or op.get("fecha_entrada") or "1900-01-01"
-
+    return op.get("exit_timestamp") or op.get("fecha_cierre") or op.get("entry_timestamp") or op.get("fecha_entrada") or ""
 
 def es_ganada(op):
-    if str(op.get("resultado", "")).startswith("GANADA"):
-        return True
-    try:
-        return float(op.get("ganancia_pct_final") or op.get("ganancia_pct") or 0) > 0
-    except Exception:
-        return False
-
+    return number(op["pnl_usd_estimado"]) > 0
 
 def calcular_rachas(cerradas):
     max_perdidas = max_ganadas = actual_perdidas = actual_ganadas = 0
@@ -1135,373 +1050,15 @@ def calcular_rachas(cerradas):
     }
 
 
-def resumen_grupo_operaciones(ops, campo):
-    grupos = {}
-    costo_pct = costo_total_estimado_pct()
-
-    for op in ops:
-        clave = op.get(campo) or "SIN DATOS"
-        grupos.setdefault(clave, {
-            "grupo": clave,
-            "operaciones": 0,
-            "ganadas": 0,
-            "perdidas": 0,
-            "rentabilidad_bruta_pct": 0.0,
-            "rentabilidad_neta_pct": 0.0,
-            "total_ganado_pct": 0.0,
-            "total_perdido_pct": 0.0,
-        })
-        g = grupos[clave]
-        bruto = float(op.get("ganancia_pct_final") or 0)
-        neto = bruto - costo_pct
-        g["operaciones"] += 1
-        g["rentabilidad_bruta_pct"] += bruto
-        g["rentabilidad_neta_pct"] += neto
-        if neto >= 0:
-            g["ganadas"] += 1
-            g["total_ganado_pct"] += neto
-        else:
-            g["perdidas"] += 1
-            g["total_perdido_pct"] += abs(neto)
-
-    salida = []
-    for g in grupos.values():
-        ops_n = g["operaciones"] or 1
-        perdido = g["total_perdido_pct"]
-        salida.append({
-            "grupo": g["grupo"],
-            "operaciones": g["operaciones"],
-            "ganadas": g["ganadas"],
-            "perdidas": g["perdidas"],
-            "win_rate": round((g["ganadas"] / ops_n) * 100, 2),
-            "rentabilidad_bruta_pct": round(g["rentabilidad_bruta_pct"], 2),
-            "rentabilidad_neta_pct": round(g["rentabilidad_neta_pct"], 2),
-            "profit_factor": round(g["total_ganado_pct"] / perdido, 2) if perdido else None,
-        })
-
-    return sorted(salida, key=lambda x: x["rentabilidad_neta_pct"], reverse=True)
-
-
-def _calcular_ratios_pro(cerradas, max_dd_pct, rentabilidad_neta_pct, capital_inicial):
-    """V4.6: Sharpe, Sortino, Calmar, win rate, expectancy y winrate por sector."""
-    if not cerradas:
-        return {}
-
-    retornos = [float(op.get("ganancia_pct_neta_estimada") or 0) for op in cerradas]
-    pnls_usd = [float(op.get("pnl_usd_estimado") or 0) for op in cerradas]
-    dias_list = [float(op.get("dias_abierta") or 1) for op in cerradas]
-    n = len(retornos)
-
-    mu = sum(retornos) / n
-    varianza = sum((r - mu) ** 2 for r in retornos) / max(n - 1, 1)
-    sigma = varianza ** 0.5
-    avg_dias = sum(dias_list) / n if n else 1
-
-    # Factor de anualización según el periodo medio de tenencia
-    factor = (252 / max(avg_dias, 1)) ** 0.5
-
-    sharpe = round((mu / sigma) * factor, 3) if sigma > 0 else None
-
-    negativos = [r for r in retornos if r < 0]
-    if len(negativos) > 1:
-        mu_neg = sum(negativos) / len(negativos)
-        var_neg = sum((r - mu_neg) ** 2 for r in negativos) / max(len(negativos) - 1, 1)
-        downside = var_neg ** 0.5
-        sortino = round((mu / downside) * factor, 3) if downside > 0 else None
-    else:
-        sortino = None
-
-    # CAGR usando fecha primera / última operación cerrada.
-    # Solo se anualiza con >= 90 días de historial; con menos, anualizar infla el dato
-    # de forma engañosa (p. ej. 30 días daría CAGR de cientos de %).
-    fechas = sorted([op.get("fecha_cierre") or op.get("fecha_entrada") or "" for op in cerradas])
-    cagr = None
-    periodo_dias = None
-    try:
-        d0 = datetime.strptime(fechas[0], "%Y-%m-%d")
-        d1 = datetime.strptime(fechas[-1], "%Y-%m-%d")
-        periodo_dias = max((d1 - d0).days, 1)
-        if periodo_dias >= 90:
-            cagr = round(((1 + rentabilidad_neta_pct / 100) ** (365 / periodo_dias) - 1) * 100, 2)
-    except Exception:
-        pass
-
-    calmar = round(cagr / max_dd_pct, 3) if (cagr is not None and max_dd_pct and max_dd_pct > 0) else None
-
-    # Win rate y expectancy en USD
-    wins_usd = [p for p in pnls_usd if p > 0]
-    loss_usd = [p for p in pnls_usd if p <= 0]
-    win_rate = round(len(wins_usd) / n * 100, 2) if n else 0
-    avg_win_usd = round(sum(wins_usd) / len(wins_usd), 2) if wins_usd else 0
-    avg_loss_usd = round(abs(sum(loss_usd) / len(loss_usd)), 2) if loss_usd else 0
-    expectancy_usd = round((win_rate / 100) * avg_win_usd - (1 - win_rate / 100) * avg_loss_usd, 2)
-    payoff = round(avg_win_usd / avg_loss_usd, 2) if avg_loss_usd else None
-
-    # Win rate por sector (mínimo 2 trades)
-    sector_map = {}
-    for op in cerradas:
-        s = str(op.get("sector") or "Sin sector").strip() or "Sin sector"
-        pnl = float(op.get("pnl_usd_estimado") or 0)
-        if s not in sector_map:
-            sector_map[s] = {"wins": 0, "total": 0, "pnl_usd": 0.0}
-        sector_map[s]["total"] += 1
-        sector_map[s]["pnl_usd"] = round(sector_map[s]["pnl_usd"] + pnl, 2)
-        if pnl > 0:
-            sector_map[s]["wins"] += 1
-
-    winrate_por_sector = sorted(
-        [{"sector": s,
-          "trades": v["total"],
-          "win_rate_pct": round(v["wins"] / v["total"] * 100, 1),
-          "pnl_usd": v["pnl_usd"]}
-         for s, v in sector_map.items() if v["total"] >= 2],
-        key=lambda x: x["pnl_usd"], reverse=True
-    )
-
-    return {
-        "sharpe_ratio": sharpe,
-        "sortino_ratio": sortino,
-        "calmar_ratio": calmar,
-        "cagr_estimado_pct": cagr,
-        "periodo_dias": periodo_dias,
-        "win_rate_pct": win_rate,
-        "avg_win_usd": avg_win_usd,
-        "avg_loss_usd": avg_loss_usd,
-        "expectancy_usd": expectancy_usd,
-        "payoff_ratio": payoff,
-        "avg_holding_dias": round(avg_dias, 1),
-        "winrate_por_sector": winrate_por_sector,
-    }
-
-
 def calcular_metricas_avanzadas(operaciones, mercado=None):
-    """Genera curva de capital, drawdown, costos, profit factor, exposición y diagnóstico."""
-    capital_inicial = float(CONFIG_SIMULACION["capital_inicial"])
-    capital = capital_inicial
-    costo_pct = costo_total_estimado_pct()
-    cerradas = [op for op in operaciones if op.get("estado") == "CERRADA"]
-    abiertas = [op for op in operaciones if op.get("estado") == "ABIERTA"]
-    cerradas_ordenadas = sorted(cerradas, key=fecha_orden_operacion)
-
-    equity_curve = []
-    peak = capital_inicial
-    max_dd_pct = 0.0
-    max_dd_usd = 0.0
-    total_costos = 0.0
-    ganancias_usd = 0.0
-    perdidas_usd = 0.0
-    ganancias_pct = []
-    perdidas_pct = []
-    suma_bruta_pct = 0.0
-    suma_neta_pct = 0.0
-
-    for i, op in enumerate(cerradas_ordenadas, start=1):
-        bruto_pct = float(op.get("ganancia_pct_final") or 0)
-        neto_pct = bruto_pct - costo_pct
-        capital_antes = capital
-        pos = calcular_posicion(capital_antes, op.get("precio_entrada"), op.get("stop"))
-        posicion_usd = pos["posicion_usd"]
-        costo_usd = posicion_usd * (costo_pct / 100)
-        pnl_usd = posicion_usd * (neto_pct / 100)
-        capital += pnl_usd
-        peak = max(peak, capital)
-        dd_usd = max(0.0, peak - capital)
-        dd_pct = (dd_usd / peak) * 100 if peak else 0.0
-        max_dd_usd = max(max_dd_usd, dd_usd)
-        max_dd_pct = max(max_dd_pct, dd_pct)
-        total_costos += costo_usd
-        suma_bruta_pct += bruto_pct
-        suma_neta_pct += neto_pct
-
-        if pnl_usd >= 0:
-            ganancias_usd += pnl_usd
-            ganancias_pct.append(neto_pct)
-        else:
-            perdidas_usd += abs(pnl_usd)
-            perdidas_pct.append(neto_pct)
-
-        op["ganancia_pct_neta_estimada"] = round(neto_pct, 2)
-        op["pnl_usd_estimado"] = round(pnl_usd, 2)
-        op["costo_usd_estimado"] = round(costo_usd, 2)
-        op["posicion_usd_estimada"] = pos["posicion_usd"]
-        op["valor_cartera_usd"] = 0.0
-        op["capital_antes_operacion"] = round(capital_antes, 2)
-        op["capital_despues_operacion"] = round(capital, 2)
-        op["riesgo_usd_estimado"] = pos["riesgo_usd"]
-        op["riesgo_pct_cuenta_estimado"] = pos["riesgo_pct_cuenta"]
-        op["perdida_maxima_stop_usd"] = pos["riesgo_usd"]
-        op["distancia_stop_pct"] = pos["distancia_stop_pct"]
-        op["distancia_stop_actual_pct"] = 0.0
-        op["distancia_objetivo_pct"] = 0.0
-
-        equity_curve.append({
-            "n": i,
-            "fecha": fecha_orden_operacion(op),
-            "accion": op.get("accion", ""),
-            "capital": round(capital, 2),
-            "pnl_usd": round(pnl_usd, 2),
-            "retorno_neto_pct": round(neto_pct, 2),
-            "drawdown_pct": round(dd_pct, 2),
-        })
-
-    # V4.5 Position Sizing Pro: cada posición abierta descuenta caja antes de dimensionar la siguiente.
-    # Sin esto, todas las posiciones se dimensionan sobre el capital completo → exposición >100% posible.
-    exposicion_usd = 0.0
-    riesgo_abierto_usd = 0.0
-    ganancia_abierta_neta_usd = 0.0
-    caja_disponible = capital  # se reduce conforme se compromete cash en cada posición
-    for op in abiertas:
-        pos = calcular_posicion(caja_disponible, op.get("precio_entrada"), op.get("stop"))
-        bruto_abierto = float(op.get("ganancia_pct") or 0)
-        neto_abierto = bruto_abierto - costo_pct
-        pnl_abierto = pos["posicion_usd"] * (neto_abierto / 100)
-        valor_cartera = pos["posicion_usd"] + pnl_abierto
-        exposicion_usd += pos["posicion_usd"]
-        riesgo_abierto_usd += pos["riesgo_usd"]
-        ganancia_abierta_neta_usd += pnl_abierto
-        caja_disponible = max(caja_disponible - pos["posicion_usd"], 0)
-        op["ganancia_pct_neta_estimada"] = round(neto_abierto, 2)
-        op["pnl_usd_estimado"] = round(pnl_abierto, 2)
-        op["ganancia_abierta_usd_estimada"] = round(pnl_abierto, 2)
-        op["costo_usd_estimado"] = round(pos["posicion_usd"] * (costo_pct / 100), 2)
-        op["posicion_usd_estimada"] = pos["posicion_usd"]
-        op["valor_cartera_usd"] = round(valor_cartera, 2)
-        op["riesgo_usd_estimado"] = pos["riesgo_usd"]
-        op["riesgo_pct_cuenta_estimado"] = pos["riesgo_pct_cuenta"]
-        op["perdida_maxima_stop_usd"] = pos["riesgo_usd"]
-        op["distancia_stop_pct"] = pos["distancia_stop_pct"]
-        op["distancia_stop_actual_pct"] = distancia_stop_actual_pct(op.get("precio_actual"), op.get("stop"))
-        op["distancia_objetivo_pct"] = distancia_objetivo_pct(op.get("precio_actual"), op.get("objetivo"))
-
-    # Métricas de caja real V4.5
-    caja_comprometida_usd = round(exposicion_usd, 2)
-    caja_disponible_usd = round(max(capital - caja_comprometida_usd, 0), 2)
-    caja_disponible_pct = round((caja_disponible_usd / capital_inicial * 100), 2) if capital_inicial else 0
-    max_nueva_posicion_usd = round(min(
-        caja_disponible_usd,
-        capital_inicial * (CONFIG_SIMULACION.get("max_posicion_pct", 20) / 100)
-    ), 2)
-
-    rachas = calcular_rachas(cerradas_ordenadas)
-    profit_factor = round(ganancias_usd / perdidas_usd, 2) if perdidas_usd else None
-    gan_prom = round(sum(ganancias_pct) / len(ganancias_pct), 2) if ganancias_pct else 0
-    per_prom = round(sum(perdidas_pct) / len(perdidas_pct), 2) if perdidas_pct else 0
-    ratio_gp = round(abs(gan_prom / per_prom), 2) if per_prom else None
-    expectativa_pct = round(suma_neta_pct / len(cerradas), 2) if cerradas else 0
-
-    capital_total_estimado = capital + ganancia_abierta_neta_usd
-    exposicion_pct = round((exposicion_usd / capital) * 100, 2) if capital else 0
-    riesgo_abierto_pct = round((riesgo_abierto_usd / capital) * 100, 2) if capital else 0
-
-    mejores = sorted(cerradas, key=lambda x: float(x.get("ganancia_pct_final") or 0), reverse=True)[:10]
-    peores = sorted(cerradas, key=lambda x: float(x.get("ganancia_pct_final") or 0))[:10]
-
-    mercado_estado = (mercado or {}).get("estado", "SIN DATOS")
-    modo = "ACTIVO"
-    alertas = []
-    riesgo_sistema = "BAJO"
-
-    if mercado_estado == "DÉBIL":
-        modo = "DEFENSIVO"
-        alertas.append("Mercado general débil por SPY/QQQ")
-    if rachas["racha_actual_tipo"] == "PERDIDAS" and rachas["racha_actual"] >= CONFIG_SIMULACION["pausar_si_perdidas_seguidas"]:
-        modo = "DEFENSIVO"
-        alertas.append(f"Racha actual de pérdidas: {rachas['racha_actual']}")
-    if rachas["racha_actual_tipo"] == "PERDIDAS" and rachas["racha_actual"] >= CONFIG_SIMULACION["bloquear_si_perdidas_seguidas"]:
-        modo = "PAUSADO"
-        alertas.append("Racha de pérdidas alcanzó límite de bloqueo")
-    if len(abiertas) >= CONFIG_SIMULACION["max_operaciones_abiertas"]:
-        modo = "DEFENSIVO" if modo != "PAUSADO" else modo
-        alertas.append("Máximo de operaciones abiertas alcanzado")
-    if exposicion_pct >= CONFIG_SIMULACION["max_exposicion_total_pct"]:
-        modo = "DEFENSIVO" if modo != "PAUSADO" else modo
-        alertas.append("Exposición abierta alta")
-
-    if max_dd_pct >= 25 or exposicion_pct >= 90 or rachas["racha_max_perdidas"] >= 12:
-        riesgo_sistema = "ALTO"
-    elif max_dd_pct >= 12 or exposicion_pct >= 70 or rachas["racha_max_perdidas"] >= 8:
-        riesgo_sistema = "MEDIO"
-
-    diagnostico = {
-        "modo": modo,
-        "riesgo_sistema": riesgo_sistema,
-        "mercado": mercado_estado,
-        "mensaje": "Sistema en simulación con control de riesgo; validar varios meses antes de dinero real.",
-        "alertas": alertas[:6],
-    }
-
-    simulacion = {
-        "capital_inicial": round(capital_inicial, 2),
-        "capital_actual_cerrado": round(capital, 2),
-        "capital_actual_total_estimado": round(capital_total_estimado, 2),
-        "ganancia_neta_usd": round(capital - capital_inicial, 2),
-        "ganancia_total_estimada_usd": round(capital_total_estimado - capital_inicial, 2),
-        "rentabilidad_neta_pct": round(((capital / capital_inicial) - 1) * 100, 2) if capital_inicial else 0,
-        "rentabilidad_total_estimada_pct": round(((capital_total_estimado / capital_inicial) - 1) * 100, 2) if capital_inicial else 0,
-        "rentabilidad_bruta_pct": round(suma_bruta_pct, 2),
-        "rentabilidad_neta_senales_pct": round(suma_neta_pct, 2),
-        "costos_totales_usd": round(total_costos, 2),
-        "costo_total_estimado_pct_por_operacion": costo_pct,
-        "ganancia_abierta_neta_usd": round(ganancia_abierta_neta_usd, 2),
-        "valor_total_en_cartera_usd": round(exposicion_usd + ganancia_abierta_neta_usd, 2),
-        "caja_comprometida_usd": caja_comprometida_usd,
-        "caja_disponible_usd": caja_disponible_usd,
-        "caja_disponible_pct": caja_disponible_pct,
-        "max_nueva_posicion_usd": max_nueva_posicion_usd,
-        "modo": "SIMULACIÓN",
-    }
-
-    benchmark = calcular_benchmark_desde_fecha(
-        cerradas_ordenadas[0].get("fecha_entrada") if cerradas_ordenadas else None,
-        capital_inicial,
-        simulacion.get("rentabilidad_neta_pct", 0),
-    )
-    resumen_diario = crear_resumen_diario(equity_curve, simulacion)
-
-    riesgo = {
-        "max_drawdown_pct": round(max_dd_pct, 2),
-        "max_drawdown_usd": round(max_dd_usd, 2),
-        "racha_max_perdidas": rachas["racha_max_perdidas"],
-        "racha_max_ganadas": rachas["racha_max_ganadas"],
-        "racha_actual_tipo": rachas["racha_actual_tipo"],
-        "racha_actual": rachas["racha_actual"],
-        "exposicion_abierta_usd": round(exposicion_usd, 2),
-        "exposicion_abierta_pct": exposicion_pct,
-        "riesgo_total_abierto_usd": round(riesgo_abierto_usd, 2),
-        "riesgo_total_abierto_pct": riesgo_abierto_pct,
-        "operaciones_abiertas": len(abiertas),
-        "max_operaciones_abiertas": CONFIG_SIMULACION["max_operaciones_abiertas"],
-    }
-
-    ratios_pro = _calcular_ratios_pro(
-        cerradas_ordenadas, max_dd_pct,
-        simulacion.get("rentabilidad_neta_pct", 0), capital_inicial
-    )
-
-    metricas = {
-        "profit_factor": profit_factor,
-        "ganancia_promedio_pct": gan_prom,
-        "perdida_promedio_pct": per_prom,
-        "ratio_ganancia_perdida": ratio_gp,
-        "expectativa_pct_por_operacion": expectativa_pct,
-        "total_ganado_usd": round(ganancias_usd, 2),
-        "total_perdido_usd": round(perdidas_usd, 2),
-        **ratios_pro,
-    }
-
-    return {
-        "simulacion": simulacion,
-        "riesgo": riesgo,
-        "metricas": metricas,
-        "equity_curve": equity_curve,
-        "resumen_diario": resumen_diario,
-        "benchmark": benchmark,
-        "rendimiento_por_sector": resumen_grupo_operaciones(cerradas, "sector"),
-        "rendimiento_por_mercado": resumen_grupo_operaciones(cerradas, "mercado_entrada"),
-        "mejores_operaciones": [resumen_operacion_top(op) for op in mejores],
-        "peores_operaciones": [resumen_operacion_top(op) for op in peores],
-        "diagnostico_bot": diagnostico,
-    }
+    # Compatibility read-only helper; main computes from the complete versioned book.
+    from engine.ledger import mark
+    now = datetime.now(timezone.utc)
+    book = migrate({"operaciones": __import__("copy").deepcopy(operaciones)}, CONFIG_SIMULACION, now)
+    for op in book["operaciones"]:
+        if op["estado"] == "ABIERTA":
+            mark(op, op.get("precio_actual", op["precio_entrada"]))
+    return summarize(book, CONFIG_SIMULACION, now)
 
 
 def resumen_operacion_top(op):
@@ -1519,403 +1076,9 @@ def resumen_operacion_top(op):
 
 
 
-# ============================================================
-# BOT-ARQ V4.4 - REGLAS OPERATIVAS
-# No duplica el riesgo: convierte métricas existentes en bloqueo real.
-# ============================================================
-
-def _num_cfg_(key, default=0.0):
-    try: return float(CONFIG_SIMULACION.get(key, default))
-    except Exception: return float(default)
-
-def _bool_cfg_(key, default=False):
-    v = CONFIG_SIMULACION.get(key, default)
-    if isinstance(v, str): return v.strip().lower() in ("true", "1", "si", "sí", "yes", "on")
-    return bool(v)
-
-def _safe_num_(value, default=0.0):
-    try:
-        if value is None or value == "": return float(default)
-        return float(value)
-    except Exception:
-        return float(default)
-
-def calcular_contexto_reglas_operativas_(operaciones, mercado):
-    try:
-        metricas_previas = calcular_metricas_avanzadas(operaciones, mercado)
-    except Exception as e:
-        metricas_previas = {}
-        print("ADVERTENCIA: no se pudo calcular contexto operativo:", e)
-
-    riesgo = dict(metricas_previas.get("riesgo", {}) or {})
-    sim = dict(metricas_previas.get("simulacion", {}) or {})
-    diagnostico = dict(metricas_previas.get("diagnostico_bot", {}) or {})
-    capital_operativo = _safe_num_(sim.get("capital_actual_cerrado"), CONFIG_SIMULACION.get("capital_inicial", 5000.0))
-    if capital_operativo <= 0: capital_operativo = _safe_num_(CONFIG_SIMULACION.get("capital_inicial"), 5000.0)
-    exposicion_usd = _safe_num_(riesgo.get("exposicion_abierta_usd"), 0)
-    riesgo_usd = _safe_num_(riesgo.get("riesgo_total_abierto_usd"), 0)
-    drawdown_pct = _safe_num_(riesgo.get("max_drawdown_pct"), 0)
-    return {
-        "version":"V4.4", "capital_operativo":capital_operativo,
-        "exposicion_abierta_usd":exposicion_usd, "riesgo_abierto_usd":riesgo_usd,
-        "exposicion_abierta_pct":round((exposicion_usd/capital_operativo)*100,2) if capital_operativo else 0,
-        "riesgo_abierto_pct":round((riesgo_usd/capital_operativo)*100,2) if capital_operativo else 0,
-        "drawdown_pct":round(drawdown_pct,2), "modo_previo":diagnostico.get("modo","ACTIVO"),
-        "riesgo_sistema_previo":diagnostico.get("riesgo_sistema","SIN DATOS"),
-        "max_exposicion_total_pct":_num_cfg_("max_exposicion_total_pct",80),
-        "max_riesgo_total_abierto_pct":_num_cfg_("max_riesgo_total_abierto_pct",10),
-        "modo_defensivo_drawdown_pct":_num_cfg_("modo_defensivo_drawdown_pct",12),
-        "bloquear_entradas_drawdown_pct":_num_cfg_("bloquear_entradas_drawdown_pct",25),
-        "activar_reglas_operativas":_bool_cfg_("activar_reglas_operativas",True),
-        "usar_exposicion_como_bloqueo":_bool_cfg_("usar_exposicion_como_bloqueo",True),
-        "usar_riesgo_abierto_como_bloqueo":_bool_cfg_("usar_riesgo_abierto_como_bloqueo",True),
-        "usar_drawdown_como_bloqueo":_bool_cfg_("usar_drawdown_como_bloqueo",True),
-        "permitir_buy_strong_en_modo_defensivo_drawdown":_bool_cfg_("permitir_buy_strong_en_modo_defensivo_drawdown",True),
-        "permitir_buy_strong_sobre_exposicion":_bool_cfg_("permitir_buy_strong_sobre_exposicion",False),
-        "permitir_buy_strong_sobre_riesgo":_bool_cfg_("permitir_buy_strong_sobre_riesgo",False),
-        "bloqueos_generados":0, "ultimo_motivo":""
-    }
-
-def evaluar_reglas_operativas_candidato_(r, posicion, contexto, senal_bot):
-    if not contexto.get("activar_reglas_operativas", True): return ""
-    capital = _safe_num_(contexto.get("capital_operativo"), CONFIG_SIMULACION.get("capital_inicial", 5000.0))
-    if capital <= 0: return ""
-    posicion_usd = _safe_num_(posicion.get("posicion_usd"), 0)
-    riesgo_usd = _safe_num_(posicion.get("riesgo_usd"), 0)
-    exposicion_actual_usd = _safe_num_(contexto.get("exposicion_abierta_usd"), 0)
-    riesgo_actual_usd = _safe_num_(contexto.get("riesgo_abierto_usd"), 0)
-    exposicion_actual_pct = (exposicion_actual_usd / capital) * 100
-    exposicion_resultante_pct = ((exposicion_actual_usd + posicion_usd) / capital) * 100
-    riesgo_actual_pct = (riesgo_actual_usd / capital) * 100
-    riesgo_resultante_pct = ((riesgo_actual_usd + riesgo_usd) / capital) * 100
-    drawdown_pct = _safe_num_(contexto.get("drawdown_pct"), 0)
-    if contexto.get("usar_drawdown_como_bloqueo", True):
-        if drawdown_pct >= contexto.get("bloquear_entradas_drawdown_pct", 25):
-            return f"Bloqueo operativo por drawdown máximo: {round(drawdown_pct, 2)}%"
-        if drawdown_pct >= contexto.get("modo_defensivo_drawdown_pct", 12):
-            if senal_bot != "BUY STRONG" or not contexto.get("permitir_buy_strong_en_modo_defensivo_drawdown", True):
-                return f"Modo defensivo por drawdown: {round(drawdown_pct, 2)}%"
-    if contexto.get("usar_exposicion_como_bloqueo", True):
-        max_exp = contexto.get("max_exposicion_total_pct", 80)
-        if exposicion_actual_pct >= max_exp and (senal_bot != "BUY STRONG" or not contexto.get("permitir_buy_strong_sobre_exposicion", False)):
-            return f"Exposición abierta ya supera límite: {round(exposicion_actual_pct, 2)}%"
-        if exposicion_resultante_pct > max_exp and (senal_bot != "BUY STRONG" or not contexto.get("permitir_buy_strong_sobre_exposicion", False)):
-            return f"Exposición resultante superaría límite: {round(exposicion_resultante_pct, 2)}%"
-    if contexto.get("usar_riesgo_abierto_como_bloqueo", True):
-        max_risk = contexto.get("max_riesgo_total_abierto_pct", 10)
-        if riesgo_actual_pct >= max_risk and (senal_bot != "BUY STRONG" or not contexto.get("permitir_buy_strong_sobre_riesgo", False)):
-            return f"Riesgo abierto ya supera límite: {round(riesgo_actual_pct, 2)}%"
-        if riesgo_resultante_pct > max_risk and (senal_bot != "BUY STRONG" or not contexto.get("permitir_buy_strong_sobre_riesgo", False)):
-            return f"Riesgo resultante superaría límite: {round(riesgo_resultante_pct, 2)}%"
-    return ""
-
-def actualizar_contexto_reglas_operativas_(contexto, posicion):
-    capital = _safe_num_(contexto.get("capital_operativo"), CONFIG_SIMULACION.get("capital_inicial", 5000.0))
-    contexto["exposicion_abierta_usd"] = _safe_num_(contexto.get("exposicion_abierta_usd"),0) + _safe_num_(posicion.get("posicion_usd"),0)
-    contexto["riesgo_abierto_usd"] = _safe_num_(contexto.get("riesgo_abierto_usd"),0) + _safe_num_(posicion.get("riesgo_usd"),0)
-    contexto["exposicion_abierta_pct"] = round((contexto["exposicion_abierta_usd"]/capital)*100,2) if capital else 0
-    contexto["riesgo_abierto_pct"] = round((contexto["riesgo_abierto_usd"]/capital)*100,2) if capital else 0
-    return contexto
-
-def resumen_reglas_operativas_(contexto, bloqueadas):
-    motivos = {}
-    for b in bloqueadas or []:
-        m = str(b.get("motivo","")).strip() or "SIN MOTIVO"
-        motivos[m] = motivos.get(m,0)+1
-    estado = "NORMAL"
-    if contexto.get("drawdown_pct",0) >= contexto.get("bloquear_entradas_drawdown_pct",25): estado = "BLOQUEADO"
-    elif (contexto.get("exposicion_abierta_pct",0) >= contexto.get("max_exposicion_total_pct",80) or contexto.get("riesgo_abierto_pct",0) >= contexto.get("max_riesgo_total_abierto_pct",10) or contexto.get("drawdown_pct",0) >= contexto.get("modo_defensivo_drawdown_pct",12)):
-        estado = "DEFENSIVO"
-    return {
-        "version":"V4.4", "estado":estado,
-        "exposicion_abierta_pct":round(_safe_num_(contexto.get("exposicion_abierta_pct")),2),
-        "riesgo_abierto_pct":round(_safe_num_(contexto.get("riesgo_abierto_pct")),2),
-        "drawdown_pct":round(_safe_num_(contexto.get("drawdown_pct")),2),
-        "max_exposicion_total_pct":contexto.get("max_exposicion_total_pct"),
-        "max_riesgo_total_abierto_pct":contexto.get("max_riesgo_total_abierto_pct"),
-        "modo_defensivo_drawdown_pct":contexto.get("modo_defensivo_drawdown_pct"),
-        "bloquear_entradas_drawdown_pct":contexto.get("bloquear_entradas_drawdown_pct"),
-        "bloqueos_generados":len(bloqueadas or []),
-        "motivo_principal":max(motivos, key=motivos.get) if motivos else "SIN BLOQUEOS",
-        "reglas_activas":{"exposicion":bool(contexto.get("usar_exposicion_como_bloqueo",True)),"riesgo_abierto":bool(contexto.get("usar_riesgo_abierto_como_bloqueo",True)),"drawdown":bool(contexto.get("usar_drawdown_como_bloqueo",True))},
-        "nota":"V4.4 usa métricas existentes como reglas operativas de entrada. No duplica el motor de riesgo."
-    }
-
-
-def actualizar_historial(historial, resultados, mercado):
-    """
-    Simulación tipo paper tracking:
-    - Abre operación cuando aparece BUY STRONG o BUY.
-    - Cierra operación si toca stop, objetivo o si la señal se vuelve SELL / EVITAR después de al menos 1 día.
-    - No ejecuta órdenes reales. Solo mide si las señales habrían ganado o perdido.
-    """
-
-    hoy = hoy_ymd()
-    resultados_por_ticker = {r["Accion"]: r for r in resultados}
-    operaciones = historial.get("operaciones", [])
-
-    for op in operaciones:
-        if op.get("estado") != "ABIERTA":
-            continue
-
-        ticker = op.get("accion") or op.get("Accion")
-        r = resultados_por_ticker.get(ticker)
-
-        if not r:
-            continue
-
-        precio_actual = float(
-            r.get("Precio actual", op.get("precio_actual", op.get("precio_entrada", 0))) or 0
-        )
-        precio_entrada = float(op.get("precio_entrada") or precio_actual or 0)
-
-        if precio_entrada <= 0:
-            continue
-
-        ganancia_pct = ((precio_actual / precio_entrada) - 1) * 100
-
-        op["precio_actual"] = round(precio_actual, 2)
-        op["ganancia_pct"] = round(ganancia_pct, 2)
-        op["dias_abierta"] = dias_desde(op.get("fecha_entrada", hoy))
-        op["senal_actual"] = r.get("Senal", "")
-        op["senal_bot_actual"] = r.get("Senal Bot", "")
-        op["probabilidad_actual"] = r.get("Probabilidad tecnica", 0)
-        op["riesgo_actual"] = r.get("Riesgo", "")
-        op["mercado_actual"] = r.get("Mercado", mercado.get("estado", "NEUTRO"))
-        op["contexto_sector_actual"] = r.get("Contexto sector", "")
-        op["volumen_relativo_actual"] = r.get("Volumen relativo", 0)
-        op["score_calidad_actual"] = r.get("Score calidad", calcular_score_calidad(r))
-        op["max_ganancia_pct"] = round(
-            max(float(op.get("max_ganancia_pct", ganancia_pct)), ganancia_pct), 2
-        )
-        op["max_perdida_pct"] = round(
-            min(float(op.get("max_perdida_pct", ganancia_pct)), ganancia_pct), 2
-        )
-
-        stop = float(op.get("stop") or 0)
-        objetivo = float(op.get("objetivo") or 0)
-        senal_bot_actual = r.get("Senal Bot", "")
-
-        cerrar = False
-        resultado = "EN SEGUIMIENTO"
-        tipo_cierre = ""
-        dias_abierta = op.get("dias_abierta", 0)
-        max_dias = CONFIG_SIMULACION.get("max_dias_holding", 99)
-
-        # V4.9.1: el STOP está SIEMPRE activo, incluso el día de compra.
-        # Bloquearlo el día 0 dejaba correr la pérdida overnight: stops planeados
-        # de -1.3% terminaban ejecutando a -5% o -6% (HAL, UNH, AFRM).
-        if stop > 0 and precio_actual <= stop:
-            cerrar = True
-            resultado = "PERDIDA STOP"
-            tipo_cierre = "STOP"
-
-        # V4.9: tomas de ganancia (objetivo/señal/tiempo) solo desde el día 1
-        # (capturar volatilidad overnight — no vender en ganancia el mismo día).
-        if not cerrar and dias_abierta >= 1:
-            if objetivo > 0 and precio_actual >= objetivo:
-                cerrar = True
-                resultado = "GANADA OBJETIVO"
-                tipo_cierre = "OBJETIVO"
-            elif senal_bot_actual == "SELL / EVITAR":
-                cerrar = True
-                resultado = "GANADA POR SEÑAL" if ganancia_pct >= 0 else "PERDIDA POR SEÑAL"
-                tipo_cierre = "SEÑAL SELL"
-            # V4.9: forzar salida solo si está en ganancia (≥0) — nunca forzar pérdida por tiempo.
-            # Si está en pérdida, seguir aguantando: stop sigue activo como protección.
-            if not cerrar and dias_abierta >= max_dias and ganancia_pct >= 0:
-                cerrar = True
-                resultado = "GANADA POR TIEMPO"
-                tipo_cierre = "TIEMPO MAXIMO"
-
-        if cerrar:
-            op["estado"] = "CERRADA"
-            op["fecha_cierre"] = hoy
-            op["precio_cierre"] = round(precio_actual, 2)
-            op["ganancia_pct_final"] = round(ganancia_pct, 2)
-            op["resultado"] = resultado
-            op["tipo_cierre"] = tipo_cierre
-            op["mercado_cierre"] = r.get("Mercado", mercado.get("estado", "NEUTRO"))
-            op["contexto_sector_cierre"] = r.get("Contexto sector", "")
-        else:
-            op["resultado"] = resultado
-
-    abiertas = {op.get("accion") for op in operaciones if op.get("estado") == "ABIERTA"}
-    creadas_hoy = {(op.get("accion"), op.get("fecha_entrada")) for op in operaciones}
-    # V4.9: tickers cerrados hoy — cooldown, no recomprar hasta mañana
-    cerradas_hoy_tickers = {
-        op.get("accion") for op in operaciones
-        if op.get("estado") == "CERRADA" and op.get("fecha_cierre") == hoy
-    }
-    cerradas_previas = [op for op in operaciones if op.get("estado") == "CERRADA"]
-    rachas_previas = calcular_rachas(cerradas_previas)
-    nuevas_bloqueadas = []
-    contexto_reglas_operativas = calcular_contexto_reglas_operativas_(operaciones, mercado)
-
-    for r in resultados:
-        ticker = r.get("Accion")
-        senal_bot = r.get("Senal Bot")
-        riesgo = r.get("Riesgo")
-        rr = float(r.get("R/R") or 0)
-
-        motivo_bloqueo = ""
-
-        if senal_bot not in ["BUY STRONG", "BUY"]:
-            continue
-
-        if ticker in abiertas:
-            continue
-        elif (ticker, hoy) in creadas_hoy:
-            continue
-        elif ticker in cerradas_hoy_tickers:
-            # V4.9: cooldown — si se cerró hoy, no recomprar hasta mañana
-            nuevas_bloqueadas.append({
-                "fecha": hoy, "accion": ticker, "senal_bot": senal_bot,
-                "motivo": "Cerrada hoy — cooldown hasta mañana",
-                "rr": rr, "riesgo": riesgo, "score": r.get("Score calidad", 0),
-                "precio": float(r.get("Precio actual") or 0),
-                "regla_operativa": True,
-            })
-            continue
-
-        precio = float(r.get("Precio actual") or 0)
-        posicion = calcular_posicion(CONFIG_SIMULACION["capital_inicial"], precio, r.get("Stop loss"))
-
-        if riesgo == "ALTO":
-            motivo_bloqueo = "Riesgo alto"
-        elif rr < CONFIG_SIMULACION["rr_minimo"]:
-            motivo_bloqueo = f"R/R menor a {CONFIG_SIMULACION['rr_minimo']}"
-        elif len(abiertas) >= CONFIG_SIMULACION["max_operaciones_abiertas"]:
-            motivo_bloqueo = "Máximo de operaciones abiertas alcanzado"
-        elif rachas_previas.get("racha_actual_tipo") == "PERDIDAS" and rachas_previas.get("racha_actual", 0) >= CONFIG_SIMULACION["bloquear_si_perdidas_seguidas"]:
-            motivo_bloqueo = "Sistema pausado por racha de pérdidas"
-        elif rachas_previas.get("racha_actual_tipo") == "PERDIDAS" and rachas_previas.get("racha_actual", 0) >= CONFIG_SIMULACION["pausar_si_perdidas_seguidas"] and senal_bot != "BUY STRONG":
-            motivo_bloqueo = "Modo defensivo por racha de pérdidas"
-        elif mercado.get("estado") == "DÉBIL" and (senal_bot != "BUY STRONG" or not CONFIG_SIMULACION["permitir_buy_strong_en_mercado_debil"]):
-            motivo_bloqueo = "Mercado débil"
-        elif float(r.get("Volumen relativo") or 0) < CONFIG_SIMULACION["volumen_relativo_minimo"]:
-            motivo_bloqueo = "Volumen relativo bajo"
-        elif r.get("Confirmacion") == "BAJA":
-            motivo_bloqueo = "Confirmación baja"
-        elif r.get("Contexto sector") == "NO ACOMPAÑA":
-            motivo_bloqueo = "Sector no acompaña"
-        else:
-            motivo_bloqueo = evaluar_reglas_operativas_candidato_(r, posicion, contexto_reglas_operativas, senal_bot)
-
-        if motivo_bloqueo:
-            nuevas_bloqueadas.append({
-                "fecha": hoy,
-                "accion": ticker,
-                "senal_bot": senal_bot,
-                "motivo": motivo_bloqueo,
-                "rr": rr,
-                "riesgo": riesgo,
-                "score": r.get("Score calidad", 0),
-                "precio": precio,
-                "exposicion_abierta_pct": contexto_reglas_operativas.get("exposicion_abierta_pct", 0),
-                "riesgo_abierto_pct": contexto_reglas_operativas.get("riesgo_abierto_pct", 0),
-                "drawdown_pct": contexto_reglas_operativas.get("drawdown_pct", 0),
-                "regla_operativa": motivo_bloqueo.startswith(("Exposición", "Riesgo", "Bloqueo operativo", "Modo defensivo")),
-            })
-            continue
-
-
-        nueva = {
-            "id": f"{hoy}-{ticker}",
-            "fecha_entrada": hoy,
-            "accion": ticker,
-            "sector": r.get("Sector", "Otro"),
-            "senal_entrada": r.get("Senal", ""),
-            "senal_bot_entrada": senal_bot,
-            "probabilidad_entrada": r.get("Probabilidad tecnica", 0),
-            "riesgo_entrada": riesgo,
-            "precio_entrada": round(precio, 2),
-            "precio_actual": round(precio, 2),
-            "entrada_min": r.get("Entrada min"),
-            "entrada_max": r.get("Entrada max"),
-            "stop": r.get("Stop loss"),
-            "objetivo": r.get("Objetivo"),
-            "rr": r.get("R/R"),
-            "estado": "ABIERTA",
-            "resultado": "EN SEGUIMIENTO",
-            "ganancia_pct": 0,
-            "ganancia_pct_final": None,
-            "max_ganancia_pct": 0,
-            "max_perdida_pct": 0,
-            "dias_abierta": 0,
-            "senal_actual": r.get("Senal", ""),
-            "senal_bot_actual": senal_bot,
-            "probabilidad_actual": r.get("Probabilidad tecnica", 0),
-            "riesgo_actual": riesgo,
-            "mercado_entrada": r.get("Mercado", mercado.get("estado", "NEUTRO")),
-            "contexto_sector_entrada": r.get("Contexto sector", ""),
-            "volumen_relativo_entrada": r.get("Volumen relativo", 0),
-            "score_calidad_entrada": r.get("Score calidad", calcular_score_calidad(r)),
-            "score_calidad_actual": r.get("Score calidad", calcular_score_calidad(r)),
-            "costo_total_estimado_pct": costo_total_estimado_pct(),
-            "posicion_usd_estimada": posicion.get("posicion_usd", 0),
-            "posicion_pct_cuenta_estimada": posicion.get("posicion_pct_cuenta", 0),
-            "riesgo_usd_estimado": posicion.get("riesgo_usd", 0),
-            "riesgo_pct_cuenta_estimado": posicion.get("riesgo_pct_cuenta", 0),
-            "distancia_stop_pct": posicion.get("distancia_stop_pct", 0),
-            "acciones_estimadas": posicion.get("acciones_estimadas", 0),
-            "valor_cartera_usd": posicion.get("posicion_usd", 0),
-            "ganancia_abierta_usd_estimada": 0.0,
-            "perdida_maxima_stop_usd": posicion.get("riesgo_usd", 0),
-            "distancia_stop_actual_pct": distancia_stop_actual_pct(precio, r.get("Stop loss")),
-            "distancia_objetivo_pct": distancia_objetivo_pct(precio, r.get("Objetivo")),
-        }
-
-        operaciones.append(nueva)
-        abiertas.add(ticker)
-        creadas_hoy.add((ticker, hoy))
-        actualizar_contexto_reglas_operativas_(contexto_reglas_operativas, posicion)
-
-    operaciones = sorted(
-        operaciones,
-        key=lambda x: (
-            1 if x.get("estado") == "ABIERTA" else 0,
-            x.get("fecha_entrada", ""),
-            x.get("accion", ""),
-        ),
-        reverse=True,
-    )[:300]
-
-    cerradas = [op for op in operaciones if op.get("estado") == "CERRADA"]
-    abiertas_ops = [op for op in operaciones if op.get("estado") == "ABIERTA"]
-    ganadas = [op for op in cerradas if str(op.get("resultado", "")).startswith("GANADA")]
-    perdidas = [op for op in cerradas if str(op.get("resultado", "")).startswith("PERDIDA")]
-
-    win_rate = round((len(ganadas) / len(cerradas)) * 100, 2) if cerradas else 0
-    rentabilidad_cerrada = round(sum(float(op.get("ganancia_pct_final") or 0) for op in cerradas), 2)
-    rentabilidad_abierta = round(sum(float(op.get("ganancia_pct") or 0) for op in abiertas_ops), 2)
-    promedio_cerradas = round(rentabilidad_cerrada / len(cerradas), 2) if cerradas else 0
-
-    avanzadas = calcular_metricas_avanzadas(operaciones, mercado)
-    reglas_operativas = resumen_reglas_operativas_(contexto_reglas_operativas, nuevas_bloqueadas)
-
-    resumen = {
-        "total_operaciones": len(operaciones),
-        "abiertas": len(abiertas_ops),
-        "cerradas": len(cerradas),
-        "ganadas": len(ganadas),
-        "perdidas": len(perdidas),
-        "win_rate": win_rate,
-        "rentabilidad_cerrada_pct": rentabilidad_cerrada,
-        "rentabilidad_abierta_pct": rentabilidad_abierta,
-        "promedio_cerradas_pct": promedio_cerradas,
-        "nuevas_bloqueadas": nuevas_bloqueadas[:50],
-        "reglas_operativas": reglas_operativas,
-        "config_simulacion": CONFIG_SIMULACION,
-        "nota": "Simulación avanzada paper trading: tamaño de posición, costos estimados, drawdown y riesgo. No ejecuta compras reales.",
-    }
-    resumen.update(avanzadas)
-
-    historial["actualizado"] = fecha_visible()
-    historial["operaciones"] = operaciones
-    historial["resumen"] = resumen
-
-    return historial
+def actualizar_historial(historial, resultados, mercado, now=None, quotes=None):
+    now = now or datetime.now(timezone.utc)
+    return update_ledger(historial, resultados, mercado, CONFIG_SIMULACION, now, quotes or {})
 
 
 def _df_limpio(data):
@@ -1925,8 +1088,9 @@ def _df_limpio(data):
 
 
 def guardar_historial(historial):
-    with open(HISTORIAL_FILE, "w", encoding="utf-8") as f:
-        json.dump(historial, f, ensure_ascii=False, indent=2)
+    atomic_json(HISTORIAL_FILE, historial)
+    if not EXPORT_XLSX:
+        return
 
     ops = historial.get("operaciones", [])
     resumen = historial.get("resumen", {})
@@ -2007,80 +1171,83 @@ def guardar_historial(historial):
 
 
 def main():
+    started = time.perf_counter()
+    historial = cargar_historial()  # validate BEFORE any download/write
+    original = __import__("copy").deepcopy(historial)
+    driver_tickers = {t for group in DRIVERS_CONTEXTO.values() for t in group}
+    DAILY_DATA.clear()
+    DAILY_DATA.update(download_batch(set(ACCIONES) | driver_tickers))
+    drivers = {t: compute_driver(DAILY_DATA.get(t), t) for t in driver_tickers}
+    mercado = armar_contexto_mercado(drivers)
+    if any(drivers.get(t, {}).get("estado") == "SIN DATOS" for t in ("SPY", "QQQ")):
+        mercado["estado"] = "SIN DATOS"
     resultados = []
-
-    mercado = contexto_mercado()
-    print(f"Contexto mercado: {mercado}")
-
+    signal_time = datetime.now(timezone.utc).isoformat()
     for ticker in ACCIONES:
-        print(f"Analizando {ticker}...")
-        r = analizar(ticker, mercado)
-
+        frame = DAILY_DATA.get(ticker)
+        r = compute_signal(frame, ticker, mercado)
         if r:
+            r["Score calidad"] = calcular_score_calidad(r)
+            r["signal_timestamp"] = signal_time
+            r["bar_session"] = str(frame.index[-1].date())
             resultados.append(r)
-            print("OK")
-        else:
-            print("SIN DATOS")
-
-        time.sleep(0.35)
-
-    for r in resultados:
-        r["Score calidad"] = calcular_score_calidad(r)
-
-    resultados = sorted(
-        resultados,
-        key=lambda x: (
-            prioridad_senal(x.get("Senal", "")),
-            prioridad_riesgo(x.get("Riesgo", "")),
-            prioridad_contexto(x.get("Contexto sector", "")),
-            len(x.get("Hot Score", "")),
-            x.get("Score calidad", 0),
-            x.get("Probabilidad tecnica", 0),
-            x.get("Fuerza relativa", 0),
-            -x.get("ATR %", 99),
-        ),
-        reverse=True,
-    )
-
-    historial = cargar_historial()
-    historial = actualizar_historial(historial, resultados, mercado)
-    guardar_historial(historial)
-
-    paper_state = None
-    if export_paper_state:
-        try:
-            paper_state = export_paper_state(historial, resultados, mercado, CONFIG_SIMULACION)
-            print("PAPER TRADING V4.4.5 EXPORTADO")
-        except Exception as e:
-            print("ADVERTENCIA: no se pudo exportar paper trading V4:", e)
-    else:
-        print("ADVERTENCIA: paper trading engine V4 no disponible:", PAPER_ENGINE_IMPORT_ERROR)
-
-    salida = {
-        "actualizado": fecha_visible(),
-        "version_bot": "V4.9.1 STOP SIEMPRE ACTIVO",
-        "contexto_mercado": mercado,
-        "config_operativa": resumen_config_operativa(CONFIG_SISTEMA, CONFIG_SIMULACION) if resumen_config_operativa else {"simulation_config": CONFIG_SIMULACION},
-        "resultados": resultados,
-        "paper_trading": paper_state.get("status", {}) if paper_state else {
-            "version": "V4",
-            "health": "NO_EXPORT",
-            "error": PAPER_ENGINE_IMPORT_ERROR
-        },
-        "historial": {
-            "actualizado": historial.get("actualizado", ""),
-            "resumen": historial.get("resumen", {}),
-            "operaciones": historial.get("operaciones", [])[:120],
-        },
+    resultados.sort(key=lambda x: (
+        prioridad_senal(x.get("Senal", "")), prioridad_riesgo(x.get("Riesgo", "")),
+        prioridad_contexto(x.get("Contexto sector", "")), x.get("Score calidad", 0),
+        x.get("Probabilidad tecnica", 0), x.get("Fuerza relativa", 0),
+        -x.get("ATR %", 99), x["Accion"]), reverse=True)
+    quote_tickers = {o["accion"] for o in historial["operaciones"] if o["estado"] == "ABIERTA"}
+    quote_tickers.update(r["Accion"] for r in resultados if r["Senal Bot"] in ("BUY", "BUY STRONG"))
+    quotes = execution_quotes(quote_tickers)
+    # Never trade through an unprocessed split on an existing position.
+    corporate_actions = []
+    for op in historial["operaciones"]:
+        if op["estado"] != "ABIERTA":
+            continue
+        frame = DAILY_DATA.get(op["accion"])
+        if frame is not None and "Stock Splits" in frame:
+            later = frame[frame.index.strftime("%Y-%m-%d") > op["fecha_entrada"]]
+            if later["Stock Splits"].fillna(0).ne(0).any():
+                quotes.pop(op["accion"], None)
+                corporate_actions.append(op["accion"])
+    now = datetime.now(timezone.utc)  # includes entire scan latency; session gate cannot be bypassed
+    historial = actualizar_historial(historial, resultados, mercado, now, quotes)
+    historial["resumen"]["benchmark"] = calcular_benchmark_desde_fecha(
+        min((o["fecha_entrada"] for o in historial["operaciones"]), default=None),
+        CONFIG_SIMULACION["capital_inicial"],
+        historial["resumen"]["simulacion"]["rentabilidad_total_estimada_pct"])
+    historial["resumen"]["benchmark"]["nota"] = "Comparación orientativa con saldo legacy no certificado; cierres diarios."
+    missing_drivers = [t for t in driver_tickers if t not in DAILY_DATA]
+    telemetry = {
+        "duration_seconds": round(time.perf_counter() - started, 3),
+        "signals_available": len(resultados), "universe_size": len(ACCIONES),
+        "missing_symbols": sorted(set(ACCIONES) - {r["Accion"] for r in resultados}),
+        "missing_drivers": missing_drivers, "corporate_actions_pending": corporate_actions,
+        "quote_source": "yfinance 1m; simulación muestreada, no ticks ni ejecución garantizada",
     }
-
-    with open("datos_acciones.json", "w", encoding="utf-8") as f:
-        json.dump(salida, f, ensure_ascii=False, indent=2)
-
+    # Freeze the unmodified first legacy snapshot for audit/rollback before changing the ledger.
+    if original.get("schema_version") != 2:
+        legacy_path = Path("paper/legacy") / (config_hash(original) + ".json")
+        if not legacy_path.exists():
+            atomic_json(legacy_path, original)
+    paper_state = export_paper_state(historial, resultados, mercado, CONFIG_SIMULACION)
+    paper_state["run_id"] = historial["run_id"]
+    salida = {
+        "actualizado": historial["actualizado"], "generated_at": historial["generated_at"],
+        "run_id": historial["run_id"], "schema_version": 2, "version_bot": VERSION,
+        "market_session": historial["market_session"], "telemetry": telemetry,
+        "contexto_mercado": mercado, "config_operativa": resumen_config_operativa(CONFIG_SISTEMA, CONFIG_SIMULACION),
+        "resultados": resultados, "paper_trading": paper_state["status"],
+        "paper_state": paper_state,  # one coherent dashboard snapshot, no cross-file race
+        "historial": {"actualizado": historial["actualizado"], "resumen": historial["resumen"],
+                     "total_operaciones": len(historial["operaciones"]),
+                     "operaciones": sorted(historial["operaciones"], key=lambda o: (o["estado"] == "ABIERTA", o.get("entry_timestamp", o["fecha_entrada"])), reverse=True)},
+    }
+    guardar_historial(historial)
+    atomic_json("datos_acciones.json", salida)  # publish manifest last; workflow commits all files together
     if EXPORT_XLSX:
         pd.DataFrame(resultados).to_excel("analisis_acciones.xlsx", index=False)
-
-    print("ARCHIVOS GENERADOS")
+    print(json.dumps(telemetry, ensure_ascii=False))
 
 
 if __name__ == "__main__":

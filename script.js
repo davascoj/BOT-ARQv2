@@ -1,11 +1,9 @@
 /* ============================================================
-   BOT-ARQ V4.4.5 · Dashboard
-   - V4.4.3 Profesionalización visual (layout A-H, dedup, diagnóstico)
-   - V4.4.4 Rendimiento (refresh 5 min, cache-busting por versión, debounce)
-   No cambia el motor de análisis ni las reglas operativas V4.4.
+   BOT-ARQ V5.0.0 · Dashboard
+   Snapshot coherente, calidad de datos, P&L neto y bloqueo de venta por sesión.
    ============================================================ */
 
-const APP_VERSION = "4.4.5";
+const APP_VERSION = "5.0.0";
 const AUTO_REFRESH_MS = 5 * 60 * 1000; // 5 minutos, alineado con GitHub Actions
 
 let datosGlobales = [];
@@ -32,6 +30,8 @@ let operationalRulesV44 = null;
 let renderLazyInicializado = false;
 let ultimaActualizacionRender = "";
 let diagEstado = { errores: [] };
+let snapshot = null;
+let loadInFlight = false;
 
 /* ---------- Helpers base ---------- */
 function $(id) { return document.getElementById(id); }
@@ -46,24 +46,28 @@ function safe(valor) {
 }
 
 function numero(valor, decimales = 2) {
+  if (valor === null || valor === undefined || valor === "") return "—";
   const n = Number(valor);
   if (!Number.isFinite(n)) return "—";
   return n.toFixed(decimales).replace(/\.0+$/, "");
 }
 
 function dinero(valor) {
+  if (valor === null || valor === undefined || valor === "") return "—";
   const n = Number(valor);
-  if (!Number.isFinite(n)) return "$0";
+  if (!Number.isFinite(n)) return "—";
   return n.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 }
 
 function formatoPrecio(v) {
+  if (v === null || v === undefined || v === "") return "—";
   const n = Number(v);
   if (!Number.isFinite(n)) return "—";
   return n.toLocaleString("en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 });
 }
 
 function formatoNumeroCorto(v, dec = 2) {
+  if (v === null || v === undefined || v === "") return "—";
   const n = Number(v);
   if (!Number.isFinite(n)) return "—";
   return n.toLocaleString("en-US", { maximumFractionDigits: dec, minimumFractionDigits: dec });
@@ -128,6 +132,7 @@ function scoreVisual(score) {
 }
 
 function textoAccionSugerida(r) {
+  if (r?.decision_reason) return r.decision_reason;
   const bot = String(r?.["Senal Bot"] || "");
   const riesgo = String(r?.Riesgo || "");
   if (bot === "BUY STRONG" && riesgo === "BAJO") return "Prioritaria";
@@ -152,15 +157,32 @@ function marcarCargando() {
   if (el) { el.textContent = "Actualizando..."; el.className = "tb-load"; }
 }
 
+function snapshotHealth(data = snapshot, now = Date.now()) {
+  if (!data || data.schema_version !== 2) return "Datos legacy: migración V5 pendiente";
+  const generated = Date.parse(data.generated_at);
+  if (!Number.isFinite(generated) || generated > now + 60000) return "Fecha de datos inválida";
+  if (!data.paper_state || data.paper_state.run_id !== data.run_id) return "Snapshot incompleto o inconsistente";
+  const session = data.market_session || {};
+  const open = Date.parse(session.market_open), close = Date.parse(session.market_close);
+  const next = Date.parse(session.next_open);
+  const requiresFresh = (now >= open && now < close) || (Number.isFinite(next) && now >= next);
+  if (requiresFresh && now - generated > 15 * 60 * 1000) return "Datos desactualizados: no usar para decidir";
+  if (now - generated > 5 * 24 * 60 * 60 * 1000) return "Sin actualización reciente";
+  const stale = data.historial?.operaciones?.some(o => o.estado === "ABIERTA" && o.quote_stale);
+  if (stale) return "Cotizaciones de cartera pendientes/desactualizadas";
+  return "";
+}
+
 function actualizarLoadStatus(sinCambios) {
   const el = $("loadStatus");
   if (!el) return;
-  const hora = new Date().toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
-  if (diagEstado.errores.length) {
-    el.textContent = `⚠ Error visual en: ${diagEstado.errores.join(", ")}`;
+  const issue = snapshotHealth();
+  if (diagEstado.errores.length || issue) {
+    el.textContent = "⚠ " + (issue || "Error visual: " + diagEstado.errores.join(", "));
     el.className = "tb-load tb-load-err";
   } else {
-    el.textContent = `✔ Datos OK · ${hora}${sinCambios ? " (sin cambios)" : ""}`;
+    const age = Math.max(0, Math.floor((Date.now() - Date.parse(snapshot.generated_at)) / 60000));
+    el.textContent = "Datos publicados hace " + age + " min" + (sinCambios ? " · sin cambios" : "");
     el.className = "tb-load tb-load-ok";
   }
 }
@@ -182,12 +204,18 @@ function bust(force) {
 }
 
 async function fetchJSON(path) {
-  const resp = await fetch(path);
+  const resp = await fetch(path, { signal: AbortSignal.timeout(20000), cache: "no-cache" });
   if (!resp.ok) throw new Error(`HTTP ${resp.status} en ${path}`);
   return await resp.json();
 }
 
 async function cargarDatos(force = false) {
+  if (loadInFlight) return;
+  loadInFlight = true;
+  try { await cargarSnapshot(force); } finally { loadInFlight = false; }
+}
+
+async function cargarSnapshot(force = false) {
   marcarCargando();
   diagEstado.errores = [];
 
@@ -199,6 +227,15 @@ async function cargarDatos(force = false) {
     return;
   }
 
+  if (!Array.isArray(data.resultados) || !Array.isArray(data.historial?.operaciones)) {
+    manejarErrorCarga(new Error("Contrato JSON inválido"));
+    return;
+  }
+  if (data.schema_version === 2 && (!data.paper_state || data.paper_state.run_id !== data.run_id)) {
+    manejarErrorCarga(new Error("Snapshot inconsistente"));
+    return;
+  }
+  snapshot = data;
   // Globals SIEMPRE actualizados (también si se omite el repintado, para las vistas lazy)
   contextoMercado = data.contexto_mercado || null;
   configOperativa = data.config_operativa || {};
@@ -217,7 +254,16 @@ async function cargarDatos(force = false) {
   peoresOperaciones = historialResumen.peores_operaciones || [];
   diagnosticoBot = historialResumen.diagnostico_bot || {};
 
-  await cargarPaperTradingV4(force);
+  paperTradingV4 = data.paper_state || null;
+  paperAuditV43 = paperTradingV4?.audit || null;
+  operationalRulesV44 = paperTradingV4?.operational_rules || historialResumen.reglas_operativas || null;
+  actualizarAvisoSistemaARQ();
+  const accounting = $("accountingNotice");
+  if (accounting) accounting.textContent = data.schema_version !== 2
+    ? "Migración pendiente: estos datos fueron calculados por el motor anterior y no están certificados."
+    : "Libro V5 activo. Saldo anterior no reconciliado, conservado como base heredada. Rentabilidad histórica no certificada.";
+  const rule = $("saleRule");
+  if (rule) rule.textContent = "Venta permitida solo desde la siguiente sesión de bolsa, durante horario regular. Incluye stop loss: hay riesgo overnight y de gaps.";
 
   const historialFecha = $("historialFecha");
   if (historialFecha) historialFecha.textContent = "Actualizado: " + (data.historial?.actualizado || data.actualizado || "sin fecha");
@@ -225,12 +271,12 @@ async function cargarDatos(force = false) {
   ejecutarBloqueSeguro("Barra superior", () => pintarTopbar(data));
 
   // Refresh inteligente: si no cambió la fecha de datos, no repintamos todo el dashboard.
-  if (!force && data.actualizado && data.actualizado === ultimaActualizacionRender) {
+  if (!force && data.run_id && data.run_id === ultimaActualizacionRender) {
     actualizarLoadStatus(true);
     refrescarVistasAvanzadasSiAbiertas();
     return;
   }
-  ultimaActualizacionRender = data.actualizado || "";
+  ultimaActualizacionRender = data.run_id || data.actualizado || "";
 
   ejecutarBloqueSeguro("Panel ejecutivo", pintarDashboardEjecutivo);
   ejecutarBloqueSeguro("Estado del mercado", pintarMercado);
@@ -250,19 +296,6 @@ async function cargarDatos(force = false) {
 
 function actualizarManual() { cargarDatos(true); }
 
-async function cargarPaperTradingV4(force = false) {
-  try {
-    paperTradingV4 = await fetchJSON("paper/paper_state.json" + bust(force));
-    paperAuditV43 = paperTradingV4.audit || null;
-    operationalRulesV44 = paperTradingV4.operational_rules || paperTradingV4.risk?.operational_rules || null;
-  } catch (e) {
-    console.warn("BOT-ARQ: paper_state.json no disponible (el resto del dashboard sigue).", e);
-    paperTradingV4 = null;
-    paperAuditV43 = null;
-    operationalRulesV44 = null;
-  }
-}
-
 /* ---------- A. Barra superior ---------- */
 function pintarTopbar(data) {
   const v = $("tbVersion"); if (v) v.textContent = "V" + APP_VERSION;
@@ -279,7 +312,7 @@ function pintarDashboardEjecutivo() {
   const sim = simulacionPro || {};
   const riesgo = riesgoPro || {};
   const paperPortfolio = paperTradingV4?.portfolio || {};
-  const estadoOp = operationalRulesV44?.estado || paperTradingV4?.status?.operational_mode || "NORMAL";
+  const estadoOp = operationalRulesV44?.estado || paperTradingV4?.status?.operational_mode || "SIN DATOS";
 
   box.innerHTML = `
     <div class="metric-box">
@@ -296,11 +329,11 @@ function pintarDashboardEjecutivo() {
     </div>
     <div class="metric-box">
       <strong>${numero(riesgo.exposicion_abierta_pct ?? paperPortfolio.exposure_pct ?? 0)}%</strong>
-      <span>exposición abierta / capital inicial</span>
+      <span>exposición / equity neta actual</span>
     </div>
     <div class="metric-box">
       <strong>${numero(riesgo.riesgo_total_abierto_pct ?? paperPortfolio.open_risk_pct ?? 0)}%</strong>
-      <span>riesgo abierto / capital inicial</span>
+      <span>riesgo abierto / equity neta actual</span>
     </div>
     <div class="metric-box">
       <strong class="estado-pill ${claseEstadoOperativo(estadoOp)}">${safe(estadoOp)}</strong>
@@ -397,14 +430,17 @@ function pintarAlertasEjecutivas() {
 
   const exp = Number(riesgo.exposicion_abierta_pct ?? 0);
   const risk = Number(riesgo.riesgo_total_abierto_pct ?? 0);
-  const dd = Number(riesgo.max_drawdown_pct ?? 0);
+  const dd = Number(riesgo.drawdown_actual_pct ?? 0);
+  const cfg = configOperativa.simulation_config || {};
   const abiertas = Number(riesgo.operaciones_abiertas ?? 0);
   const maxAbiertas = Number(riesgo.max_operaciones_abiertas ?? 0);
 
   if (maxAbiertas && abiertas >= maxAbiertas) alertas.push({ tipo: "danger", texto: "Máximo de operaciones abiertas alcanzado." });
-  if (exp > 80) alertas.push({ tipo: "danger", texto: `Exposición abierta alta: ${numero(exp)}%.` });
-  if (risk > 10) alertas.push({ tipo: "danger", texto: `Riesgo abierto elevado: ${numero(risk)}%.` });
-  if (dd > 20) alertas.push({ tipo: "warning", texto: `Drawdown histórico relevante: -${numero(dd)}%.` });
+  if (exp > cfg.max_exposicion_total_pct) alertas.push({ tipo: "danger", texto: `Exposición abierta alta: ${numero(exp)}%.` });
+  if (risk > cfg.max_riesgo_total_abierto_pct) alertas.push({ tipo: "danger", texto: `Riesgo abierto elevado: ${numero(risk)}%.` });
+  if (dd >= cfg.modo_defensivo_drawdown_pct) alertas.push({ tipo: "warning", texto: `Drawdown actual relevante: -${numero(dd)}%.` });
+  const missing = snapshot?.telemetry?.missing_symbols || [];
+  if (missing.length) alertas.push({tipo:"warning", texto:"Sin datos para: " + missing.join(", ")});
 
   if (Array.isArray(diag.alertas)) diag.alertas.slice(0, 4).forEach(a => alertas.push({ tipo: "info", texto: a }));
 
@@ -433,7 +469,7 @@ function renderTopOportunidades() {
     ["BAJO", "MEDIO"].includes(String(r.Riesgo || ""))
   );
   datos.sort(ordenRanking);
-  datos = datos.slice(0, 10);
+  datos = datos.slice(0, configOperativa.dashboard?.top_oportunidades || 10);
 
   if (!datos.length) {
     tbody.innerHTML = `<tr><td colspan="11">No hay oportunidades BUY con riesgo bajo/medio en este momento.</td></tr>`;
@@ -478,7 +514,7 @@ function renderCarteraAbierta() {
   }
 
   tbody.innerHTML = abiertas.slice(0, 40).map(op => {
-    const gananciaPct = Number(op.ganancia_pct ?? 0);
+    const gananciaPct = Number(op.ganancia_pct_neta_estimada ?? 0);
     const gpUsd = op.ganancia_abierta_usd_estimada ?? op.pnl_usd_estimado ?? 0;
     const botActual = op.senal_bot_actual || op.senal_bot_entrada || "";
     return `<tr>
@@ -491,7 +527,7 @@ function renderCarteraAbierta() {
       <td class="num">${formatoPrecio(op.stop)}</td>
       <td class="num objetivo-cell">${formatoPrecio(op.objetivo)}</td>
       <td class="num valor-neg">${dinero(op.riesgo_usd_estimado ?? op.perdida_maxima_stop_usd ?? 0)}</td>
-      <td><span class="bot-badge ${claseBot(botActual)}">${safe(botActual)}</span></td>
+      <td><span class="bot-badge ${claseBot(botActual)}">${safe(botActual)}</span><small class="subsignal">${op.sale_locked !== false ? "Venta bloqueada hasta " + safe(op.sell_eligible_at ? new Date(op.sell_eligible_at).toLocaleString("es-CO", {timeZone:"America/New_York"}) + " NY" : "siguiente sesión") : "Venta habilitada en sesión"}${op.quote_stale ? " · Cotización atrasada" : ""}</small></td>
     </tr>`;
   }).join("");
 }
@@ -555,7 +591,7 @@ function pintarPanelProfesional() {
     const fmtRatio = v => v === null ? "N/D" : numero(v, 2);
     resumen.innerHTML = `
       <div class="metric-box"><strong>${dinero(sim.capital_inicial ?? 0)}</strong><span>capital inicial</span></div>
-      <div class="metric-box"><strong>${numero(met.profit_factor ?? 0)}</strong><span>profit factor</span></div>
+      <div class="metric-box"><strong>${numero(met.profit_factor)}</strong><span>profit factor</span></div>
       <div class="metric-box"><strong>${numero(met.win_rate_pct ?? hr.win_rate ?? 0)}%</strong><span>win rate (cerradas)</span></div>
       <div class="metric-box" title="Retorno ajustado por volatilidad. >1 bueno, >2 excelente."><strong class="${claseRatio(sharpe)}">${fmtRatio(sharpe)}</strong><span>Sharpe ratio</span></div>
       <div class="metric-box" title="Como Sharpe, pero solo penaliza la volatilidad negativa."><strong class="${claseRatio(sortino)}">${fmtRatio(sortino)}</strong><span>Sortino ratio</span></div>
@@ -572,7 +608,7 @@ function pintarPanelProfesional() {
       <div><strong>${numero(riesgo.exposicion_abierta_pct ?? 0)}%</strong><span>exposición</span></div>
       <div><strong>${numero(riesgo.riesgo_total_abierto_pct ?? 0)}%</strong><span>riesgo abierto</span></div>
       <div><strong>${dinero(riesgo.riesgo_total_abierto_usd ?? 0)}</strong><span>riesgo USD</span></div>
-      <div><strong class="${claseValor(benchmarkBot.bot_vs_spy_alpha_pct)}">${numero(benchmarkBot.bot_vs_spy_alpha_pct ?? 0)}%</strong><span>bot vs SPY</span></div>`;
+      <div><strong class="${claseValor(benchmarkBot.bot_vs_spy_alpha_pct)}">${numero(benchmarkBot.bot_vs_spy_alpha_pct)}%</strong><span>bot vs SPY</span></div>`;
   }
 
   const diagCaja = $("diagnosticoBot");
@@ -587,7 +623,7 @@ function pintarPanelProfesional() {
       </div>
       <p>${safe(diag.mensaje || "Sistema en seguimiento paper trading.")}</p>
       <ul>${alertas.slice(0, 5).map(a => `<li>${safe(a)}</li>`).join("")}</ul>
-      <p class="mini-copy">Costo estimado/op: ${numero(met.costo_total_pct_estimado ?? 0)}%. Benchmark: SPY ${numero(benchmarkBot.spy_pct ?? 0)}%, QQQ ${numero(benchmarkBot.qqq_pct ?? 0)}%.</p>`;
+      <p class="mini-copy">Costos estimados ida/vuelta: ${numero(sim.costo_total_estimado_pct_por_operacion)}%. Benchmark: SPY ${numero(benchmarkBot.spy_rentabilidad_pct)}%, QQQ ${numero(benchmarkBot.qqq_rentabilidad_pct)}%.</p>`;
   }
 }
 
@@ -599,8 +635,8 @@ function pintarPaperTradingV4() {
   if (!box) return;
 
   if (!paperTradingV4 || !paperTradingV4.status) {
-    box.innerHTML = `<div class="metric-box">Motor V4 pendiente. Espera la próxima ejecución de GitHub Actions.</div>`;
-    if (health) { health.textContent = "V4 pendiente"; health.className = "mode-badge v4-badge warning"; }
+    box.innerHTML = `<div class="metric-box">Motor V5 pendiente. Espera la próxima ejecución de GitHub Actions.</div>`;
+    if (health) { health.textContent = "V5 pendiente"; health.className = "mode-badge v4-badge warning"; }
     if (warnings) warnings.innerHTML = "";
     return;
   }
@@ -630,8 +666,8 @@ function pintarPaperTradingV4() {
 
   if (warnings) {
     warnings.innerHTML = warningList.length
-      ? `<strong>Alertas V4:</strong><ul>${warningList.map(w => `<li>${safe(w)}</li>`).join("")}</ul>`
-      : `<span class="paper-ok">Sin alertas críticas del motor V4.</span>`;
+      ? `<strong>Alertas V5:</strong><ul>${warningList.map(w => `<li>${safe(w)}</li>`).join("")}</ul>`
+      : `<span class="paper-ok">Sin alertas críticas del motor V5.</span>`;
   }
 }
 
@@ -678,13 +714,14 @@ function dibujarEquityCurve() {
   if (puntos.length < 2) {
     ctx.fillStyle = "#cbd5e1";
     ctx.font = "18px Arial";
-    ctx.fillText("Aún no hay suficientes operaciones cerradas para dibujar la curva de capital.", 30, 60);
+    ctx.fillText("Se necesitan al menos dos sesiones observadas desde V5.", 30, 60);
     return;
   }
 
   const margen = 42;
   const valores = puntos.map(p => Number(p.capital || 0)).filter(Number.isFinite);
-  const min = Math.min(...valores), max = Math.max(...valores);
+  const baseline = Number(simulacionPro.capital_inicial);
+  const min = Math.min(...valores, baseline), max = Math.max(...valores, baseline);
   const rango = Math.max(max - min, 1);
 
   ctx.strokeStyle = "#334155";
@@ -698,7 +735,8 @@ function dibujarEquityCurve() {
   ctx.lineWidth = 3;
   ctx.beginPath();
   puntos.forEach((p, i) => {
-    const x = margen + ((w - margen * 2) * i / (puntos.length - 1));
+    const dates = puntos.map(p => Date.parse(p.fecha));
+    const x = margen + (w - margen * 2) * (dates[i] - dates[0]) / Math.max(1, dates[dates.length - 1] - dates[0]);
     const y = h - margen - (((Number(p.capital || 0) - min) / rango) * (h - margen * 2));
     if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   });
@@ -709,7 +747,13 @@ function dibujarEquityCurve() {
   ctx.fillText(`Máx: ${dinero(max)}`, margen, 22);
   ctx.fillText(`Mín: ${dinero(min)}`, margen, h - 12);
   const ultimo = puntos[puntos.length - 1];
-  ctx.fillText(`Actual cerrado: ${dinero(ultimo.capital || 0)}`, w - 245, 22);
+  ctx.fillText(`Equity neta: ${dinero(ultimo.capital)}`, w - 245, 22);
+  ctx.fillText(puntos[0].fecha + " → " + ultimo.fecha, w / 2 - 95, h - 12);
+  const baselineY = h - margen - ((baseline - min) / rango) * (h - margen * 2);
+  ctx.strokeStyle = "#94a3b8"; ctx.setLineDash([5, 5]);
+  ctx.beginPath(); ctx.moveTo(margen, baselineY); ctx.lineTo(w - margen, baselineY); ctx.stroke(); ctx.setLineDash([]);
+  const accessible = $("equityTable");
+  if (accessible) accessible.innerHTML = "<table><caption>Equity neta observada por sesión desde V5</caption><thead><tr><th>Sesión</th><th>Capital USD</th><th>Drawdown %</th></tr></thead><tbody>" + puntos.map(p => "<tr><td>" + safe(p.fecha) + "</td><td>" + dinero(p.capital) + "</td><td>" + numero(p.drawdown_pct) + "</td></tr>").join("") + "</tbody></table>";
 }
 
 /* ---------- Tablas avanzadas (sector/mercado/mejores/peores) ---------- */
@@ -727,12 +771,12 @@ function llenarTablaSimple(id, filas, tipo) {
         <td>${safe(f.operaciones)}</td>
         <td>${numero(f.win_rate ?? 0)}%</td>
         <td class="${claseValor(f.rentabilidad_neta_pct)}">${numero(f.rentabilidad_neta_pct ?? 0)}%</td>
-        <td>${f.profit_factor === null || f.profit_factor === undefined ? "∞" : numero(f.profit_factor)}</td>
+        <td>${numero(f.profit_factor)}</td>
       </tr>`;
     }
     return `<tr>
       <td><strong>${safe(f.accion)}</strong></td>
-      <td class="${claseValor(f.ganancia_pct_final)}">${numero(f.ganancia_pct_final ?? 0)}%</td>
+      <td class="${claseValor(f.ganancia_pct_neta_estimada)}">${numero(f.ganancia_pct_final ?? 0)}%</td>
       <td class="${claseValor(f.pnl_usd_estimado)}">${dinero(f.pnl_usd_estimado ?? 0)}</td>
       <td>${safe(f.tipo_cierre || f.resultado || "")}</td>
     </tr>`;
@@ -779,16 +823,7 @@ function prioridadRiesgo(riesgo) {
   return 0;
 }
 function ordenRanking(a, b) {
-  const aHot = String(a["Hot Score"] || "").length;
-  const bHot = String(b["Hot Score"] || "").length;
-  return (
-    prioridadSenal(b.Senal) - prioridadSenal(a.Senal) ||
-    prioridadRiesgo(b.Riesgo) - prioridadRiesgo(a.Riesgo) ||
-    bHot - aHot ||
-    Number(b["Probabilidad tecnica"] || 0) - Number(a["Probabilidad tecnica"] || 0) ||
-    Number(b["Fuerza relativa"] || 0) - Number(a["Fuerza relativa"] || 0) ||
-    Number(a["ATR %"] || 99) - Number(b["ATR %"] || 99)
-  );
+  return (a.rank ?? Number.MAX_SAFE_INTEGER) - (b.rank ?? Number.MAX_SAFE_INTEGER);
 }
 
 function renderTabla() {
@@ -834,7 +869,7 @@ function renderTabla() {
       <td><strong>${safe(r.Accion)}</strong></td>
       <td>${safe(r.Sector || "Otro")}</td>
       <td class="num">${formatoPrecio(campo(r, ["Precio actual", "Precio"]))}</td>
-      <td class="num"><span class="prob ${claseProbabilidad(prob)}">${numero(prob, 1)}%</span></td>
+      <td class="num"><span class="prob ${claseProbabilidad(prob)}">${numero(prob, 1)}/100</span></td>
       <td class="num ${claseMom}">${numero(momentum)}%</td>
       <td class="num ${claseRel}">${numero(fuerzaRel)}%</td>
       <td>${safe(r["Hot Score"] || "")}</td>
@@ -856,7 +891,7 @@ function renderTabla() {
 }
 
 /* ---------- Historial ---------- */
-function renderHistorial() {
+function renderHistorial(page = 0) {
   const tabla = $("tablaHistorial");
   if (!tabla) return;
 
@@ -866,7 +901,7 @@ function renderHistorial() {
 
   let ops = [...historialOperaciones];
   if (estadoFiltro !== "TODOS") ops = ops.filter(op => String(op.estado || "") === estadoFiltro);
-  if (resultadoFiltro !== "TODOS") ops = ops.filter(op => String(op.resultado || "").startsWith(resultadoFiltro));
+  if (resultadoFiltro !== "TODOS") ops = ops.filter(op => op.estado === "CERRADA" && (resultadoFiltro === "GANADA" ? op.pnl_usd_estimado > 0 : op.pnl_usd_estimado <= 0));
   if (busqueda) {
     ops = ops.filter(op =>
       String(op.accion || "").toUpperCase().includes(busqueda) ||
@@ -875,14 +910,21 @@ function renderHistorial() {
     );
   }
 
+  const pageSize = 50;
+  const totalPages = Math.max(1, Math.ceil(ops.length / pageSize));
+  page = Math.min(Math.max(0, Number(page) || 0), totalPages - 1);
+  const summary = $("historialResumen");
+  if (summary) summary.textContent = ops.length + " coinciden / " + historialOperaciones.length + " conservadas · P&L neto · Página " + (page + 1) + " de " + totalPages;
+  const pager = $("historyPager");
+  if (pager) pager.innerHTML = '<button ' + (page === 0 ? 'disabled' : '') + ' onclick="renderHistorial(' + (page - 1) + ')">Anterior</button><button ' + (page >= totalPages - 1 ? 'disabled' : '') + ' onclick="renderHistorial(' + (page + 1) + ')">Siguiente</button>';
   if (ops.length === 0) {
-    tabla.innerHTML = `<tr><td colspan="15">Todavía no hay historial. Ejecuta el análisis una vez y la app empezará a guardar señales.</td></tr>`;
+    tabla.innerHTML = `<tr><td colspan="15">${historialOperaciones.length ? "No hay coincidencias con estos filtros." : "Sin operaciones registradas."}</td></tr>`;
     return;
   }
 
-  tabla.innerHTML = ops.slice(0, 120).map(op => {
+  tabla.innerHTML = ops.slice(page * pageSize, (page + 1) * pageSize).map(op => {
     const estado = String(op.estado || "");
-    const ganancia = Number(op.estado === "CERRADA" ? (op.ganancia_pct_final ?? op.ganancia_pct ?? 0) : (op.ganancia_pct ?? 0));
+    const ganancia = Number(op.ganancia_pct_neta_estimada ?? 0);
     const claseGanancia = ganancia >= 0 ? "hist-pos" : "hist-neg";
     const claseEstado = estado === "ABIERTA" ? "hist-open" : "hist-closed";
     const botActual = op.senal_bot_actual || op.senal_bot_entrada || "";
@@ -902,7 +944,7 @@ function renderHistorial() {
       <td class="num">${safe(op.dias_abierta ?? 0)}</td>
       <td>${safe(op.senal_entrada)}</td>
       <td><span class="bot-badge ${claseBot(botActual)}">${safe(botActual)}</span></td>
-      <td>${safe(op.resultado || "EN SEGUIMIENTO")}</td>
+      <td>${safe(op.estado === "CERRADA" ? (op.pnl_usd_estimado > 0 ? "GANADA NETA" : "PERDIDA NETA") : "EN SEGUIMIENTO")}<small class="subsignal">${safe(op.accounting_quality || "LEGACY")}</small></td>
     </tr>`;
   }).join("");
 }
@@ -1006,31 +1048,29 @@ function obtenerHoraNewYorkARQ() {
 }
 
 function mercadoAbiertoAhoraARQ() {
-  const ny = obtenerHoraNewYorkARQ();
-  const habil = ["Mon", "Tue", "Wed", "Thu", "Fri"].includes(ny.weekday);
-  const min = ny.hour * 60 + ny.minute;
-  return habil && min >= (9 * 60 + 30) && min < (16 * 60);
-}
-
-function mercadoPreAperturaARQ() {
-  const ny = obtenerHoraNewYorkARQ();
-  const habil = ["Mon", "Tue", "Wed", "Thu", "Fri"].includes(ny.weekday);
-  const min = ny.hour * 60 + ny.minute;
-  return habil && min >= (9 * 60) && min < (9 * 60 + 30);
+  const session = snapshot?.market_session;
+  if (!session) return false;
+  const now = Date.now();
+  return now >= Date.parse(session.market_open) && now < Date.parse(session.market_close);
 }
 
 function actualizarAvisoSistemaARQ() {
-  const badge = $("marketStatusBadge");
-  const texto = $("marketStatusText");
+  const badge = $("marketStatusBadge"), texto = $("marketStatusText");
   if (!badge || !texto) return;
   badge.classList.remove("market-online", "market-off", "market-preopen");
-  if (mercadoAbiertoAhoraARQ()) { badge.classList.add("market-online"); texto.textContent = "sistema en línea"; }
-  else if (mercadoPreAperturaARQ()) { badge.classList.add("market-preopen"); texto.textContent = "preapertura"; }
-  else { badge.classList.add("market-off"); texto.textContent = "sistema off"; }
+  if (mercadoAbiertoAhoraARQ()) {
+    badge.classList.add("market-online"); texto.textContent = "NYSE · sesión abierta";
+  } else {
+    badge.classList.add("market-off");
+    const next = Date.parse(snapshot?.market_session?.next_open);
+    texto.textContent = !snapshot?.market_session || (Number.isFinite(next) && Date.now() >= next)
+      ? "Sesión pendiente de confirmar" : "NYSE · fuera de sesión";
+  }
 }
+document.addEventListener("visibilitychange", () => { if (!document.hidden) cargarDatos(); });
 
 /* ---------- Arranque ---------- */
 cargarDatos();
 setInterval(() => { if (!document.hidden) cargarDatos(); }, AUTO_REFRESH_MS);
 actualizarAvisoSistemaARQ();
-setInterval(actualizarAvisoSistemaARQ, 30000);
+setInterval(() => { actualizarAvisoSistemaARQ(); if (snapshot) actualizarLoadStatus(true); }, 30000);

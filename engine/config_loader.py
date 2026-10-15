@@ -1,154 +1,72 @@
-"""
-BOT-ARQ V4.2 - Config Loader
-
-Carga la configuración real del motor desde config/system_config.json.
-
-Objetivo:
-- Mantener valores por defecto seguros.
-- Permitir modificar parámetros del bot sin editar analizador_acciones.py.
-- No romper el sistema si el JSON no existe o está mal escrito.
-"""
-
+"""Strict configuration: invalid or missing production settings stop the run."""
 from pathlib import Path
-import json
-import copy
+from copy import deepcopy
+from engine.storage import read_json
+from engine.policy import number
 
-DEFAULT_CONFIG_PATH = Path("config/system_config.json")
+DEFAULT_CONFIG_PATH = Path(__file__).resolve().parents[1] / "config/system_config.json"
 
 
 def _safe_read_json(path):
-    try:
-        path = Path(path)
-        if not path.exists():
-            return {}
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception:
-        return {}
+    return read_json(path)
 
 
 def deep_merge(base, override):
-    result = copy.deepcopy(base)
-    if not isinstance(override, dict):
-        return result
-
+    result = deepcopy(base)
     for key, value in override.items():
-        if isinstance(value, dict) and isinstance(result.get(key), dict):
-            result[key] = deep_merge(result[key], value)
-        else:
-            result[key] = value
+        result[key] = deep_merge(result[key], value) if isinstance(value, dict) and isinstance(result.get(key), dict) else value
     return result
 
 
 def cargar_config_sistema(path=DEFAULT_CONFIG_PATH):
-    cfg = _safe_read_json(path)
-    if not isinstance(cfg, dict):
-        return {}
+    cfg = read_json(path)
+    if not isinstance(cfg, dict) or not isinstance(cfg.get("simulation_config"), dict):
+        raise ValueError("Falta simulation_config")
+    if cfg.get("paper_trading", {}).get("real_broker_enabled") is not False:
+        raise ValueError("Esta versión solo permite simulación, broker real deshabilitado")
     return cfg
 
 
 def cargar_config_simulacion(default_config, system_config=None):
-    """
-    Devuelve la configuración plana que ya usa el motor actual:
-    CONFIG_SIMULACION.
-
-    Prioridad:
-    1. Valores por defecto definidos en analizador_acciones.py.
-    2. config/system_config.json -> simulation_config.
-    3. Compatibilidad con formatos anteriores si existen.
-    """
-
-    result = dict(default_config or {})
-    system_config = system_config if isinstance(system_config, dict) else {}
-
-    # Formato V4.2 recomendado
-    sim = system_config.get("simulation_config", {})
-    if isinstance(sim, dict):
-        for key, value in sim.items():
-            if key in result:
-                result[key] = value
-
-    # Compatibilidad con posibles formatos previos o alternos
-    aliases = {
-        "capital_inicial": ["capital_inicial", "capital"],
-        "riesgo_por_operacion_pct": ["riesgo_por_operacion_pct", "risk_per_trade_pct", "riesgo_por_operacion"],
-        "max_posicion_pct": ["max_posicion_pct", "max_position_pct"],
-        "max_operaciones_abiertas": ["max_operaciones_abiertas", "max_open_positions"],
-        "max_exposicion_total_pct": ["max_exposicion_total_pct", "max_total_exposure_pct"],
-        "comision_por_operacion_pct": ["comision_por_operacion_pct", "commission_pct"],
-        "slippage_pct": ["slippage_pct"],
-        "spread_pct": ["spread_pct"],
-        "pausar_si_perdidas_seguidas": ["pausar_si_perdidas_seguidas", "pause_after_consecutive_losses"],
-        "bloquear_si_perdidas_seguidas": ["bloquear_si_perdidas_seguidas", "block_after_consecutive_losses"],
-        "rr_minimo": ["rr_minimo", "min_rr"],
-        "volumen_relativo_minimo": ["volumen_relativo_minimo", "min_relative_volume"],
-        "permitir_buy_strong_en_mercado_debil": ["permitir_buy_strong_en_mercado_debil", "allow_buy_strong_weak_market"],
-        "max_riesgo_total_abierto_pct": ["max_riesgo_total_abierto_pct", "max_total_open_risk_pct"],
-        "modo_defensivo_drawdown_pct": ["modo_defensivo_drawdown_pct", "defensive_drawdown_pct"],
-        "bloquear_entradas_drawdown_pct": ["bloquear_entradas_drawdown_pct", "block_entries_drawdown_pct"],
-        "activar_reglas_operativas": ["activar_reglas_operativas", "enable_operational_rules"],
-        "usar_exposicion_como_bloqueo": ["usar_exposicion_como_bloqueo", "use_exposure_as_block"],
-        "usar_riesgo_abierto_como_bloqueo": ["usar_riesgo_abierto_como_bloqueo", "use_open_risk_as_block"],
-        "usar_drawdown_como_bloqueo": ["usar_drawdown_como_bloqueo", "use_drawdown_as_block"],
-        "permitir_buy_strong_en_modo_defensivo_drawdown": ["permitir_buy_strong_en_modo_defensivo_drawdown", "allow_buy_strong_defensive_drawdown"],
-        "permitir_buy_strong_sobre_exposicion": ["permitir_buy_strong_sobre_exposicion", "allow_buy_strong_over_exposure"],
-        "permitir_buy_strong_sobre_riesgo": ["permitir_buy_strong_sobre_riesgo", "allow_buy_strong_over_risk"],
-    }
-
-    # Revisa top-level y secciones conocidas.
-    sections = [
-        system_config,
-        system_config.get("simulation", {}),
-        system_config.get("risk_controls", {}),
-        system_config.get("position_sizing", {}),
-        system_config.get("costs", {}),
-        system_config.get("entry_filters", {}),
-    ]
-
-    for target_key, possible_keys in aliases.items():
-        for section in sections:
-            if not isinstance(section, dict):
-                continue
-            for key in possible_keys:
-                if key in section and section[key] not in (None, ""):
-                    result[target_key] = section[key]
-
-    # Normalización simple de tipos para evitar errores por texto.
-    int_keys = {"max_operaciones_abiertas", "pausar_si_perdidas_seguidas", "bloquear_si_perdidas_seguidas"}
-    bool_keys = {
-        "permitir_buy_strong_en_mercado_debil",
-        "activar_reglas_operativas",
-        "usar_exposicion_como_bloqueo",
-        "usar_riesgo_abierto_como_bloqueo",
-        "usar_drawdown_como_bloqueo",
-        "permitir_buy_strong_en_modo_defensivo_drawdown",
-        "permitir_buy_strong_sobre_exposicion",
-        "permitir_buy_strong_sobre_riesgo",
-    }
-
-    for key in list(result.keys()):
-        if key in bool_keys:
-            if isinstance(result[key], str):
-                result[key] = result[key].strip().lower() in ("true", "1", "si", "sí", "yes")
-        elif key in int_keys:
-            try:
-                result[key] = int(result[key])
-            except Exception:
-                result[key] = int(default_config.get(key, 0))
-        else:
-            try:
-                result[key] = float(result[key])
-            except Exception:
-                result[key] = default_config.get(key)
-
-    return result
+    cfg = dict(default_config)
+    sim = (system_config or {}).get("simulation_config", {})
+    allowed = set(default_config) | {"rr_neto_minimo", "max_exposicion_sector_pct", "min_posicion_usd", "max_quote_age_seconds"}
+    if set(sim) - allowed:
+        raise ValueError(f"Parámetros desconocidos: {set(sim) - allowed}")
+    cfg.update(sim)
+    cfg.setdefault("rr_neto_minimo", 1.0)
+    cfg.setdefault("max_exposicion_sector_pct", 35.0)
+    cfg.setdefault("min_posicion_usd", 10.0)
+    cfg.setdefault("max_quote_age_seconds", 180)
+    ints = {"max_operaciones_abiertas", "pausar_si_perdidas_seguidas", "bloquear_si_perdidas_seguidas", "max_dias_holding", "max_quote_age_seconds"}
+    bools = {k for k, v in default_config.items() if isinstance(v, bool)}
+    for key, value in cfg.items():
+        if key in bools:
+            if type(value) is not bool:
+                raise ValueError(f"{key}: debe ser booleano")
+            continue
+        value = number(value)
+        if value < 0 or (key in ints and (not value.is_integer() or value < 1)):
+            raise ValueError(f"{key}: fuera de rango")
+        if key.endswith("_pct") and value > 100:
+            raise ValueError(f"{key}: porcentaje superior a 100")
+        cfg[key] = int(value) if key in ints else value
+    for key in ("capital_inicial", "riesgo_por_operacion_pct", "max_posicion_pct", "rr_minimo", "rr_neto_minimo", "max_exposicion_total_pct", "max_riesgo_total_abierto_pct", "min_posicion_usd"):
+        if cfg[key] <= 0:
+            raise ValueError(f"{key}: debe ser positivo")
+    if cfg["modo_defensivo_drawdown_pct"] >= cfg["bloquear_entradas_drawdown_pct"]:
+        raise ValueError("Drawdown defensivo debe ser menor al bloqueo")
+    if cfg["pausar_si_perdidas_seguidas"] > cfg["bloquear_si_perdidas_seguidas"]:
+        raise ValueError("Rachas de defensa/bloqueo inconsistentes")
+    if cfg["max_quote_age_seconds"] > 900 or cfg["max_exposicion_sector_pct"] > cfg["max_exposicion_total_pct"]:
+        raise ValueError("Límite de datos/sector inválido")
+    if cfg["comision_por_operacion_pct"] + cfg["slippage_pct"] + cfg["spread_pct"] / 2 >= 10:
+        raise ValueError("Costos por lado inválidos")
+    return cfg
 
 
 def resumen_config_operativa(system_config, config_simulacion):
-    return {
-        "version_config": str(system_config.get("version", "default")),
-        "mode": system_config.get("mode", "PAPER_TRADING_SIMULATED"),
-        "source": str(DEFAULT_CONFIG_PATH),
-        "simulation_config": config_simulacion,
-        "paper_trading": system_config.get("paper_trading", {}),
-        "automation": system_config.get("automation", {}),
-    }
+    return {"version_config": system_config["version"], "mode": system_config["mode"],
+            "source": "config/system_config.json", "simulation_config": config_simulacion,
+            "paper_trading": system_config.get("paper_trading", {}), "automation": system_config.get("automation", {}),
+            "dashboard": system_config.get("dashboard", {})}
