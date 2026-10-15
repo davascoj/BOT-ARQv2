@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>BOT-ARQ V4.4.5 · Dashboard</title>
-  <link rel="stylesheet" href="style.css?v=4.4.5"/>
+  <title>BOT-ARQ V5.0.0 · Dashboard</title>
+  <link rel="stylesheet" href="style.css?v=5.0.0"/>
 </head>
 
 <body>
@@ -13,8 +13,8 @@
     <!-- ============ A. BARRA SUPERIOR COMPACTA ============ -->
     <header class="topbar-global">
       <div class="tb-brand">
-        <span class="tb-logo">BOT-ARQ</span>
-        <span class="tb-version" id="tbVersion">V4.4.5</span>
+        <h1 class="tb-logo">BOT-ARQ</h1>
+        <span class="tb-version" id="tbVersion">V5.0.0</span>
         <span class="tb-tag tb-paper" id="tbModo">MODO PAPER</span>
         <span class="tb-tag tb-broker" id="tbBroker">BROKER REAL OFF</span>
       </div>
@@ -25,21 +25,24 @@
           <span id="marketStatusText">sistema off</span>
         </div>
         <span class="tb-update" id="fecha">Cargando...</span>
-        <span class="tb-load" id="loadStatus">Cargando datos...</span>
+        <span class="tb-load" id="loadStatus" role="status" aria-live="polite">Cargando datos...</span>
       </div>
 
       <div class="tb-actions">
         <button onclick="actualizarManual()">Actualizar</button>
         <button class="btn-ghost" onclick="ejecutarAnalisis()">GitHub Actions</button>
-        <button class="btn-ghost" onclick="mostrarTop4()">Top 4</button>
         <button class="btn-ghost" onclick="scrollHistorial()">Historial</button>
       </div>
     </header>
 
     <div id="autoRefreshInfo" class="auto-refresh-info">
-      La vista se refresca sola cada 5 minutos. GitHub Actions actualiza los datos cada 5 minutos en horario de mercado.
+      La vista consulta cada 5 minutos. Las ejecuciones programadas pueden demorarse; verifica la antigüedad de los datos.
     </div>
 
+    <aside class="integrity-notice" aria-label="Reglas y calidad de datos">
+      <p id="saleRule">No se vende el día de compra: venta desde la siguiente sesión, solo en horario regular, incluido el stop.</p>
+      <p id="accountingNotice">Comprobando versión y calidad del historial...</p>
+    </aside>
     <!-- ============ B. PANEL EJECUTIVO ============ -->
     <section class="card executive-card">
       <div class="topbar">
@@ -67,11 +70,11 @@
       </div>
     </section>
 
-    <!-- ============ D. REGLAS OPERATIVAS V4.4 ============ -->
+    <!-- ============ D. REGLAS OPERATIVAS V5 ============ -->
     <section class="card operational-card" id="reglasOperativasCard">
       <div class="topbar">
         <div>
-          <h2>Reglas operativas V4.4</h2>
+          <h2>Reglas operativas V5</h2>
           <span>Exposición, riesgo abierto y drawdown convertidos en decisiones de entrada.</span>
         </div>
         <span class="mode-badge v4-badge" id="operationalRulesBadge">Cargando...</span>
@@ -97,11 +100,11 @@
     <section class="card" id="topOportunidadesCard">
       <div class="topbar">
         <div>
-          <h2>Top oportunidades</h2>
+          <h2>Señales y decisión del motor</h2>
           <span>Mejores señales BUY / BUY STRONG con riesgo bajo o medio.</span>
         </div>
       </div>
-      <div class="table-wrap">
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Tabla desplazable horizontalmente">
         <table class="compact-table">
           <thead>
             <tr>
@@ -131,7 +134,7 @@
           <span>Posiciones paper abiertas: entrada, precio actual, G/P, stop, objetivo y riesgo.</span>
         </div>
       </div>
-      <div class="table-wrap">
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Tabla desplazable horizontalmente">
         <table class="compact-table">
           <thead>
             <tr>
@@ -139,8 +142,8 @@
               <th>Sector</th>
               <th class="num">Entrada</th>
               <th class="num">Precio actual</th>
-              <th class="num">G/P USD</th>
-              <th class="num">G/P %</th>
+              <th class="num">G/P neta USD</th>
+              <th class="num">G/P neta %</th>
               <th class="num">Stop</th>
               <th class="num">Objetivo</th>
               <th class="num" title="Pérdida máxima estimada si toca el stop.">Riesgo USD</th>
@@ -157,12 +160,12 @@
       <div class="topbar">
         <div>
           <h2>Auditoría de bloqueos</h2>
-          <span>Señales BUY que el bot no abrió, por filtros existentes y reglas operativas V4.4.</span>
+          <span>Señales BUY que el bot no abrió, por filtros existentes y reglas operativas V5.</span>
         </div>
-        <span class="mode-badge warning" id="auditBadge">Auditoría V4.4</span>
+        <span class="mode-badge warning" id="auditBadge">Auditoría V5</span>
       </div>
       <div class="audit-summary" id="auditSummary">Cargando auditoría...</div>
-      <div class="table-wrap">
+      <div class="table-wrap" tabindex="0" role="region" aria-label="Tabla desplazable horizontalmente">
         <table class="compact-table">
           <thead>
             <tr>
@@ -170,7 +173,7 @@
               <th>Señal</th>
               <th>Motivo</th>
               <th>Score</th>
-              <th title="Bloqueada por una regla operativa V4.4.">Regla op.</th>
+              <th title="Bloqueada por una regla operativa V5.">Regla op.</th>
               <th class="num">Exposición</th>
               <th class="num">Riesgo</th>
               <th class="num">Drawdown</th>
@@ -229,30 +232,31 @@
         <div class="topbar">
           <div>
             <h2>Curva de capital simulada</h2>
-            <span>Equity curve neta, con costos estimados.</span>
+            <span>Equity neta observada por sesión desde V5. No se reconstruyen cierres históricos ausentes.</span>
           </div>
         </div>
         <div class="chart-wrap">
-          <canvas id="equityChart" width="1200" height="320"></canvas>
+          <canvas id="equityChart" width="1200" height="320" role="img" aria-label="Curva de equity neta observada desde V5; tabla accesible debajo"></canvas>
+          <details><summary>Ver valores de la curva</summary><div id="equityTable" class="table-wrap">Se necesitan dos sesiones observadas.</div></details>
         </div>
       </section>
     </details>
 
     <details class="advanced-details" id="metricasAvanzadasDetails">
-      <summary>Métricas avanzadas · Ratios Pro V4.6 · sector, mercado y mejores/peores operaciones</summary>
+      <summary>Métricas avanzadas · Ratios Pro V5 · sector, mercado y mejores/peores operaciones</summary>
       <section class="card advanced-card">
         <div class="advanced-layout">
           <div>
-            <h3>Win Rate &amp; P&amp;L por sector <span class="mini-copy">(V4.6)</span></h3>
+            <h3>Win Rate &amp; P&amp;L por sector <span class="mini-copy">(V5)</span></h3>
             <div id="winratePorSector" class="table-wrap small-table">Cargando...</div>
           </div>
           <div>
             <h3>Rendimiento por sector</h3>
-            <div class="table-wrap small-table"><table><thead><tr><th>Sector</th><th>Ops</th><th>Win</th><th>Neta %</th><th>PF</th></tr></thead><tbody id="tablaSectores"></tbody></table></div>
+            <div class="table-wrap small-table"><table><thead><tr><th>Sector</th><th>Ops</th><th>Win</th><th title="P&L dividido por suma de importes, no rentabilidad de cartera">Neta ponderada %</th><th>PF</th></tr></thead><tbody id="tablaSectores"></tbody></table></div>
           </div>
           <div>
             <h3>Rendimiento por mercado</h3>
-            <div class="table-wrap small-table"><table><thead><tr><th>Mercado</th><th>Ops</th><th>Win</th><th>Neta %</th><th>PF</th></tr></thead><tbody id="tablaMercados"></tbody></table></div>
+            <div class="table-wrap small-table"><table><thead><tr><th>Mercado</th><th>Ops</th><th>Win</th><th title="P&L dividido por suma de importes, no rentabilidad de cartera">Neta ponderada %</th><th>PF</th></tr></thead><tbody id="tablaMercados"></tbody></table></div>
           </div>
           <div>
             <h3>Mejores operaciones</h3>
@@ -292,7 +296,7 @@
             <button onclick="filtrarSector('ETF')">ETF</button>
             <button onclick="filtrarSector('Robótica')">Robótica</button>
 
-            <input type="text" id="buscarAccion" placeholder="Buscar acción: NVDA, AMD, TSLA..." oninput="buscarRankingDebounced()"/>
+            <input type="text" id="buscarAccion" aria-label="Buscar acción" placeholder="Buscar acción: NVDA, AMD, TSLA..." oninput="buscarRankingDebounced()"/>
             <button onclick="limpiarBusqueda()">Quitar filtro</button>
 
             <label><input type="checkbox" id="soloCompra" onchange="renderTabla()"> Solo compra</label>
@@ -301,14 +305,14 @@
           </div>
         </details>
 
-        <div class="table-wrap">
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Tabla desplazable horizontalmente">
           <table>
             <thead>
               <tr>
                 <th title="Ticker o símbolo bursátil.">Acción</th>
                 <th title="Sector o categoría principal.">Sector</th>
                 <th class="num" title="Último precio de cierre tomado por el sistema.">Precio</th>
-                <th class="num" title="Probabilidad técnica estimada. No garantiza ganancia.">Prob.</th>
+                <th class="num" title="Puntuación heurística 0–100. No es probabilidad de ganar.">Punt. técnica</th>
                 <th class="num" title="Movimiento reciente de 5 días.">Mom. 5D</th>
                 <th class="num" title="Fuerza contra QQQ en 20 días. Positivo = supera al Nasdaq.">Rel.</th>
                 <th title="Más fuego significa mayor fuerza técnica con riesgo controlado.">Hot</th>
@@ -348,22 +352,23 @@
         </div>
 
         <div class="historial-filters">
-          <input type="text" id="buscarHistorial" placeholder="Buscar ticker o resultado..." oninput="buscarHistorialDebounced()"/>
-          <select id="filtroEstadoHistorial" onchange="renderHistorial()">
+          <input type="text" id="buscarHistorial" aria-label="Buscar operación" placeholder="Buscar ticker o resultado..." oninput="buscarHistorialDebounced()"/>
+          <select id="filtroEstadoHistorial" aria-label="Estado" onchange="renderHistorial()">
             <option value="TODOS">Todos los estados</option>
             <option value="ABIERTA">Abiertas</option>
             <option value="CERRADA">Cerradas</option>
           </select>
-          <select id="filtroResultadoHistorial" onchange="renderHistorial()">
+          <select id="filtroResultadoHistorial" aria-label="Resultado neto" onchange="renderHistorial()">
             <option value="TODOS">Ganadas y perdidas</option>
             <option value="GANADA">Ganadas</option>
             <option value="PERDIDA">Perdidas</option>
           </select>
         </div>
 
-        <div class="summary historial-summary" id="historialResumen">Cargando historial...</div>
+        <div class="summary historial-summary" id="historialResumen" role="status">Abre esta sección para consultar las operaciones.</div>
+        <nav id="historyPager" class="history-pager" aria-label="Páginas del historial"></nav>
 
-        <div class="table-wrap">
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Tabla desplazable horizontalmente">
           <table>
             <thead>
               <tr>
@@ -371,8 +376,8 @@
                 <th>Acción</th>
                 <th class="num">Entrada</th>
                 <th class="num">Actual</th>
-                <th class="num">G/P %</th>
-                <th class="num">G/P USD</th>
+                <th class="num">G/P neta %</th>
+                <th class="num">G/P neta USD</th>
                 <th class="num">Riesgo USD</th>
                 <th class="num">Stop</th>
                 <th class="num">Objetivo</th>
@@ -399,7 +404,7 @@
             <span>Parámetros operativos reales cargados desde <code>config/system_config.json</code>.</span>
           </div>
         </div>
-        <div class="table-wrap">
+        <div class="table-wrap" tabindex="0" role="region" aria-label="Tabla desplazable horizontalmente">
           <table class="compact-table">
             <thead><tr><th>Parámetro</th><th class="num">Valor</th></tr></thead>
             <tbody id="tablaConfigTecnica"></tbody>
@@ -415,6 +420,6 @@
     </section>
   </main>
 
-  <script src="script.js?v=4.4.5"></script>
+  <script src="script.js?v=5.0.0"></script>
 </body>
 </html>

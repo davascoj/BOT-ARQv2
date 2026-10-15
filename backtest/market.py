@@ -26,9 +26,11 @@ def reconstruir_mercado_fn(precios_drivers, motor):
         drivers = {}
         for tk, df in precios_drivers.items():
             df_t = df.loc[:T]
-            if len(df_t) >= 80:
+            if len(df_t) >= 80 and df_t.index[-1].date() == T.date():
                 drivers[tk] = motor.compute_driver(df_t, tk)
         ctx = motor.armar_contexto_mercado(drivers)
+        if any(drivers.get(t, {}).get("estado", "SIN DATOS") == "SIN DATOS" for t in ("SPY", "QQQ")):
+            ctx["estado"] = "SIN DATOS"
         cache[key] = ctx
         return ctx
 

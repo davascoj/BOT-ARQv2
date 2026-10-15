@@ -16,13 +16,19 @@ Requiere yfinance + pandas instalados (igual que el motor live).
 import argparse
 import importlib.util
 import json
+import hashlib
+import platform
+from datetime import datetime, timezone
+from engine.policy import VERSION
+from engine.ledger import config_hash
+from engine.storage import atomic_json
 from pathlib import Path
 
 
 def cargar_motor():
     """Importa el motor live para reutilizar compute_signal, compute_driver,
     armar_contexto_mercado, ACCIONES_INFO, DRIVERS_CONTEXTO y CONFIG_SIMULACION."""
-    spec = importlib.util.spec_from_file_location("motor", "analizador_acciones.py")
+    spec = importlib.util.spec_from_file_location("motor", Path(__file__).resolve().parents[1] / "analizador_acciones.py")
     motor = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(motor)
     return motor
@@ -62,14 +68,27 @@ def main():
 
     print("[2/3] Reconstruyendo contexto de mercado point-in-time y simulando...")
     mercado_fn = reconstruir_mercado_fn(precios_drivers, motor)
-    res = run_backtest(precios, motor.compute_signal, mercado_fn, config, sectores=sectores)
+    def signal(df, ticker, mercado):
+        result = motor.compute_signal(df, ticker, mercado)
+        if result:
+            result["Score calidad"] = motor.calcular_score_calidad(result)
+        return result
+    res = run_backtest(precios, signal, mercado_fn, config, sectores=sectores)
 
     print("[3/3] Calculando métricas...")
     met = calcular_metricas_backtest(res["equity_curve"], res["trades"], config["capital_inicial"])
     met["winrate_por_sector"] = winrate_por_sector(res["trades"])
 
     salida = {
-        "version": "V4.7",
+        "version": VERSION,
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "python_version": platform.python_version(),
+        "config_usada": config,
+        "config_hash": config_hash(config),
+        "data_hashes": {t: hashlib.sha256(df.to_csv().encode()).hexdigest() for t, df in precios.items()},
+        "driver_hashes": {t: hashlib.sha256(df.to_csv().encode()).hexdigest() for t, df in precios_drivers.items()},
+        "posiciones_abiertas": res["posiciones_abiertas"],
+        "diagnostics": res["diagnostics"],
         "periodo": args.periodo,
         "universo_tickers": len(tickers),
         "metricas": met,
@@ -78,13 +97,15 @@ def main():
         "trades": res["trades"],
         "notas": [
             "Backtest sin look-ahead: decisión en cierre de T, ejecución en apertura de T+1.",
-            "Costos aplicados (comisión + slippage + spread) en entrada y salida.",
+            "Costos aditivos por lado (comisión + slippage + medio spread) congelados en entrada, mismo modelo que live.",
+            "Toda venta solo desde sesión posterior y en horario NYSE. No se liquida artificialmente al final.",
+            "OHLC diario no identifica la hora intradía; si toca ambos niveles se elige stop primero. Live usa muestras 1m.",
             "Caja real (V4.5): cada posición descuenta efectivo; sin sobre-apalancamiento.",
             "Universo = tickers actuales del motor => posible survivorship bias (ver README).",
         ],
     }
     Path(args.salida).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.salida).write_text(json.dumps(salida, ensure_ascii=False, indent=2, default=str), encoding="utf-8")
+    atomic_json(args.salida, salida)
 
     print(f"\nResultado -> {args.salida}")
     print(f"  Retorno total : {met.get('retorno_total_pct')}%")

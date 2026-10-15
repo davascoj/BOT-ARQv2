@@ -1,24 +1,18 @@
-name: BOT-ARQ v4.4.1 - Hotfix Dashboard
+name: BOT-ARQ V5 - Analisis y publicacion validada
 
 on:
   schedule:
-    # Corre cada 5 minutos en días hábiles. El paso de Python valida si NYSE está abierto.
     - cron: "*/5 13-21 * * 1-5"
-
   workflow_dispatch:
     inputs:
       force:
-        description: "Forzar ejecucion aunque el mercado este cerrado"
+        description: "Actualizar analisis fuera de horario (NUNCA permite operar fuera de sesión)"
         required: false
         default: "false"
         type: choice
-        options:
-          - "false"
-          - "true"
-
+        options: ["false", "true"]
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
       - ".github/workflows/analizar.yml"
       - "analizador_acciones.py"
@@ -28,122 +22,93 @@ on:
       - "requirements.txt"
       - "config/**"
       - "engine/**"
+      - "backtest/**"
       - "execution/**"
+      - "tests/**"
       - "scripts/**"
 
 permissions:
-  contents: write
+  contents: read
 
+# Keep this group stable across deployment to serialize with the previous version.
 concurrency:
   group: arq-v4-4-1-auto-update
   cancel-in-progress: false
 
 jobs:
   analizar:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
+    timeout-minutes: 20
     steps:
-      - name: Descargar repositorio
-        uses: actions/checkout@v4
+      - name: Checkout sin credenciales persistentes ni historial completo
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          fetch-depth: 0
-          token: ${{ secrets.ARQ_PAT }}
-          persist-credentials: true
+          ref: main
+          fetch-depth: 1
+          persist-credentials: false
 
-      - name: Sincronizar con la rama main
-        run: |
-          git fetch origin main
-          git pull --rebase origin main
-
-      - name: Mostrar tipo de ejecucion
-        run: |
-          echo "Evento: ${{ github.event_name }}"
-          echo "Force: ${{ inputs.force }}"
-          echo "Rama: ${{ github.ref }}"
-          echo "Fecha UTC:"
-          date -u
-          echo "Fecha Colombia:"
-          TZ=America/Bogota date
-          echo "Fecha New York:"
-          TZ=America/New_York date
-
-      - name: Configurar Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
+          cache: pip
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: "22"
 
-      - name: Instalar librerias
+      - name: Dependencias fijadas
+        run: python -m pip install -r requirements.txt
+
+      - name: Pruebas antes de tocar estado
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          python -m pytest
+          node --check script.js
+          node tests/frontend.test.cjs
 
-      - name: Verificar mercado abierto NYSE
-        id: mercado
+      - name: Ventana de analisis
+        id: window
+        env:
+          FORCE_ANALYSIS: ${{ inputs.force }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           python - <<'PY'
           import os
-          from datetime import datetime
-          from zoneinfo import ZoneInfo
-          import pandas_market_calendars as mcal
-
-          now = datetime.now(ZoneInfo("America/New_York"))
-          cal = mcal.get_calendar("NYSE")
-          sched = cal.schedule(start_date=now.date(), end_date=now.date())
-
-          is_open = False
-
-          if sched.empty:
-              print(f"Mercado cerrado hoy. Ahora NY: {now:%Y-%m-%d %H:%M:%S %Z}")
-          else:
-              market_open = sched.iloc[0]["market_open"].tz_convert("America/New_York").to_pydatetime()
-              market_close = sched.iloc[0]["market_close"].tz_convert("America/New_York").to_pydatetime()
-
-              is_open = market_open <= now <= market_close
-
-              print(f"Ahora NY: {now:%Y-%m-%d %H:%M:%S %Z}")
-              print(f"Apertura NYSE: {market_open:%Y-%m-%d %H:%M:%S %Z}")
-              print(f"Cierre NYSE: {market_close:%Y-%m-%d %H:%M:%S %Z}")
-              print(f"Mercado abierto: {is_open}")
-
-          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
-              f.write(f"is_open={'true' if is_open else 'false'}\n")
+          from datetime import datetime, timezone
+          from engine.policy import market_session, timestamp
+          now = datetime.now(timezone.utc)
+          session = market_session(now)
+          close = session["market_close"]
+          final_mark = close and 0 <= (now - timestamp(close)).total_seconds() <= 1200
+          run = session["is_open"] or final_mark or os.environ["FORCE_ANALYSIS"] == "true" or os.environ["EVENT_NAME"] == "push"
+          with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+              out.write(f"run={'true' if run else 'false'}\n")
+          print(session)
           PY
 
-      - name: Mercado cerrado - no ejecutar analisis
-        if: steps.mercado.outputs.is_open != 'true' && inputs.force != 'true'
-        run: |
-          echo "Mercado cerrado. No se actualizan los archivos."
-
-      - name: Ejecutar analizador
-        if: steps.mercado.outputs.is_open == 'true' || inputs.force == 'true'
+      - name: Analizar con bloqueo de sesión dentro del motor
+        if: steps.window.outputs.run == 'true'
         run: python analizador_acciones.py
 
-      - name: Guardar resultados en el repositorio
-        if: steps.mercado.outputs.is_open == 'true' || inputs.force == 'true'
+      - name: Validar snapshot antes de publicar
+        if: steps.window.outputs.run == 'true'
+        run: python scripts/validate_snapshot.py
+
+      - name: Publicar estado sin sobrescribir cambios concurrentes
+        if: steps.window.outputs.run == 'true'
+        env:
+          ARQ_PUSH_TOKEN: ${{ secrets.ARQ_PAT }}
         run: |
-          git config user.name "davascoj"
-          git config user.email "stivenvasco223@gmail.com"
-
-          echo "Agregando archivos generados..."
-
-          for file in datos_acciones.json analisis_acciones.xlsx historial_senales.json historial_senales.xlsx paper/paper_portfolio.json paper/paper_orders.json paper/paper_trades.json paper/paper_risk.json paper/paper_status.json paper/paper_state.json paper/paper_audit.json paper/paper_operational_rules.json; do
-            if [ -f "$file" ]; then
-              git add "$file"
-              echo "Agregado: $file"
-            else
-              echo "No existe, se omite: $file"
-            fi
-          done
-
-          if git diff --cached --quiet; then
-            echo "Sin cambios para guardar"
-          else
-            git commit -m "Actualizar analisis automatico BOT-ARQ v4.4.1"
-
-            echo "Sincronizando antes de subir cambios..."
-            git pull --rebase origin main
-
-            echo "Subiendo cambios al repositorio..."
-            git push origin main
-          fi
+          set -euo pipefail
+          test -n "$ARQ_PUSH_TOKEN"
+          BASE_SHA=$(git rev-parse HEAD)
+          # Public read, no token persisted. If main changed, discard this run rather than rebase stale state.
+          git fetch --depth=1 https://github.com/${{ github.repository }}.git main
+          test "$(git rev-parse FETCH_HEAD)" = "$BASE_SHA"
+          git add datos_acciones.json historial_senales.json paper/
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "BOT-ARQ"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Actualizar snapshot BOT-ARQ V5"
+          AUTH=$(printf 'x-access-token:%s' "$ARQ_PUSH_TOKEN" | base64 -w0)
+          echo "::add-mask::$AUTH"
+          git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $AUTH" push https://github.com/${{ github.repository }}.git HEAD:main

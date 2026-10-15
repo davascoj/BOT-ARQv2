@@ -22,6 +22,8 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 import json
 import math
+from engine.storage import atomic_json
+from engine.policy import VERSION
 
 ZONA_HORARIA = ZoneInfo("America/Bogota")
 PAPER_DIR = Path("paper")
@@ -52,9 +54,7 @@ def _safe_text(value):
 
 
 def _write_json(path, data):
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    atomic_json(path, data)
 
 
 def _operaciones(historial):
@@ -77,7 +77,7 @@ def _position_from_operation(op, idx):
     invested = _num(op.get("posicion_usd_estimada"), qty * entry)
     market_value = _num(op.get("valor_cartera_usd"), qty * current if qty else invested * (1 + _num(op.get("ganancia_pct"), 0) / 100))
     pnl_usd = _num(op.get("ganancia_abierta_usd_estimada"), market_value - invested)
-    pnl_pct = _num(op.get("ganancia_pct"), 0)
+    pnl_pct = _num(op.get("ganancia_pct_neta_estimada"), 0)
 
     return {
         "position_id": _operation_id(op, idx),
@@ -85,6 +85,10 @@ def _position_from_operation(op, idx):
         "sector": _safe_text(op.get("sector")),
         "status": "OPEN",
         "entry_date": _safe_text(op.get("fecha_entrada")),
+        "sell_eligible_at": op.get("sell_eligible_at"),
+        "sale_locked": op.get("sale_locked", True),
+        "quote_stale": op.get("quote_stale", True),
+        "accounting_quality": op.get("accounting_quality"),
         "days_open": int(_num(op.get("dias_abierta"), 0)),
         "entry_signal": _safe_text(op.get("senal_bot_entrada")),
         "current_signal": _safe_text(op.get("senal_bot_actual")),
@@ -153,7 +157,7 @@ def _orders_from_operation(op, idx):
             "reason": _safe_text(op.get("tipo_cierre")) or _safe_text(op.get("resultado")),
             "result": _safe_text(op.get("resultado")),
             "pnl_usd_estimated": _round(op.get("pnl_usd_estimado")),
-            "pnl_pct": _round(op.get("ganancia_pct_final")),
+            "pnl_pct": _round(op.get("ganancia_pct_neta_estimada")),
             "mode": "PAPER_ONLY"
         })
 
@@ -192,7 +196,7 @@ def _audit_from_historial(historial, resultados, positions, warnings, config):
     abiertas = [p.get("ticker") for p in positions if p.get("ticker")]
 
     blocked = []
-    for idx, b in enumerate(bloqueadas[-80:]):
+    for idx, b in enumerate(bloqueadas):
         blocked.append({
             "id": f"BLOCK-{idx+1}",
             "date": _safe_text(b.get("fecha")),
@@ -233,7 +237,7 @@ def _audit_from_historial(historial, resultados, positions, warnings, config):
 
     return {
         "updated": _now_visible(),
-        "version": "V4.5",
+        "version": VERSION,
         "mode": "AUDITORIA_BLOQUEOS_EXISTENTES",
         "summary": {
             "blocked_count": len(blocked),
@@ -272,27 +276,23 @@ def build_paper_state(historial, resultados, mercado, config):
     diagnostico = dict(resumen.get("diagnostico_bot", {}) or {})
     operational_rules = dict(resumen.get("reglas_operativas", {}) or {})
 
-    capital_inicial = _num(config.get("capital_inicial"), _num(sim.get("capital_inicial"), 5000))
-    exposure_usd = sum(_num(p.get("market_value_usd")) for p in positions)
-    open_risk_usd = sum(_num(p.get("risk_usd")) for p in positions)
-    open_pnl_usd = sum(_num(p.get("open_pnl_usd")) for p in positions)
-    closed_pnl_usd = sum(_num(t.get("pnl_usd_estimated")) for t in trades)
-
-    # V4.5 Position Sizing Pro: contabilidad de caja real
-    cash_committed_usd = _round(sum(_num(p.get("invested_usd")) for p in positions))
-    cash_equity_usd = _round(capital_inicial + closed_pnl_usd)
-    cash_available_usd = _round(max(cash_equity_usd - cash_committed_usd, 0))
-    cash_available_pct = _round((cash_available_usd / capital_inicial * 100) if capital_inicial else 0)
-    max_posicion_pct = _num(config.get("max_posicion_pct"), 20)
-    max_nueva_posicion_usd = _round(min(cash_available_usd, capital_inicial * max_posicion_pct / 100))
-
-    max_positions = int(_num(config.get("max_operaciones_abiertas"), 20))
-    exposure_pct = (exposure_usd / capital_inicial * 100) if capital_inicial else 0
-    risk_pct = (open_risk_usd / capital_inicial * 100) if capital_inicial else 0
+    capital_inicial = sim["capital_inicial"]
+    exposure_usd = risk["exposicion_abierta_usd"]
+    open_risk_usd = risk["riesgo_total_abierto_usd"]
+    open_pnl_usd = sim["ganancia_abierta_neta_usd"]
+    closed_pnl_usd = sim["ganancia_neta_usd"]
+    cash_committed_usd = sim["caja_comprometida_usd"]
+    cash_equity_usd = sim["capital_actual_total_estimado"]
+    cash_available_usd = sim["caja_disponible_usd"]
+    cash_available_pct = sim["caja_disponible_pct"]
+    max_nueva_posicion_usd = sim["max_nueva_posicion_usd"]
+    max_positions = int(config["max_operaciones_abiertas"])
+    exposure_pct = risk["exposicion_abierta_pct"]
+    risk_pct = risk["riesgo_total_abierto_pct"]
 
     if not operational_rules:
         operational_rules = {
-            "version": "V4.5",
+            "version": VERSION,
             "estado": "DEFENSIVO" if exposure_pct >= _num(config.get("max_exposicion_total_pct"), 80) or risk_pct >= _num(config.get("max_riesgo_total_abierto_pct"), 10) else "NORMAL",
             "exposicion_abierta_pct": _round(exposure_pct),
             "riesgo_abierto_pct": _round(risk_pct),
@@ -304,12 +304,12 @@ def build_paper_state(historial, resultados, mercado, config):
             "nota": "Fallback generado desde paper_trading_engine si historial no trae reglas_operativas."
         }
 
-    warnings = []
+    warnings = list(diagnostico.get('alertas', []))
     if len(positions) >= max_positions:
         warnings.append("Máximo de posiciones abiertas alcanzado.")
     if exposure_pct > _num(config.get("max_exposicion_total_pct"), 80):
         warnings.append("Exposición estimada supera el límite configurado.")
-    if risk_pct > 10:
+    if risk_pct > config['max_riesgo_total_abierto_pct']:
         warnings.append("Riesgo abierto total elevado.")
     if cash_available_usd <= 0 and len(positions) > 0:
         warnings.append("Caja disponible agotada: no hay capital libre para nuevas posiciones.")
@@ -322,7 +322,7 @@ def build_paper_state(historial, resultados, mercado, config):
 
     portfolio = {
         "updated": _now_visible(),
-        "version": "V4.5",
+        "version": VERSION,
         "mode": "PAPER_TRADING_SIMULATED",
         "capital_initial_usd": _round(capital_inicial),
         "cash_model_note": "Cash derivado de simulación histórica; no representa cuenta broker real.",
@@ -345,7 +345,7 @@ def build_paper_state(historial, resultados, mercado, config):
 
     risk_state = {
         "updated": _now_visible(),
-        "version": "V4.5",
+        "version": VERSION,
         "mode": "PAPER_TRADING_SIMULATED",
         "market_state": mercado,
         "risk_config": config,
@@ -353,7 +353,7 @@ def build_paper_state(historial, resultados, mercado, config):
         "metrics_from_bot": metrics,
         "diagnostic_from_bot": diagnostico,
         "warnings": warnings,
-        "can_open_more_positions": len(positions) < max_positions,
+        "can_open_more_positions": bool(historial.get("market_session", {}).get("is_open")) and len(positions) < max_positions and cash_available_usd > 0 and operational_rules.get("estado") != "BLOQUEADO" and exposure_pct < config["max_exposicion_total_pct"] and risk_pct < config["max_riesgo_total_abierto_pct"] and not any(p.get("quote_stale") for p in positions),
         "remaining_position_slots": max(max_positions - len(positions), 0),
         "exposure_pct": _round(exposure_pct),
         "open_risk_pct": _round(risk_pct),
@@ -362,7 +362,7 @@ def build_paper_state(historial, resultados, mercado, config):
 
     status = {
         "updated": _now_visible(),
-        "version": "V4.5",
+        "version": VERSION,
         "engine": "PAPER_TRADING_ENGINE",
         "mode": "PAPER_ONLY_NO_REAL_ORDERS",
         "health": "OK" if not warnings else "WARNING",
@@ -391,18 +391,19 @@ def build_paper_state(historial, resultados, mercado, config):
 
     state = {
         "updated": _now_visible(),
-        "version": "V4.5",
+        "run_id": historial.get("run_id"),
+        "version": VERSION,
         "status": status,
         "portfolio": portfolio,
         "orders": {
             "updated": _now_visible(),
             "mode": "PAPER_ONLY",
-            "orders": orders[-600:]
+            "orders": orders
         },
         "trades": {
             "updated": _now_visible(),
             "mode": "PAPER_ONLY",
-            "trades": trades[-600:]
+            "trades": trades
         },
         "risk": risk_state,
         "audit": audit,
@@ -445,4 +446,4 @@ def export_paper_state(historial, resultados, mercado, config):
     }
     _write_json(PAPER_DIR / "paper_state.json", state_light)
 
-    return state
+    return state_light
