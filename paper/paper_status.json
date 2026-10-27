@@ -1,83 +1,86 @@
 {
-  "updated": "27-10-2026 12:16 PM Colombia",
+  "updated": "27-10-2026 12:21 PM Colombia",
   "version": "5.0.0",
   "engine": "PAPER_TRADING_ENGINE",
   "mode": "PAPER_ONLY_NO_REAL_ORDERS",
   "health": "WARNING",
-  "warnings_count": 2,
+  "warnings_count": 5,
   "warnings": [
+    "APO: sin cotización reciente; no se ejecuta y se bloquean nuevas entradas.",
     "Historial anterior a V5 no reconciliado; el saldo heredado no está certificado.",
-    "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps."
+    "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps.",
+    "Diagnóstico general marca riesgo ALTO.",
+    "Reglas operativas V4.5 en estado BLOQUEADO."
   ],
   "market": {
     "estado": "NEUTRO +",
     "score": 4,
-    "spy20": 0.71,
-    "qqq20": -2.28,
+    "spy20": 0.7,
+    "qqq20": -2.35,
     "drivers": {
-      "ARKK": {
-        "ticker": "ARKK",
-        "estado": "NEUTRO",
-        "score": 0,
-        "mom20": -5.34,
-        "mom5": 1.5
-      },
-      "XLE": {
-        "ticker": "XLE",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 10.92,
-        "mom5": 0.43
-      },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -8.73,
-        "mom5": -1.57
-      },
-      "SOXX": {
-        "ticker": "SOXX",
-        "estado": "NEUTRO",
-        "score": 0,
-        "mom20": -10.19,
-        "mom5": 1.92
-      },
-      "CL=F": {
-        "ticker": "CL=F",
-        "estado": "POSITIVO",
-        "score": 3,
-        "mom20": 11.99,
-        "mom5": -1.66
-      },
-      "SPY": {
-        "ticker": "SPY",
-        "estado": "POSITIVO",
-        "score": 3,
-        "mom20": 0.71,
-        "mom5": 0.08
+        "mom20": -8.79,
+        "mom5": -1.63
       },
       "QQQ": {
         "ticker": "QQQ",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": -2.28,
-        "mom5": 0.48
+        "mom20": -2.35,
+        "mom5": 0.41
+      },
+      "SPY": {
+        "ticker": "SPY",
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": 0.7,
+        "mom5": 0.06
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -3.32,
-        "mom5": -0.98
+        "mom20": -3.33,
+        "mom5": -1.0
+      },
+      "XLE": {
+        "ticker": "XLE",
+        "estado": "FUERTE",
+        "score": 6,
+        "mom20": 10.98,
+        "mom5": 0.48
+      },
+      "SOXX": {
+        "ticker": "SOXX",
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": -10.22,
+        "mom5": 1.88
+      },
+      "ARKK": {
+        "ticker": "ARKK",
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": -5.39,
+        "mom5": 1.45
+      },
+      "CL=F": {
+        "ticker": "CL=F",
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": 11.92,
+        "mom5": -1.73
       }
     },
     "sectores": {
       "chips": {
         "estado": "NEUTRO",
         "score": 0,
-        "mom20_prom": -6.23,
-        "detalle": "SOXX -10.19% · QQQ -2.28%",
+        "mom20_prom": -6.29,
+        "detalle": "SOXX -10.22% · QQQ -2.35%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -86,8 +89,8 @@
       "energia": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": 11.46,
-        "detalle": "XLE 10.92% · CL=F 11.99%",
+        "mom20_prom": 11.45,
+        "detalle": "XLE 10.98% · CL=F 11.92%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -96,8 +99,8 @@
       "cripto": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -6.03,
-        "detalle": "BTC-USD -3.32% · ETH-USD -8.73%",
+        "mom20_prom": -6.06,
+        "detalle": "BTC-USD -3.33% · ETH-USD -8.79%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -106,8 +109,8 @@
       "tech_ia": {
         "estado": "NEUTRO +",
         "score": 3,
-        "mom20_prom": -2.3,
-        "detalle": "QQQ -2.28% · ARKK -5.34% · SPY 0.71%",
+        "mom20_prom": -2.35,
+        "detalle": "QQQ -2.35% · ARKK -5.39% · SPY 0.7%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -121,7 +124,7 @@
   "trades_closed": 310,
   "signals_available": 276,
   "broker_real_enabled": false,
-  "operational_mode": "NORMAL",
+  "operational_mode": "BLOQUEADO",
   "files": {
     "portfolio": "paper/paper_portfolio.json",
     "orders": "paper/paper_orders.json",
