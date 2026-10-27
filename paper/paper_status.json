@@ -1,83 +1,84 @@
 {
-  "updated": "27-10-2026 02:46 PM Colombia",
+  "updated": "27-10-2026 02:51 PM Colombia",
   "version": "5.0.0",
   "engine": "PAPER_TRADING_ENGINE",
   "mode": "PAPER_ONLY_NO_REAL_ORDERS",
   "health": "WARNING",
-  "warnings_count": 2,
+  "warnings_count": 3,
   "warnings": [
     "Historial anterior a V5 no reconciliado; el saldo heredado no está certificado.",
-    "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps."
+    "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps.",
+    "Exposición estimada supera el límite configurado."
   ],
   "market": {
     "estado": "NEUTRO +",
     "score": 4,
-    "spy20": 0.89,
-    "qqq20": -2.05,
+    "spy20": 0.82,
+    "qqq20": -2.21,
     "drivers": {
-      "XLE": {
-        "ticker": "XLE",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 10.98,
-        "mom5": 0.48
-      },
-      "ARKK": {
-        "ticker": "ARKK",
-        "estado": "NEUTRO",
-        "score": 0,
-        "mom20": -5.18,
-        "mom5": 1.68
+      "CL=F": {
+        "ticker": "CL=F",
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": 11.65,
+        "mom5": -1.96
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -8.72,
-        "mom5": -1.55
+        "mom20": -8.88,
+        "mom5": -1.73
       },
-      "SPY": {
-        "ticker": "SPY",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 0.89,
-        "mom5": 0.26
-      },
-      "BTC-USD": {
-        "ticker": "BTC-USD",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -3.08,
-        "mom5": -0.74
-      },
-      "CL=F": {
-        "ticker": "CL=F",
-        "estado": "POSITIVO",
-        "score": 3,
-        "mom20": 11.68,
-        "mom5": -1.94
+      "ARKK": {
+        "ticker": "ARKK",
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": -5.43,
+        "mom5": 1.4
       },
       "QQQ": {
         "ticker": "QQQ",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": -2.05,
-        "mom5": 0.72
+        "mom20": -2.21,
+        "mom5": 0.56
+      },
+      "BTC-USD": {
+        "ticker": "BTC-USD",
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -3.17,
+        "mom5": -0.83
+      },
+      "XLE": {
+        "ticker": "XLE",
+        "estado": "FUERTE",
+        "score": 6,
+        "mom20": 11.02,
+        "mom5": 0.51
+      },
+      "SPY": {
+        "ticker": "SPY",
+        "estado": "POSITIVO",
+        "score": 3,
+        "mom20": 0.82,
+        "mom5": 0.18
       },
       "SOXX": {
         "ticker": "SOXX",
         "estado": "NEUTRO",
         "score": 0,
-        "mom20": -9.59,
-        "mom5": 2.61
+        "mom20": -10.03,
+        "mom5": 2.1
       }
     },
     "sectores": {
       "chips": {
         "estado": "NEUTRO",
         "score": 0,
-        "mom20_prom": -5.82,
-        "detalle": "SOXX -9.59% · QQQ -2.05%",
+        "mom20_prom": -6.12,
+        "detalle": "SOXX -10.03% · QQQ -2.21%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -86,8 +87,8 @@
       "energia": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": 11.33,
-        "detalle": "XLE 10.98% · CL=F 11.68%",
+        "mom20_prom": 11.34,
+        "detalle": "XLE 11.02% · CL=F 11.65%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -96,8 +97,8 @@
       "cripto": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -5.9,
-        "detalle": "BTC-USD -3.08% · ETH-USD -8.72%",
+        "mom20_prom": -6.03,
+        "detalle": "BTC-USD -3.17% · ETH-USD -8.88%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -106,8 +107,8 @@
       "tech_ia": {
         "estado": "NEUTRO +",
         "score": 3,
-        "mom20_prom": -2.11,
-        "detalle": "QQQ -2.05% · ARKK -5.18% · SPY 0.89%",
+        "mom20_prom": -2.27,
+        "detalle": "QQQ -2.21% · ARKK -5.43% · SPY 0.82%",
         "drivers": [
           "QQQ",
           "ARKK",
