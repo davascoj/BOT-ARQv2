@@ -1,83 +1,84 @@
 {
-  "updated": "26-10-2026 02:56 PM Colombia",
+  "updated": "27-10-2026 08:31 AM Colombia",
   "version": "5.0.0",
   "engine": "PAPER_TRADING_ENGINE",
   "mode": "PAPER_ONLY_NO_REAL_ORDERS",
   "health": "WARNING",
-  "warnings_count": 2,
+  "warnings_count": 3,
   "warnings": [
     "Historial anterior a V5 no reconciliado; el saldo heredado no está certificado.",
-    "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps."
+    "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps.",
+    "Exposición estimada supera el límite configurado."
   ],
   "market": {
     "estado": "DÉBIL",
     "score": -8,
-    "spy20": -0.06,
-    "qqq20": -3.29,
+    "spy20": 0.42,
+    "qqq20": -3.13,
     "drivers": {
-      "ARKK": {
-        "ticker": "ARKK",
+      "SOXX": {
+        "ticker": "SOXX",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -8.37,
-        "mom5": -0.64
-      },
-      "BTC-USD": {
-        "ticker": "BTC-USD",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -6.65,
-        "mom5": -4.93
-      },
-      "SPY": {
-        "ticker": "SPY",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -0.06,
-        "mom5": -0.17
+        "mom20": -12.08,
+        "mom5": -0.22
       },
       "QQQ": {
         "ticker": "QQQ",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -3.29,
-        "mom5": -0.84
-      },
-      "SOXX": {
-        "ticker": "SOXX",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -12.05,
-        "mom5": -1.74
-      },
-      "XLE": {
-        "ticker": "XLE",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 11.96,
-        "mom5": 2.55
+        "mom20": -3.13,
+        "mom5": -0.39
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -14.17,
-        "mom5": -6.3
+        "mom20": -9.84,
+        "mom5": -2.76
       },
       "CL=F": {
         "ticker": "CL=F",
         "estado": "POSITIVO",
         "score": 3,
-        "mom20": 9.97,
-        "mom5": -1.77
+        "mom20": 13.21,
+        "mom5": -0.59
+      },
+      "BTC-USD": {
+        "ticker": "BTC-USD",
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -4.03,
+        "mom5": -1.71
+      },
+      "ARKK": {
+        "ticker": "ARKK",
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -7.94,
+        "mom5": -1.28
+      },
+      "SPY": {
+        "ticker": "SPY",
+        "estado": "NEUTRO",
+        "score": 0,
+        "mom20": 0.42,
+        "mom5": -0.21
+      },
+      "XLE": {
+        "ticker": "XLE",
+        "estado": "FUERTE",
+        "score": 6,
+        "mom20": 13.01,
+        "mom5": 2.32
       }
     },
     "sectores": {
       "chips": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -7.67,
-        "detalle": "SOXX -12.05% · QQQ -3.29%",
+        "mom20_prom": -7.61,
+        "detalle": "SOXX -12.08% · QQQ -3.13%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -86,8 +87,8 @@
       "energia": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": 10.96,
-        "detalle": "XLE 11.96% · CL=F 9.97%",
+        "mom20_prom": 13.11,
+        "detalle": "XLE 13.01% · CL=F 13.21%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -96,8 +97,8 @@
       "cripto": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -10.41,
-        "detalle": "BTC-USD -6.65% · ETH-USD -14.17%",
+        "mom20_prom": -6.94,
+        "detalle": "BTC-USD -4.03% · ETH-USD -9.84%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -106,8 +107,8 @@
       "tech_ia": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -3.91,
-        "detalle": "QQQ -3.29% · ARKK -8.37% · SPY -0.06%",
+        "mom20_prom": -3.55,
+        "detalle": "QQQ -3.13% · ARKK -7.94% · SPY 0.42%",
         "drivers": [
           "QQQ",
           "ARKK",
