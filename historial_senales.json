@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "actualizado": "30-10-2026 03:20 PM Nueva York",
+  "actualizado": "30-10-2026 03:25 PM Nueva York",
   "operaciones": [
     {
       "id": "2026-10-15-XLV",
@@ -19092,14 +19092,14 @@
       "senal_bot_entrada": "BUY",
       "senal_bot_actual": "HOLD",
       "riesgo_entrada": "BAJO",
-      "riesgo_actual": "BAJO",
+      "riesgo_actual": "MEDIO",
       "score_calidad_entrada": 81.9,
-      "score_calidad_actual": 72.5,
+      "score_calidad_actual": 67.6,
       "mercado_entrada": "NEUTRO +",
       "contexto_sector_entrada": "GENERAL",
       "sell_eligible_at": "2026-10-30T13:30:00+00:00",
       "sale_locked": false,
-      "quote_stale": false,
+      "quote_stale": true,
       "riesgo_inicial_usd": 0.42015762000745105,
       "perdida_maxima_stop_usd": 0.42015762000745105,
       "entry_fingerprint": "7705e91d6581474f5c386529d4ee288c1216ce9093365d55b6f83703ad68d652",
@@ -19182,7 +19182,7 @@
       "contexto_sector_entrada": "GENERAL",
       "sell_eligible_at": "2026-10-30T13:30:00+00:00",
       "sale_locked": false,
-      "quote_stale": false,
+      "quote_stale": true,
       "riesgo_inicial_usd": 17.370068686706688,
       "perdida_maxima_stop_usd": 17.370068686706688,
       "entry_fingerprint": "e9da47f6a18e613cf81fbe6a1f0bb2d890736b164a23433b3e08d24338e534bd",
@@ -19258,14 +19258,14 @@
       "senal_bot_entrada": "BUY",
       "senal_bot_actual": "HOLD",
       "riesgo_entrada": "MEDIO",
-      "riesgo_actual": "ALTO",
+      "riesgo_actual": "MEDIO",
       "score_calidad_entrada": 76.9,
-      "score_calidad_actual": 44.0,
+      "score_calidad_actual": 64.2,
       "mercado_entrada": "NEUTRO +",
       "contexto_sector_entrada": "GENERAL",
       "sell_eligible_at": "2026-10-30T13:30:00+00:00",
       "sale_locked": false,
-      "quote_stale": false,
+      "quote_stale": true,
       "riesgo_inicial_usd": 0.43894462170410675,
       "perdida_maxima_stop_usd": 0.43894462170410675,
       "entry_fingerprint": "faa8d8acabb084ad8bc296e480601466e065d0bcd895ab3b5a6dc7f0795f3dd6",
@@ -19542,7 +19542,7 @@
       },
       {
         "fecha": "2026-10-30",
-        "timestamp": "2026-10-30T19:20:57.718677+00:00",
+        "timestamp": "2026-10-30T19:25:50.141252+00:00",
         "equity": 3905.3911236411964,
         "drawdown_pct": 22.04741171390537,
         "session_final": false
@@ -21444,7 +21444,7 @@
     ],
     "reglas_operativas": {
       "version": "5.0.0",
-      "estado": "NORMAL",
+      "estado": "BLOQUEADO",
       "drawdown_pct": 21.892177527176074,
       "session_open": true,
       "exposicion_abierta_pct": 21.349513641411917,
@@ -21453,12 +21453,15 @@
       "max_riesgo_total_abierto_pct": 10.0,
       "bloquear_entradas_drawdown_pct": 35.0,
       "bloqueos_generados": 0,
-      "motivo_principal": "SIN BLOQUEO GLOBAL"
+      "motivo_principal": "Entradas bloqueadas: faltan cotizaciones actuales de cartera"
     },
     "diagnostico_bot": {
-      "modo": "NORMAL",
-      "riesgo_sistema": "MEDIO",
+      "modo": "BLOQUEADO",
+      "riesgo_sistema": "ALTO",
       "alertas": [
+        "IBB: sin cotización reciente; no se ejecuta y se bloquean nuevas entradas.",
+        "F: sin cotización reciente; no se ejecuta y se bloquean nuevas entradas.",
+        "CCL: sin cotización reciente; no se ejecuta y se bloquean nuevas entradas.",
         "Historial anterior a V5 no reconciliado; el saldo heredado no está certificado.",
         "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps."
       ]
@@ -21467,11 +21470,11 @@
     "benchmark": {
       "fecha_inicio": "2026-06-03",
       "bot_rentabilidad_neta_pct": -21.89,
-      "spy_rentabilidad_pct": 0.3,
+      "spy_rentabilidad_pct": 0.11,
       "qqq_rentabilidad_pct": -7.56,
-      "bot_vs_spy_alpha_pct": -22.19,
+      "bot_vs_spy_alpha_pct": -22.0,
       "bot_vs_qqq_alpha_pct": -14.33,
-      "capital_si_spy_usd": 5015.0,
+      "capital_si_spy_usd": 5005.5,
       "capital_si_qqq_usd": 4622.0,
       "nota": "Comparación orientativa con saldo legacy no certificado; cierres diarios."
     }
@@ -21568,18 +21571,18 @@
     },
     {
       "fecha": "2026-10-30",
-      "timestamp": "2026-10-30T19:20:57.718677+00:00",
+      "timestamp": "2026-10-30T19:25:50.141252+00:00",
       "equity": 3905.3911236411964,
       "drawdown_pct": 22.04741171390537,
       "session_final": false
     }
   ],
-  "generated_at": "2026-10-30T19:20:57.718677+00:00",
-  "run_id": "20261030T192057718677Z-dd2bd516",
+  "generated_at": "2026-10-30T19:25:50.141252+00:00",
+  "run_id": "20261030T192550141252Z-dd2bd516",
   "market_session": {
     "calendar": "NYSE",
     "session_date": "2026-10-30",
-    "checked_at": "2026-10-30T19:20:57.718677+00:00",
+    "checked_at": "2026-10-30T19:25:50.141252+00:00",
     "is_open": true,
     "market_open": "2026-10-30T13:30:00+00:00",
     "market_close": "2026-10-30T20:00:00+00:00",
