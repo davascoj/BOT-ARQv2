@@ -1,76 +1,76 @@
 {
-  "updated": "30-10-2026 11:45 AM Colombia",
+  "updated": "30-10-2026 11:51 AM Colombia",
   "version": "5.0.0",
   "mode": "PAPER_TRADING_SIMULATED",
   "market_state": {
     "estado": "DÉBIL",
     "score": -8,
-    "spy20": -1.61,
-    "qqq20": -7.64,
+    "spy20": -1.55,
+    "qqq20": -7.9,
     "drivers": {
       "SOXX": {
         "ticker": "SOXX",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -20.17,
-        "mom5": -1.69
-      },
-      "CL=F": {
-        "ticker": "CL=F",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 14.27,
-        "mom5": 0.81
-      },
-      "BTC-USD": {
-        "ticker": "BTC-USD",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -6.7,
-        "mom5": -3.34
+        "mom20": -20.22,
+        "mom5": -1.75
       },
       "SPY": {
         "ticker": "SPY",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -1.61,
-        "mom5": -0.36
+        "mom20": -1.55,
+        "mom5": -0.3
       },
-      "QQQ": {
-        "ticker": "QQQ",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -7.64,
-        "mom5": -1.71
-      },
-      "ARKK": {
-        "ticker": "ARKK",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -10.1,
-        "mom5": -1.5
-      },
-      "XLE": {
-        "ticker": "XLE",
+      "CL=F": {
+        "ticker": "CL=F",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 10.85,
-        "mom5": 0.44
+        "mom20": 14.26,
+        "mom5": 0.8
+      },
+      "BTC-USD": {
+        "ticker": "BTC-USD",
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -6.93,
+        "mom5": -3.57
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -10.99,
-        "mom5": -4.21
+        "mom20": -11.3,
+        "mom5": -4.55
+      },
+      "QQQ": {
+        "ticker": "QQQ",
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -7.9,
+        "mom5": -1.99
+      },
+      "ARKK": {
+        "ticker": "ARKK",
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -10.46,
+        "mom5": -1.9
+      },
+      "XLE": {
+        "ticker": "XLE",
+        "estado": "FUERTE",
+        "score": 6,
+        "mom20": 11.03,
+        "mom5": 0.61
       }
     },
     "sectores": {
       "chips": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -13.91,
-        "detalle": "SOXX -20.17% · QQQ -7.64%",
+        "mom20_prom": -14.06,
+        "detalle": "SOXX -20.22% · QQQ -7.9%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -79,8 +79,8 @@
       "energia": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": 12.56,
-        "detalle": "XLE 10.85% · CL=F 14.27%",
+        "mom20_prom": 12.64,
+        "detalle": "XLE 11.03% · CL=F 14.26%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -89,8 +89,8 @@
       "cripto": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -8.85,
-        "detalle": "BTC-USD -6.7% · ETH-USD -10.99%",
+        "mom20_prom": -9.12,
+        "detalle": "BTC-USD -6.93% · ETH-USD -11.3%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -99,8 +99,8 @@
       "tech_ia": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -6.45,
-        "detalle": "QQQ -7.64% · ARKK -10.1% · SPY -1.61%",
+        "mom20_prom": -6.64,
+        "detalle": "QQQ -7.9% · ARKK -10.46% · SPY -1.55%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -145,12 +145,12 @@
     "racha_max_ganadas": 6,
     "racha_max_perdidas": 19,
     "max_drawdown_pct": 22.20266425962577,
-    "drawdown_actual_pct": 21.994878082107807,
+    "drawdown_actual_pct": 21.968801889205277,
     "max_drawdown_usd": 1110.1332129812886,
-    "exposicion_abierta_usd": 828.6410708648793,
-    "exposicion_abierta_pct": 21.245811825974783,
-    "riesgo_total_abierto_usd": 22.935804957774014,
-    "riesgo_total_abierto_pct": 0.5880589477679716,
+    "exposicion_abierta_usd": 829.946381617371,
+    "exposicion_abierta_pct": 21.272168099711834,
+    "riesgo_total_abierto_usd": 24.242616817630957,
+    "riesgo_total_abierto_pct": 0.6213570316633974,
     "operaciones_abiertas": 3,
     "max_operaciones_abiertas": 20,
     "denominator": "equity_neta_actual",
@@ -176,32 +176,36 @@
     "cagr_pct": null
   },
   "diagnostic_from_bot": {
-    "modo": "NORMAL",
-    "riesgo_sistema": "MEDIO",
+    "modo": "BLOQUEADO",
+    "riesgo_sistema": "ALTO",
     "alertas": [
+      "CCL: sin cotización reciente; no se ejecuta y se bloquean nuevas entradas.",
       "Historial anterior a V5 no reconciliado; el saldo heredado no está certificado.",
       "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps."
     ]
   },
   "warnings": [
+    "CCL: sin cotización reciente; no se ejecuta y se bloquean nuevas entradas.",
     "Historial anterior a V5 no reconciliado; el saldo heredado no está certificado.",
-    "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps."
+    "No se vende el día de compra. El stop no limita pérdidas overnight ni gaps.",
+    "Diagnóstico general marca riesgo ALTO.",
+    "Reglas operativas V4.5 en estado BLOQUEADO."
   ],
-  "can_open_more_positions": true,
+  "can_open_more_positions": false,
   "remaining_position_slots": 17,
-  "exposure_pct": 21.25,
-  "open_risk_pct": 0.59,
+  "exposure_pct": 21.27,
+  "open_risk_pct": 0.62,
   "operational_rules": {
     "version": "5.0.0",
-    "estado": "NORMAL",
-    "drawdown_pct": 21.994878082107807,
+    "estado": "BLOQUEADO",
+    "drawdown_pct": 21.968801889205277,
     "session_open": true,
-    "exposicion_abierta_pct": 21.245811825974783,
-    "riesgo_abierto_pct": 0.5880589477679716,
+    "exposicion_abierta_pct": 21.272168099711834,
+    "riesgo_abierto_pct": 0.6213570316633974,
     "max_exposicion_total_pct": 80.0,
     "max_riesgo_total_abierto_pct": 10.0,
     "bloquear_entradas_drawdown_pct": 35.0,
     "bloqueos_generados": 0,
-    "motivo_principal": "SIN BLOQUEO GLOBAL"
+    "motivo_principal": "Entradas bloqueadas: faltan cotizaciones actuales de cartera"
   }
 }
