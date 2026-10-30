@@ -1,26 +1,19 @@
 {
-  "updated": "30-10-2026 10:50 AM Colombia",
+  "updated": "30-10-2026 10:55 AM Colombia",
   "version": "5.0.0",
   "mode": "PAPER_TRADING_SIMULATED",
   "market_state": {
     "estado": "DÉBIL",
     "score": -8,
-    "spy20": -1.57,
+    "spy20": -1.54,
     "qqq20": -7.47,
     "drivers": {
-      "CL=F": {
-        "ticker": "CL=F",
+      "XLE": {
+        "ticker": "XLE",
         "estado": "FUERTE",
         "score": 6,
-        "mom20": 14.1,
-        "mom5": 0.67
-      },
-      "SOXX": {
-        "ticker": "SOXX",
-        "estado": "DÉBIL",
-        "score": -6,
-        "mom20": -19.83,
-        "mom5": -1.27
+        "mom20": 10.96,
+        "mom5": 0.54
       },
       "QQQ": {
         "ticker": "QQQ",
@@ -29,48 +22,55 @@
         "mom20": -7.47,
         "mom5": -1.54
       },
+      "SOXX": {
+        "ticker": "SOXX",
+        "estado": "DÉBIL",
+        "score": -6,
+        "mom20": -19.91,
+        "mom5": -1.37
+      },
+      "CL=F": {
+        "ticker": "CL=F",
+        "estado": "FUERTE",
+        "score": 6,
+        "mom20": 14.21,
+        "mom5": 0.76
+      },
       "ARKK": {
         "ticker": "ARKK",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -9.87,
-        "mom5": -1.26
+        "mom20": -9.85,
+        "mom5": -1.23
       },
       "BTC-USD": {
         "ticker": "BTC-USD",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -6.64,
-        "mom5": -3.27
+        "mom20": -6.65,
+        "mom5": -3.28
       },
       "SPY": {
         "ticker": "SPY",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -1.57,
-        "mom5": -0.32
+        "mom20": -1.54,
+        "mom5": -0.29
       },
       "ETH-USD": {
         "ticker": "ETH-USD",
         "estado": "DÉBIL",
         "score": -6,
-        "mom20": -11.08,
-        "mom5": -4.31
-      },
-      "XLE": {
-        "ticker": "XLE",
-        "estado": "FUERTE",
-        "score": 6,
-        "mom20": 10.81,
-        "mom5": 0.4
+        "mom20": -11.22,
+        "mom5": -4.47
       }
     },
     "sectores": {
       "chips": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -13.65,
-        "detalle": "SOXX -19.83% · QQQ -7.47%",
+        "mom20_prom": -13.69,
+        "detalle": "SOXX -19.91% · QQQ -7.47%",
         "drivers": [
           "SOXX",
           "QQQ"
@@ -79,8 +79,8 @@
       "energia": {
         "estado": "ACOMPAÑA",
         "score": 7,
-        "mom20_prom": 12.46,
-        "detalle": "XLE 10.81% · CL=F 14.1%",
+        "mom20_prom": 12.59,
+        "detalle": "XLE 10.96% · CL=F 14.21%",
         "drivers": [
           "XLE",
           "CL=F"
@@ -89,8 +89,8 @@
       "cripto": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -8.86,
-        "detalle": "BTC-USD -6.64% · ETH-USD -11.08%",
+        "mom20_prom": -8.94,
+        "detalle": "BTC-USD -6.65% · ETH-USD -11.22%",
         "drivers": [
           "BTC-USD",
           "ETH-USD"
@@ -99,8 +99,8 @@
       "tech_ia": {
         "estado": "NO ACOMPAÑA",
         "score": -8,
-        "mom20_prom": -6.3,
-        "detalle": "QQQ -7.47% · ARKK -9.87% · SPY -1.57%",
+        "mom20_prom": -6.29,
+        "detalle": "QQQ -7.47% · ARKK -9.85% · SPY -1.54%",
         "drivers": [
           "QQQ",
           "ARKK",
@@ -145,12 +145,12 @@
     "racha_max_ganadas": 6,
     "racha_max_perdidas": 19,
     "max_drawdown_pct": 22.20266425962577,
-    "drawdown_actual_pct": 21.99074083640755,
+    "drawdown_actual_pct": 21.99015125294435,
     "max_drawdown_usd": 1110.1332129812886,
-    "exposicion_abierta_usd": 828.84817131541,
-    "exposicion_abierta_pct": 21.24999468530372,
-    "riesgo_total_abierto_usd": 23.143143573822744,
-    "riesgo_total_abierto_pct": 0.5933435036292163,
+    "exposicion_abierta_usd": 828.87768442865,
+    "exposicion_abierta_pct": 21.250590732876777,
+    "riesgo_total_abierto_usd": 23.172690627143023,
+    "riesgo_total_abierto_pct": 0.594096540355557,
     "operaciones_abiertas": 3,
     "max_operaciones_abiertas": 20,
     "denominator": "equity_neta_actual",
@@ -194,10 +194,10 @@
   "operational_rules": {
     "version": "5.0.0",
     "estado": "NORMAL",
-    "drawdown_pct": 21.99074083640755,
+    "drawdown_pct": 21.99015125294435,
     "session_open": true,
-    "exposicion_abierta_pct": 21.24999468530372,
-    "riesgo_abierto_pct": 0.5933435036292163,
+    "exposicion_abierta_pct": 21.250590732876777,
+    "riesgo_abierto_pct": 0.594096540355557,
     "max_exposicion_total_pct": 80.0,
     "max_riesgo_total_abierto_pct": 10.0,
     "bloquear_entradas_drawdown_pct": 35.0,
